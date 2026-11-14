@@ -4,8 +4,9 @@
 Cách dùng:
     python3 src/build.py                     # build dev   -> dist/xngot_studio.lua
     python3 src/build.py --release           # build phát hành -> dist/main.lua
-    python3 src/build.py --release --minify  # + bản minify -> dist/main.min.lua
-    python3 src/build.py --minify full       # minify mạnh: đổi tên + dồn 1 dòng
+    python3 src/build.py --release --minify  # + bản minify (compact) -> dist/main.min.lua
+    python3 src/build.py --minify light      # nhẹ tay: chỉ bỏ comment
+    python3 src/build.py --minify full       # đổi tên định danh + dồn 1 dòng
     python3 src/build.py --check             # kiểm tra module, không ghi gì
     python3 src/build.py --stats             # bảng thống kê module
     python3 src/build.py --out path.lua      # đổi đường dẫn xuất
@@ -314,12 +315,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default=None, help="đường dẫn xuất")
     parser.add_argument("--check", action="store_true", help="chỉ kiểm tra")
     parser.add_argument("--stats", action="store_true", help="in thống kê module")
-    parser.add_argument("--minify", nargs="?", const="light", default=None,
-                        choices=["light", "full"],
-                        help="xuất thêm bản minify: light (bỏ comment, giữ dòng) "
-                             "hoặc full (đổi tên + dồn 1 dòng)")
+    parser.add_argument("--minify", nargs="?", const="compact", default=None,
+                        choices=["light", "compact", "full"],
+                        help="xuất thêm bản minify: compact (mặc định: bỏ comment + dấu cách, "
+                             "GIỮ tên), light (giữ xuống dòng) hoặc full (đổi tên)")
     parser.add_argument("--no-rename", action="store_true",
-                        help="minify full nhưng KHÔNG đổi tên định danh")
+                        help="giữ nguyên tên định danh kể cả khi chọn mức full")
     parser.add_argument("--tag-modules", action="store_true", help="chèn `-- [module]` giữa các module")
     parser.add_argument("--verify-source", default=None, metavar="PATH", help="đối chiếu bản gốc")
     parser.add_argument("--quiet", action="store_true", help="không in")
@@ -360,7 +361,7 @@ def main(argv: list[str] | None = None) -> int:
         "release_entry", manifest["entry"])
     out = args.out or os.path.join(REPO, "dist", entry)
     # Bản dev không có header: tệp xuất ra chính là bản gốc (chỉ khác 4 dòng đã ghi ở
-    # docs/PROVENANCE.md), nên có thể `diff` với tệp gốc bất cứ lúc nào.
+    # đã ghi trong manifest), nên có thể `diff` với tệp gốc bất cứ lúc nào.
     header = "" if profile["name"] == "dev" else build_header(manifest, profile, items, payload_hash)
     bundle = header + payload
     os.makedirs(os.path.dirname(out), exist_ok=True)

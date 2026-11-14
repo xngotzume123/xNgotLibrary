@@ -6,7 +6,6 @@
      source : main 2.txt L20-59 · 40 dòng · delta +0
 --]]
 local ConfigSchema = {
-
 	topN = { type = "number", min = 1, max = 40, default = 12,
 		desc = "Số kết quả trả về cho dropdown" },
 	sources = { type = "table", default = { "youtube", "soundcloud", "audius" },

@@ -2,8 +2,11 @@
 """xNgot Library - minifier Lua/Luau (thuần Python, không cần thư viện ngoài).
 
 Ba mức:
-    light  bỏ comment, bỏ dòng trống, bỏ khoảng trắng cuối dòng — giữ nguyên tên & xuống dòng
-    full   light + đổi tên local cấp chunk thành tên ngẫu nhiên + dồn về 1 dòng
+    light    bỏ comment, bỏ dòng trống, bỏ khoảng trắng cuối dòng — giữ nguyên tên & xuống dòng
+    compact  bỏ comment + thụt lề + dấu cách, dồn thành dòng dài, GIỮ NGUYÊN mọi tên
+             (đây là mức mặc định — file vẫn đọc được, không giống obfuscate)
+    full     compact + đổi tên local cấp chunk thành tên ngẫu nhiên (trông như obfuscate,
+             chỉ dùng khi thật cần giấu tên)
 
 Nguyên tắc an toàn:
     - Chỉ đổi tên `local` khai báo ở **cấp chunk** và không bị khai báo lại (không shadow)
@@ -344,15 +347,15 @@ def _token_signature(tokens: list[Token], mapping: dict[str, str] | None = None)
 
 def minify(text: str, level: str = "light", seed: str = "xngot", rename: bool = True) -> dict:
     """Trả về dict: code, bytes, lines, mapping, breaks, renamed, tokens."""
-    if level not in ("light", "full"):
-        raise ValueError("level phải là 'light' hoặc 'full'")
+    if level not in ("light", "compact", "full"):
+        raise ValueError("level phải là 'light', 'compact' hoặc 'full'")
     tokens = tokenize(text)
     bare = strip(tokens)
     mapping: dict[str, str] = {}
     if level == "full" and rename:
         bare, mapping = rename_chunk_locals(bare, seed)
 
-    code, breaks = emit(bare, single_line=(level == "full"))
+    code, breaks = emit(bare, single_line=(level != "light"))
 
     # tự kiểm chứng: token stream phải trùng khớp bản gốc (sau khi áp bảng đổi tên)
     round_trip = _token_signature(strip(tokenize(code)))
@@ -367,7 +370,7 @@ def minify(text: str, level: str = "light", seed: str = "xngot", rename: bool = 
         "code": code,
         "bytes": len(code.encode("utf-8")),
         "lines": code.count("\n") + 1,           # kể cả xuống dòng nằm trong chuỗi dài
-        "code_lines": (breaks if level == "full" else code.count("\n")) + 1,
+        "code_lines": (breaks if level != "light" else code.count("\n")) + 1,
         "mapping": mapping,
         "breaks": breaks,
         "renamed": len(mapping),
