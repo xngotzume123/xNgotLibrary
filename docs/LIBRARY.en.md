@@ -1,32 +1,42 @@
-# xNgot Library Library — Usage Guide
+# xNgot Library — User Manual
 
-> For **script authors reusing the library**.
-> Vietnamese version: [`LIBRARY.vi.md`](LIBRARY.vi.md) · Repo overview: [`../README.md`](../README.md)
+> For people **using this library to build a hub / menu for a Roblox script**.
+> Vietnamese version: [`LIBRARY.vi.md`](LIBRARY.vi.md) · Overview & support: [`../README.md`](../README.md)
 
-The library ships five independent pieces:
-
-| Block | What you get | Global |
-|---|---|---|
-| **UI** | Window, Tabs, 11 element types, Settings tab, KeySystem | `LIB` (returned value) |
-| **Floating panel** | Floating control panel: notifications, activities, music, Cross AI, timers | `Window.DynamicIsland` |
-| **Music engine** | Search / score / download from YouTube, SoundCloud, Audius | `_G.CrossAIMusic` |
-| **Music config** | 16 schema-checked keys, 4 presets | `_G.xNgotMusicConfig` |
-| **Log / debug** | `Log`, `DevTools`, `Debug` (release build swaps in stubs) | `_G.xNgotLog`, `_G.xNgotDevTools` |
+You don't need advanced Lua. All you do is pass **tables** — the library takes care of drawing,
+dragging, resizing, effects, saving settings, notifications and music.
 
 ---
 
-## 1. Loading the library
-
-### 1.1. Default mode (opens the xNgot Library hub)
+## 1. Start in 30 seconds
 
 ```lua
-local LIB = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+
+local Window = LIB:CreateWindow({ Title = "My Hub", Icon = "sparkles" })
+local Tab = Window:Tab({ Title = "Main", Icon = "house" })
+
+Tab:Button({ Title = "Say hi", Callback = function()
+    LIB:Notify({ Title = "Hello", Content = "The library is running", Kind = "success" })
+end })
 ```
 
-The stock **xNgot Library** window opens and `_G.Window` is created.
+Run it and you have a window. Read on when you need more.
 
-### 1.2. Library-only mode (recommended for your own hub)
+---
+
+## 2. Loading the library
+
+### 2.1. Usual way
+
+```lua
+local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+```
+
+It opens a **demo window** so you can see the look. As soon as you call `LIB:CreateWindow`
+yourself, the demo window closes itself.
+
+### 2.2. Library only — nothing opens on its own
 
 Set the flag **before** loading:
 
@@ -37,311 +47,196 @@ local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
 local Window = LIB:CreateWindow({ Title = "My Hub" })
 ```
 
-In this mode:
+No demo window, no `_G.Window` — just `LIB` for you to use.
 
-- the stock hub does **not** open, there is **no** `_G.Window`;
-- `LIB` is fully functional, you build your own window;
-- the floating panel is only created when `SettingsUI = true` (the default);
-- open the stock hub any time with `LIB.OpenXNgotHub()`.
+### 2.3. Lighter build
 
-### 1.3. Minified build
+Swap `dist/main.lua` for `dist/main.min.lua`. About 25% smaller, identical API.
 
-Same API, different URL — roughly 25% smaller:
+### 2.4. Load from a local file (offline)
 
 ```lua
-local LIB = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.min.lua"))()
+local LIB = loadstring(readfile("xNgotLibrary.lua"))()
 ```
 
-### 1.4. Loading from a local file
-
-```lua
-local code = readfile("xNgotStudio.lua")
-local LIB = loadstring(code)()
-```
-
-> Order matters: `loadstring` → call it → receive the `LIB` table. Forget the `()` and you
-> hold a function, not the library.
+> Keep the trailing `()`. Without it you're holding a *function*, not the library.
 
 ---
 
-## 2. Globals
-
-| Name | Type | Available | Purpose |
-|---|---|---|---|
-| `LIB` | table | always | root API |
-| `LIB.Version` | string | always | `"3.0.0"` |
-| `LIB.OpenXNgotHub()` | function | always | open the stock hub |
-| `LIB.ActiveDynamicIsland` | table? | after a window exists | live floating panel |
-| `LIB.LastDynamicIslandError` | string? | when floating panel creation failed | error text |
-| `LIB.ShowStartupError(err)` | function | always | show a startup error dialog |
-| `_G.Window` | table? | default mode only | stock hub window |
-| `_G.xNgotPanel` | function? | default mode | toggle the debug panel |
-| `_G.xNgotLog` | table | always | see §11 |
-| `_G.xNgotDevTools` | table | dev build | see §11 |
-| `_G.xNgotDebug` | table | always | panel / log export |
-| `_G.xNgotDebugBridge` | table | dev build | debug bridge |
-| `_G.xNgotMusicConfig` | table | always | music config (§9) |
-| `_G.CrossAIMusic` | table | always | music engine (§10) |
-| `_G.Music` / `_G.xNgotMusicEngine` | table | always | engine aliases |
-| `_G.xNgotMusicDoctor` | function | always | environment self-check |
-| `_G.__xNgotEmbeddedLibrary` | table | always | `LIB` itself (used by the loader) |
-
-`getgenv().xNgotStudio` is the stock hub's private handle — don't rely on it.
-
----
-
-## 3. `LIB:CreateWindow(options)`
-
-Returns a `Window` object. Every option is optional.
+## 3. Creating a window
 
 ```lua
 local Window = LIB:CreateWindow({
-    Title = "My Hub",
-    Icon = "sparkles",
-    Version = "v1.0.0",
-    Folder = "MyHub",
+    Title = "My Hub",              -- window title (also the name on the floating panel)
+    Icon = "sparkles",             -- icon next to the title
+    Version = "v1.0.0",            -- small text next to the title
     Size = UDim2.fromOffset(620, 440),
     ToggleKey = Enum.KeyCode.RightShift,
-    ToggleButtonPlatform = "Both",
-    AutoSave = true,
-    FileSaveName = "MyHub_Config.json",
-    SettingsUI = true,
-    Loading = { Text = "Loading", Duration = 1.4, Steps = { "UI", "Icons", "Done" } },
 })
 ```
 
-### 3.1. Options
+Every field is optional — defaults are used when omitted.
 
-| Option | Type | Default | Notes |
+| Field | Type | Default | Meaning |
 |---|---|---|---|
-| `Title` | string | `"NgotStudio"` | window title, also used by the floating panel |
-| `Icon` | string | `"layout-dashboard"` | icon name (§13) |
-| `Version` | string | `"v1.0"` | shown next to the title |
+| `Title` | string | `"NgotStudio"` | window title |
+| `Icon` | string | `"layout-dashboard"` | icon name (section 14) |
+| `Version` | string | `"v1.0"` | text beside the title |
 | `Author` | string | `"v1.0"` | subtitle line |
-| `Folder` | string | `"xNgotLibrary/Config"` | config folder |
+| `Folder` | string | `"xNgotLibrary/Config"` | where settings are stored |
 | `Size` | UDim2 | `580×420` | initial size |
-| `ToggleKey` | Enum.KeyCode | `RightShift` | show/hide hotkey |
-| `ToggleButtonPlatform` | `"PC"`/`"Mobile"`/`"Both"` | `"Both"` | where the floating button appears |
-| `LiveSearchDropdown` | boolean | `false` | filter while typing |
-| `AutoSave` | boolean | `true` | persist `CONFIG` on change |
-| `FileSaveName` | string | `"NgotStudio_Config.json"` | config file name |
-| `SettingsUI` | boolean | `true` | **`false` ⇒ no Settings tab and no floating panel** |
-| `SettingsTitle` / `SettingsIcon` | string | `"Settings Ui"` / `"settings"` | customise the Settings tab |
-| `Loading` | table | `{Duration = 1.6}` | splash screen: `Text`, `Steps`, `Duration` |
-| `KeySystem` | table / `false` | `false` | see 3.2 |
-| `AdminInfo` | table / `false` | `false` | admin card: `{Name, Bio, Avatar}` |
+| `ToggleKey` | Enum.KeyCode | `RightShift` | show / hide hotkey |
+| `ToggleButtonPlatform` | `"PC"` / `"Mobile"` / `"Both"` | `"Both"` | which devices show the floating button |
+| `LiveSearchDropdown` | boolean | `false` | filter dropdowns while typing |
+| `AutoSave` | boolean | `true` | save on every change |
+| `FileSaveName` | string | `"NgotStudio_Config.json"` | settings file name |
+| `SettingsUI` | boolean | `true` | `false` = **no Settings tab and no floating panel** |
+| `SettingsTitle` / `SettingsIcon` | string | `"Settings Ui"` / `"settings"` | rename the settings tab |
+| `Loading` | table | — | loading screen: `Text`, `Steps` (list), `Duration` (seconds) |
+| `KeySystem` | table / `false` | `false` | key gate — see section 4 |
+| `AdminInfo` | table / `false` | `false` | author card: `{ Name, Bio, Avatar }` |
 
-### 3.2. KeySystem
+---
+
+## 4. Locking the window with a key
 
 ```lua
 KeySystem = {
     Enabled = true,
-    Title = "Key System",
-    Subtitle = "Enter your key",
-    Note = "Get a key on Discord",
-    Key = "XNGOT-2026",                 -- single key
-    Keys = { "XNGOT-2026", "VIP-2026" },-- or several
+    Title = "Enter key",
+    Subtitle = "Get your key on Discord",
+    Note = "Contact the author for a key",
+    Keys = { "XNGOT-2026", "VIP-2026" },   -- multiple keys allowed
     CaseSensitive = false,
-    GetKey = "https://discord.gg/...",
-    GetKeyUrl = "https://...",
-    KeyFile = "xNgotLibrary/Keys/key.txt", -- remembered key
+    GetKeyUrl = "https://discord.gg/...",  -- "Get key" button
 }
 ```
 
-- A valid key is stored in `KeyFile` and reused next launch.
-- `Window.KeyUnlocked` tells you whether the gate has been cleared.
-- Forget it: `Window:ForgetSavedKey()` (deletes `KeyFile`).
-
-> The gate also engages whenever `Loading` is set — the splash screen shares the same
-> "startup gate" machinery.
+- A correct key is remembered in `xNgotLibrary/Keys/key.txt` — next launch goes straight in.
+- `Window.KeyUnlocked` tells you whether the gate has been passed.
+- Ask again next time: `Window:ForgetSavedKey()`.
 
 ---
 
-## 4. The `Window` object
+## 5. Tabs and elements
 
-### 4.1. Properties
-
-| Property | Type | Meaning |
-|---|---|---|
-| `Window.Title`, `.Icon`, `.Version` | string | copies of the options |
-| `Window.DynamicIsland` | table? | this window's floating panel (`nil` when `SettingsUI = false`) |
-| `Window.DynamicIslandError` | string? | floating panel creation error |
-| `Window.Size` | UDim2 | current size |
-| `Window.ToggleKey` | Enum.KeyCode | hotkey |
-| `Window.ConfigPath` | string | config file path |
-| `Window.KeySystem` | table? | key config |
-| `Window.KeyUnlocked` | boolean | gate cleared |
-| `Window.Visible` | boolean | window visible |
-
-### 4.2. Visibility
-
-| Call | Effect |
-|---|---|
-| `Window:Show()` / `Window:Hide()` / `Window:Toggle(state?)` | show / hide / flip |
-| `Window:Destroy()` | close and clean up |
-| `Window:SetToggleKey(Enum.KeyCode.X)` | change hotkey |
-| `Window:SetToggleButtonPlatform("PC"\|"Mobile"\|"Both")` | change platform |
-| `Window:GetToggleButtonPlatform()` | read it back |
-| `Window:EditOpenButton({ Icon = "x", Size = UDim2.fromOffset(44,44) })` | restyle the floating button |
-
-### 4.3. Tabs & content
-
-| Call | Effect |
-|---|---|
-| `Window:Tab({ Title, Icon })` → `Tab` | create a tab |
-| `Window:SelectTab("Main")` / `SelectTab(2)` | switch by name / index |
-| `Window:Divider()` | separator in the current tab |
-| `Window:Dialog({ Title, Content, Icon, Buttons })` | modal dialog (§5.10) |
-
-### 4.4. Config
-
-| Call | Effect |
-|---|---|
-| `Window:SaveConfig()` | write `CONFIG` to `ConfigPath` |
-| `Window:DeleteConfig()` | delete the config file |
-| `Window:GetConfigPath()` | config path |
-| `Window:ForgetSavedKey()` | delete the remembered key |
-
-### 4.5. UI settings
-
-| Call | Effect |
-|---|---|
-| `Window:GetUISettings()` | current appearance settings |
-| `Window:SetUISettings(tbl, save?)` | apply (accent, opacity, blur, font…) |
-| `Window:GetUIOverrides()` / `ClearUIOverride(key, save?)` | overrides |
-| `Window:SetUISize(w, h, save?)` / `GetUISize()` / `ResetUISize(save?)` | size |
-| `Window:ApplyUIPreset("Default"\|...)` / `GetUIPresets()` | presets |
-| `Window:UseOriginalUI(save?)` | restore the stock look |
-| `Window:ExportUISettings()` / `ImportUISettings(json, save?)` | JSON export / import |
-| `Window:SaveUISettings()` | save now |
-| `Window:GetUIProfileNames()` / `SaveUIProfile(name)` / `LoadUIProfile(name, save?)` / `DeleteUIProfile(name)` | UI profiles |
-| `Window:OpenUISettings()` | open the Settings tab |
-| `Window:GetUILanguage()` / `SetUILanguage()` | UI language (this build: `"en"`) |
-| `Window:RefreshAdminAvatar()` | reload the admin avatar |
-
-```lua
-Window:SetUISettings({ AccentColor = Color3.fromRGB(255, 55, 132), Enabled = true }, true)
-```
-
-### 4.6. floating panel bridges
-
-| Call | Effect |
-|---|---|
-| `Window:GetDynamicIsland()` | floating panel API (or `nil`) |
-| `Window:NotifyIsland(title, message, kind?, duration?)` | notification on the floating panel |
-| `Window:IslandActivity(title, message, duration?, kind?)` | activity bar |
-
----
-
-## 5. `Tab` and elements
-
-### 5.1. Creating a tab
+### 5.1. Create a tab
 
 ```lua
 local Tab = Window:Tab({ Title = "Main", Icon = "house" })
 ```
 
-- Each tab owns a `CONFIG[Title]` sub-table that stores element values.
-- **Element `Title`s must be unique inside a tab** — duplicate titles mean duplicate keys.
-- `Icon`: a icon name (§13).
+- A tab's `Title` is the **settings group name** — renaming a tab loses that tab's saved values.
+- Inside **one tab**, element `Title`s must be **unique** (duplicates overwrite each other).
 
-### 5.2. Element conventions
+### 5.2. Common rules
 
-1. Every element takes `Title`, `Desc`, `Locked` plus its own fields.
-2. `Callback(value)` fires **once at creation** with the initial value, then on every change.
-3. Every element returns an object with at least `:Destroy()`; most also have `:Set`,
-   `:SetTitle`, `:SetDesc`, `:Lock`, `:Unlock`.
-4. `Locked = true` renders the element but disables interaction.
+1. Every element takes a `data` table: `Title`, `Desc`, `Locked` plus its own fields.
+2. `Callback` fires **once at creation** (with the initial value), then on every change.
+   Don't assume it only runs when the user clicks.
+3. Elements return an object with `:Destroy()`, usually also `:Set`, `:SetTitle`, `:SetDesc`,
+   `:Lock`, `:Unlock`.
+4. `Locked = true` ⇒ visible but not clickable (soft lock).
 
-### 5.3. `Tab:Section(data)`
+### 5.3. Group box — `Section`
+
+```lua
+local Sec = Tab:Section({ Title = "Basics", Default = true })
+Sec:SetTitle("New")   Sec:SetOpen(true)   Sec:Toggle()   Sec:Destroy()
+```
 
 | Field | Type | Default |
 |---|---|---|
 | `Title` | string | `"Section"` |
-| `Default` | boolean | `false` (expanded or not) |
+| `Default` | boolean | `false` (open by default?) |
 | `TextXAlignment` | Enum | `Left` |
 
+### 5.4. Switch — `Toggle`
+
 ```lua
-local Sec = Tab:Section({ Title = "Basics", Default = true })
-Sec:SetTitle("New")  Sec:SetOpen(true)  Sec:Toggle()  Sec:Destroy()
-Sec:_Use("Button", { Title = "Button inside the section" })
+local esp = Tab:Toggle({
+    Title = "ESP",
+    Desc = "Draw player boxes",
+    Default = false,
+    Callback = function(on) print("ESP:", on) end,
+})
+
+esp:Set(true)     -- change from code (fires Callback)
+print(esp.State)  -- read state
 ```
 
-### 5.4. `Tab:Toggle(data)`
-
-| Field | Type | Default |
-|---|---|---|
-| `Title` / `Desc` / `Icon` | string | — |
-| `Default` (or `Value`) | boolean | `false` |
-| `Callback` | function(state) | — |
+### 5.5. Slider — `Slider`
 
 ```lua
-local esp = Tab:Toggle({ Title = "ESP", Default = false, Callback = print })
-esp:Set(true)   -- updates UI and calls Callback
-print(esp.State)
-```
-
-### 5.5. `Tab:Slider(data)`
-
-| Field | Type | Notes |
-|---|---|---|
-| `Value = { Min, Max, Default }` | table | `Min` 0, `Max` 100 |
-| `Default` | number | alternative to `Value.Default` |
-| `Step` | number | default 1 |
-
-```lua
-local s = Tab:Slider({ Title = "Speed", Value = { Min = 16, Max = 200, Default = 50 }, Step = 2,
-    Callback = function(v) getgenv().Speed = v end })
+local s = Tab:Slider({
+    Title = "Speed",
+    Value = { Min = 16, Max = 200, Default = 50 },
+    Step = 2,
+    Callback = function(v) getgenv().Speed = v end,
+})
 s:Set(100)
 ```
 
-### 5.6. `Tab:Input(data)`
+### 5.6. Text box — `Input`
 
-| Field | Type | Notes |
+```lua
+local nick = Tab:Input({ Title = "Name", Placeholder = "Type a name…", Default = "xNgot" })
+print(nick.Text)
+nick:Set("New")   nick:SetPlaceholder("…")
+```
+
+| Field | Type | Note |
 |---|---|---|
-| `Placeholder` | string | hint text |
+| `Placeholder` | string | grey hint text |
 | `Default` / `Text` | string | initial value |
-| `MultiLine` | boolean | textarea |
-| `ClearTextOnFocus` | boolean | clear on focus |
+| `MultiLine` | boolean | multi-line box |
+| `ClearTextOnFocus` | boolean | clear on click |
+
+### 5.7. Select list — `Dropdown`
 
 ```lua
-local nick = Tab:Input({ Title = "Name", Placeholder = "Type…", Default = "xNgot" })
-print(nick.Text)   nick:Set("New")   nick:SetPlaceholder("…")
+local src = Tab:Dropdown({
+    Title = "Music source",
+    Values = { "youtube", "soundcloud", "audius" },
+    Default = "youtube",
+    Callback = function(v) print("picked:", v) end,
+})
+src:Refresh({ "a", "b", "c" })
+src:Select("b")
+
+-- multi-select: Callback receives a table
+local tags = Tab:Dropdown({
+    Title = "Genres", Multi = true, AllowNone = true,
+    Values = { "lofi", "jazz", "chill" }, Default = { "lofi" },
+    Callback = function(list) print(#list .. " selected") end,
+})
 ```
 
-### 5.7. `Tab:Dropdown(data)`
-
-| Field | Type | Notes |
-|---|---|---|
-| `Values` | array | options |
-| `Value` / `Default` | string / table | initial value |
-| `Multi` | boolean | multi-select ⇒ Callback receives a **table** |
-| `AllowNone` | boolean | adds a `"None"` entry |
+### 5.8. Colour picker — `Colorpicker`
 
 ```lua
-local src = Tab:Dropdown({ Title = "Source", Values = { "youtube", "soundcloud" },
-    Default = "youtube", Callback = print })
-src:Refresh({ "a", "b", "c" })   src:Select("b")
+local c = Tab:Colorpicker({
+    Title = "Accent",
+    Default = Color3.fromRGB(10, 132, 255),
+    Callback = function(color) print(color) end,
+})
+c:Set(Color3.new(1, 0, 0))
+print(c:Get())
 ```
 
-### 5.8. `Tab:Colorpicker(data)`
+### 5.9. Paragraph, code block, button
 
 ```lua
-local c = Tab:Colorpicker({ Title = "Accent", Default = Color3.fromRGB(10,132,255), Callback = print })
-c:Set(Color3.new(1,0,0))   print(c:Get())
+Tab:Paragraph({ Title = "About", Desc = "RichText is supported." })
+
+local code = Tab:Code({ Title = "Example", Code = "print('hello')" })
+code:SetCode("print(2)")
+
+local btn = Tab:Button({ Title = "Run", Desc = "click to run", Callback = function() end })
+btn:SetTitle("Run again")   btn:Lock()   btn:Unlock()
 ```
 
-### 5.9. `Tab:Paragraph`, `Tab:Code`, `Tab:Button`
-
-```lua
-Tab:Paragraph({ Title = "About", Desc = "Descriptive text, RichText ok." })
-local code = Tab:Code({ Title = "Example", Code = "print('hi')" }); code:SetCode("print(2)")
-local btn = Tab:Button({ Title = "Run", Callback = function() end })
-btn:SetTitle("Run again"); btn:Lock(); btn:Unlock()
-```
-
-### 5.10. `Window:Dialog(data)`
+### 5.10. Dialog — `Window:Dialog`
 
 ```lua
 Window:Dialog({
@@ -349,13 +244,13 @@ Window:Dialog({
     Content = "Delete all settings?",
     Icon = "triangle-alert",
     Buttons = {
-        { Title = "Cancel" },
+        { Title = "Cancel" },                                     -- no Callback = just closes
         { Title = "Delete", Callback = function() Window:DeleteConfig() end },
     },
 })
 ```
 
-### 5.11. `Tab:InfoNguyenNhat(data)` / `Tab:Discord(data)`
+### 5.11. Author card and Discord
 
 ```lua
 Tab:InfoNguyenNhat({ Title = "Author", Name = "xNgot", Bio = "…", Avatar = 1234567890 })
@@ -366,174 +261,188 @@ Tab:Discord({ Title = "Discord", InviteCode = "abcd1234" })
 
 ---
 
-## 6. Config persistence (`CONFIG`)
+## 6. Notifications — `LIB:Notify`
 
-- Tab = `CONFIG["<tab title>"]`; element = `CONFIG["<tab>"]["<element Title>"]`.
-- Stored values win over `Default` when the element is created.
-- `AutoSave = true` writes (debounced) on every change.
-- Renaming an element `Title` loses its saved value.
-- Manual access: `Window:SaveConfig()`, `Window:GetConfigPath()` then
-  `HttpService:JSONDecode(readfile(path))`.
+```lua
+local n = LIB:Notify({
+    Title = "Saved",
+    Content = "Your settings were written to disk",
+    Kind = "success",     -- info / success / warn / error
+    Duration = 4,
+})
+n.Close()                 -- close early
+```
+
+| Field | Default | Note |
+|---|---|---|
+| `Title` | `"Notification"` | |
+| `Content` | `""` | |
+| `Kind` | `"info"` | info · success · warn · error |
+| `Icon` | `"info"` | `circle-check` ⇒ success, `triangle-alert` ⇒ warn |
+| `Duration` | `5` | seconds, minimum `0.1` |
+| `Native` | `false` | `true` = always use the corner card |
+
+When the floating panel is on, notifications appear **on the panel** to keep the screen clean.
 
 ---
 
-## 7. `LIB:Notify(data)`
+## 7. Settings are saved for you
 
-Card-style notification. When the floating panel is enabled it is routed to the floating panel unless
-`Native = true`.
+- Each tab is a group; each element is an entry inside it.
+- On the next run, **saved** values win over `Default`.
+- `AutoSave = true` ⇒ everything is written as the user changes it.
+- Renaming an element's `Title` loses that element's saved value (the key follows the name).
 
-| Field | Type | Default | Notes |
-|---|---|---|---|
-| `Title` | string | `"Notification"` | |
-| `Content` | string | `""` | |
-| `Icon` | string | `"info"` | `"circle-check"`/`"check"` ⇒ success, `"triangle-alert"` ⇒ warn |
-| `Kind` | `"info"`/`"success"`/`"warn"`/`"error"` | `"info"` | |
-| `Duration` | number (s) | `5` | minimum `0.1` |
-| `Native` | boolean | `false` | `true` ⇒ always the on-screen card |
+Manual control:
 
 ```lua
-local n = LIB:Notify({ Title = "Done", Content = "Saved", Kind = "success", Duration = 4 })
-n.Close()
+Window:SaveConfig()
+print(Window:GetConfigPath())
+Window:DeleteConfig()
 ```
 
 ---
 
-## 8. Floating panel API
+## 8. Floating panel
+
+The floating panel is the small bar on screen (notifications, music, timer, AI assistant).
+It exists **only when `SettingsUI = true`** (the default).
 
 ```lua
-local Island = Window:GetDynamicIsland()
-if Island then Island:Notify("Title", "Body", "info", 4) end
+local Island = Window:GetDynamicIsland()      -- nil when there is no panel
+if Island then
+    Island:Notify("Title", "Message", "info", 4)
+end
 ```
 
-`nil` when `SettingsUI = false` or floating panel creation failed (see `Window.DynamicIslandError`).
+> Function names stay `GetDynamicIsland` / `DynamicIsland` exactly as in the original release so
+> existing scripts keep working. These docs simply call it the **floating panel**.
 
-### 8.1. Notifications & activity
+### 8.1. Notifications and activity
 
-| Call | Effect |
+| Function | Does |
 |---|---|
-| `Island:Notify(title, message, kind?, duration?)` | notification on the floating panel; returns `false` when disabled |
-| `Island:GameplayActivity(title, message, duration?, kind?)` | timed activity bar |
-| `Island:Enable(bool)` | enable / disable |
-| `Island:Set(key, value)` | change a setting (§8.5) |
-| `Island:State()` | `{ Cross, Playing, MusicIndex, FPS, Ping, Timer, Island }` |
+| `Island:Notify(title, message, kind?, duration?)` | notification on the panel |
+| `Island:GameplayActivity(title, message, duration?, kind?)` | activity bar with a countdown |
+| `Island:Enable(true/false)` | turn the panel on / off |
+| `Island:Set(key, value)` | change a setting (see 8.6) |
+| `Island:State()` | current state table |
 
 ### 8.2. Expand / collapse
 
-| Call | Effect |
+| Function | Does |
 |---|---|
-| `Island:Expand(page?)` | expand; `page` = `"Home"`, `"Music"`, `"Cross"`, `"Timer"`, `"Stopwatch"`, `"Download"` |
+| `Island:Expand(page?)` | `"Home"`, `"Music"`, `"Cross"`, `"Timer"`, `"Stopwatch"`, `"Download"` |
 | `Island:Collapse()` | back to the compact bar |
-| `Island:Theme(n)` / `Island:Accent(n)` | palette (1–7) / accent (1–6) |
-| `Island:SetLanguage(lang)` | `"vi"` / `"en"` |
+| `Island:Theme(1–7)` / `Island:Accent(1–6)` | palette / accent colour |
+| `Island:SetLanguage("vi" / "en")` | panel language |
 
-### 8.3. Timers
+### 8.3. Timer and stopwatch
 
-| Call | Effect |
-|---|---|
-| `Island:Timer(seconds)` | countdown (1–86400) |
-| `Island:StopTimer()` / `Island:ExtendTimer(seconds)` | stop / add time |
-| `Island:WatchToggle()` / `WatchLap()` / `WatchReset()` | stopwatch |
+```lua
+Island:Timer(300)        -- 5 minutes
+Island:ExtendTimer(60)
+Island:StopTimer()
+
+Island:WatchToggle()  Island:WatchLap()  Island:WatchReset()
+```
 
 ### 8.4. Music
 
-| Call | Effect |
-|---|---|
-| `Island:MusicSearch(prompt)` | natural-language search (`"chill lofi for the evening"`) |
-| `Island:MusicSearchState()` | current search state |
-| `Island:MusicRows()` | result rows |
-| `Island:MusicSelectValue(value, play?)` | select a row by its `value` |
-| `Island:MusicSelect(index, play?)` | select by index |
-| `Island:MusicCatalog()` / `OnMusicCatalogChanged(fn)` | catalog + listener |
-| `Island:OnMusicChanged(fn)` | track/state listener |
-| `Island:PlayMusic()` / `NextMusic(n?)` | play-pause / next (± n) |
-| `Island:MusicVolume(0–100)` / `MusicSpeed(0.5–2)` | volume / tempo |
-| `Island:MusicMode("Auto"\|"Shuffle"\|"RepeatOne"\|"ShowIsland", bool)` | playback modes |
-| `Island:MusicFiles(includeSizes?)` → `files, stats` | downloaded files |
-| `Island:MusicStorage()` → `stats` | cache size |
-| `Island:MusicPlayFile(path)` / `MusicDeleteFile(path)` / `MusicClearDownloaded()` | file ops |
-| `Island:MusicPlayTrack(id, url, source)` / `MusicDownloadOne(id, url, source)` | play / download directly |
-| `Island:MusicLoadDownloaded()` | load the downloaded list |
-| `Island:MusicAiLearn(title, good)` | teach the AI a like/dislike |
-| `Island:DemoDownload()` | demo download animation |
-
-### 8.5. Cross AI
-
-| Call | Effect |
-|---|---|
-| `Island:AiEnable(bool)` | enable / disable |
-| `Island:AiAsk(prompt)` | ask (understands Vietnamese and English) |
-| `Island:AiOpen()` | open the Cross page |
-| `Island:AiClear()` | clear the conversation |
-| `Island:AiPermission(name, bool)` | `name` ∈ `Ui`, `Body`, `Free`, `Key` |
-| `Island:MusicAiOnline(bool)` / `MusicAiOnlineState()` | online AI mode |
-
-### 8.6. floating panel settings (`Island:Set`)
-
-Common keys: `Language`, `Theme`, `Accent`, `Duration`, `Ring`, `RimLight`, `Fps`, `Ping`,
-`Clock`, `Expand`, `ShowIsland`, `Toast`, `Bubble`…
-
 ```lua
-Island:Set("Duration", 6)   -- notifications last 6s
-Island:Set("Ring", false)   -- disable the progress ring (lighter)
-Island:Set("Fps", true)     -- show FPS on the compact bar
+Island:MusicSearch("lofi chill for the evening")
+Island:Expand("Music")
+Island:MusicSelect(1, true)      -- pick the first result and play
+Island:PlayMusic()
+Island:NextMusic(1)
+Island:MusicVolume(65)
+Island:MusicSpeed(1.0)
 ```
 
-### 8.7. Events & teardown
+| Group | Functions |
+|---|---|
+| Search | `MusicSearch(prompt)`, `MusicSearchState()`, `MusicRows()` |
+| Picking | `MusicSelectValue(value, play?)`, `MusicSelect(index, play?)`, `MusicCatalog()` |
+| Playback | `PlayMusic()`, `NextMusic(n?)`, `MusicPlayTrack(id, url, source)` |
+| Audio | `MusicVolume(0–100)`, `MusicSpeed(0.5–2)`, `MusicMode("Auto"/"Shuffle"/"RepeatOne"/"ShowIsland", bool)` |
+| Downloaded files | `MusicFiles(sizes?)`, `MusicStorage()`, `MusicPlayFile(path)`, `MusicDeleteFile(path)`, `MusicClearDownloaded()`, `MusicLoadDownloaded()` |
+| Direct download | `MusicDownloadOne(id, url, source)`, `DemoDownload()` |
+| Taste learning | `MusicAiLearn(title, good)` |
+| Events | `OnMusicChanged(fn)`, `OnMusicCatalogChanged(fn)` |
+
+### 8.5. AI assistant
 
 ```lua
-Island:OnMusicChanged(function(state) print("track changed", state) end)
+Island:AiEnable(true)
+Island:AiAsk("open the music page")   -- understands Vietnamese and English
+Island:AiOpen()
+Island:AiClear()
+Island:AiPermission("Ui", true)       -- Ui / Body / Free / Key
+```
+
+### 8.6. Panel settings — `Island:Set`
+
+```lua
+Island:Set("Duration", 6)    -- notifications stay 6s
+Island:Set("Ring", false)    -- disable progress ring (lighter)
+Island:Set("Fps", true)
+Island:Set("Clock", true)
+```
+
+Common keys: `Language`, `Theme`, `Accent`, `Duration`, `Ring`, `RimLight`, `Fps`, `Ping`,
+`Clock`, `Expand`, `ShowIsland`, `Toast`, `Bubble`.
+
+### 8.7. Removing the panel
+
+```lua
 Island:Destroy()
 ```
 
 ---
 
-## 9. Music config `_G.xNgotMusicConfig`
+## 9. Music settings — `_G.xNgotMusicConfig`
 
 ```lua
-local cfg = _G.xNgotMusicConfig
-cfg:Set("topN", 15)
-print(cfg:Get("topN"))
+_G.xNgotMusicConfig:Set("topN", 15)
+print(_G.xNgotMusicConfig:Get("topN"))
 ```
 
-| Call | Effect |
+| Function | Does |
 |---|---|
-| `Get(key)` | read |
-| `Set(key, value)` | write (schema-checked, applied to the engine) |
-| `Schema()` | full schema |
-| `Apply()` | push everything to the engine |
-| `OnChange(fn)` | listen |
-| `Preset(name)` → `ok, err` | apply a preset |
+| `Get(key)` / `Set(key, value)` | read / write one key |
+| `Preset(name)` | apply a preset (9.2) |
 | `Presets()` | list presets |
+| `Apply()` | push everything to the engine |
+| `OnChange(fn)` | listen for changes |
+| `Schema()` | every key with its allowed range |
 
-### 9.1. The 16 keys
+### 9.1. Main keys
 
-| Key | Type | Default | Meaning |
-|---|---|---|---|
-| `topN` | number 1–40 | `12` | number of results |
-| `sources` | table | `{youtube,soundcloud,audius}` | sources |
-| `searchTimeout` | number 2–60 | `12` | seconds per search |
-| `preferShort` | number 0–7200 | `600` | prefer tracks ≤ N seconds (0 = off) |
-| `folder` | string | `"xNgotLibrary/Music"` | mp3 cache folder |
-| `raceTracks` | number 1–4 | `2` | parallel downloads |
-| `downloadTimeout` | number 20–600 | `200` | conversion timeout |
-| `retries` | number 0–5 | `2` | retry count |
-| `renameFiles` | boolean | `true` | name files after the track |
-| `aiBrain` | string | `"local"` | AI brain (offline) |
-| `aiLearn` | boolean | `true` | learn from skips |
-| `coverArt` | boolean | `true` | show cover art |
-| `compactRows` | boolean | `false` | one-line track cards |
-| `showSource` | boolean | `true` | show source badge |
-| `notifyOnSearch` | boolean | `true` | notify when a search ends |
-| `debug` | boolean | `false` | console logging |
+| Key | Default | Meaning |
+|---|---|---|
+| `topN` | `12` | results per search (1–40) |
+| `sources` | youtube, soundcloud, audius | sources to search |
+| `searchTimeout` | `12` | max seconds per search |
+| `preferShort` | `600` | prefer tracks shorter than N seconds (0 = off) |
+| `folder` | `xNgotLibrary/Music` | download folder |
+| `raceTracks` | `2` | parallel downloads |
+| `downloadTimeout` | `200` | seconds to wait for a download |
+| `retries` | `2` | retry count |
+| `renameFiles` | `true` | name files after the track |
+| `aiLearn` | `true` | learn from skipped tracks |
+| `coverArt` | `true` | show cover art |
+| `compactRows` | `false` | single-line track rows |
+| `notifyOnSearch` | `true` | notify when a search finishes |
+| `debug` | `false` | verbose logging |
 
 ### 9.2. Presets
 
-| Preset | Effect |
+| Preset | Best for |
 |---|---|
-| `fast` | `raceTracks 2`, `topN 8`, `searchTimeout 8`, YouTube + Audius |
-| `quality` | sequential, `topN 20`, `searchTimeout 20`, all three sources |
-| `lowdata` | `topN 6`, YouTube only, covers off |
-| `vietnamese` | SoundCloud first, `topN 15`, `preferShort 420` |
+| `fast` | slow networks, want results quickly |
+| `quality` | strong device, more choices, best quality |
+| `lowdata` | mobile data / weak device, fewer results, no cover art |
+| `vietnamese` | Vietnamese music (SoundCloud first) |
 
 ```lua
 _G.xNgotMusicConfig:Preset("lowdata")
@@ -541,80 +450,86 @@ _G.xNgotMusicConfig:Preset("lowdata")
 
 ---
 
-## 10. Music engine `_G.CrossAIMusic`
+## 10. Appearance
+
+Users can change everything in the **Settings Ui** tab. From code:
+
+```lua
+Window:SetUISettings({ AccentColor = Color3.fromRGB(255, 55, 132), Enabled = true }, true)
+
+Window:ApplyUIPreset("Default")
+Window:ResetUISize(true)
+Window:UseOriginalUI(true)
+```
 
 | Group | Functions |
 |---|---|
-| **Parse** | `parse(prompt)` → plan, `durationSeconds(text)`, `normalizeRow(row, src)`, `queryVariants(plan, prompt)` |
-| **Search & score** | `search(plan, callback, prompt)`, `score(track, plan)`, `learn(title, good)` |
-| **Download** | `download(url, onProgress)`, `fetchFile(key, urls, onProgress, title)`, `resolve(prompt, onState)`, `assetFor(track, onProgress)` |
-| **Files** | `listDownloaded(sizes?)`, `downloadedStats(sizes?)`, `deleteDownloaded(path)`, `clearDownloaded()`, `saveBytes(key, data, title)` |
-| **Metadata** | `readDownloadedMeta(path)`, `writeDownloadedMeta(path, meta)`, `renameFiles(bool)`, `isRenameEnabled()` |
-| **Covers** | `thumbAsset(track)`, `coverAsset(track)`, `prefetchCovers(list, onOne)` |
-| **Rows** | `rowLabel(track, i)`, `rowValue(track, i)`, `rowData(track, i)`, `enrich(track)` |
-| **PoW / HTTP** | `request(url, method, headers, body, timeout)`, `getPowToken()` |
-| **LLM (optional)** | `llmAvailable()`, `llmEnabled()`, `llmSetEnabled(bool)`, `llmStatus()`, `llmPlan(prompt, plan)`, `llmSay(prompt, ctx)`, `applyLlmPlan(plan, extra)` |
+| Read / write | `GetUISettings()`, `SetUISettings(tbl, save?)`, `SaveUISettings()` |
+| Size | `SetUISize(w, h, save?)`, `GetUISize()`, `ResetUISize(save?)` |
+| Presets | `ApplyUIPreset(name)`, `GetUIPresets()` |
+| Profiles | `SaveUIProfile(name)`, `LoadUIProfile(name)`, `DeleteUIProfile(name)`, `GetUIProfileNames()` |
+| Export / import | `ExportUISettings()`, `ImportUISettings(json, save?)` |
+| Other | `GetUIOverrides()`, `ClearUIOverride(key, save?)`, `OpenUISettings()`, `SetUILanguage()` |
 
-```lua
-local plan = _G.CrossAIMusic.parse("chill lofi for the evening")
-_G.CrossAIMusic.search(plan, function(state, rows)
-    for i, row in ipairs(rows or {}) do print(i, row.Title, row.Source) end
-end, "chill lofi for the evening")
-```
+---
 
-### 10.1. Self-check
+## 11. Window control
+
+| Call | Does |
+|---|---|
+| `Window:Show()` / `Hide()` / `Toggle(state?)` | show / hide / flip |
+| `Window:Destroy()` | close and clean up |
+| `Window:SetToggleKey(Enum.KeyCode.X)` | change the hotkey |
+| `Window:SetToggleButtonPlatform("PC" / "Mobile" / "Both")` | floating button platform |
+| `Window:EditOpenButton({ Icon = "x", Size = UDim2.fromOffset(44, 44) })` | restyle the floating button |
+| `Window:SelectTab("Main")` or `SelectTab(2)` | switch tab |
+| `Window:Divider()` | divider line |
+| `Window:GetConfigPath()` / `SaveConfig()` / `DeleteConfig()` | settings file |
+| `Window:ForgetSavedKey()` | forget the saved key |
+
+---
+
+## 12. Flags and globals
+
+| Name | Purpose |
+|---|---|
+| `getgenv().xNgotLibraryOnly = true` | don't open the demo window (set before loading) |
+| `getgenv().xNgotMusic = { topN = 10 }` | music settings before the engine starts |
+| `_G.xNgotMusicConfig` | music settings (section 9) |
+| `_G.CrossAIMusic` | music engine: `parse`, `search`, `download`, `assetFor`… |
+| `_G.xNgotMusicDoctor()` | environment self-check (section 13) |
+| `_G.xNgotLog` | library log |
+| `_G.Window` | demo window (only without `xNgotLibraryOnly`) |
+
+---
+
+## 13. Troubleshooting
+
+**No sound?** Run:
 
 ```lua
 local report = _G.xNgotMusicDoctor()
--- report.items: { { name = "writefile", status = "ok"|"fail"|"warn", detail = "..." }, ... }
--- report.fails, report.warns, report.ok
+print(report.fails, report.warns)
 ```
 
-Checks `writefile/readfile/isfile/makefolder/listfiles/getcustomasset`, `request`, engine,
-parser, PoW-SHA256, config, floating panel API.
+It checks `writefile`, `readfile`, `makefolder`, `getcustomasset`, `request`, the engine, the
+parser… whatever says `fail` is the cause.
 
----
-
-## 11. Log, Debug, DevTools
+**Read the log:**
 
 ```lua
-_G.xNgotLog.info("tag", "message", { extra = 1 })   -- levels: trace debug info warn error
-_G.xNgotLog:filter("warn")
-_G.xNgotLog:export()
+_G.xNgotLog.info("tag", "message")
+print(_G.xNgotLog:export())
 _G.xNgotLog.clear()
 ```
 
-| Object | Main functions |
-|---|---|
-| `Log` (`_G.xNgotLog`) | `add`, `trace/debug/info/warn/error`, `filter`, `tags`, `stats`, `countsByTag`, `export`, `download`, `onEntry`, `hookConsole`, `measure`, `apiCall`, `clear`, `level`, `format` |
-| `DevTools` (`_G.xNgotDevTools`) | `note`, `vars`, `executors`, `run(code)`, `add`, `check`, `selftest`, `report` |
-| `Debug` (`_G.xNgotDebug`) | `getLogPanel()`, `exportLog()`, `openPanel()`, `closePanel()`, `toggle()`, `report()`, `mode()` |
-
-> `--release` swaps `DevTools`, the HTTP hook, the bridge and the panel for empty stubs:
-> `_G.xNgotLog` still works, `_G.xNgotDevTools` exists but `selftest()` returns
-> `{ passed = 0, skipped = true }`.
+**Debug panel:** press **RightShift** or call `_G.xNgotDebug.openPanel()`.
 
 ---
 
-## 12. Loader flags
+## 14. Icons
 
-| Flag / variable | Effect |
-|---|---|
-| `getgenv().xNgotLibraryOnly = true` | don't open the stock hub |
-| `getgenv().xNgotMusic = { topN = 10, ... }` | music config before the engine boots |
-| `getgenv().xNgotLoaderConfig` | loader options (`localFile`, `remoteUrl`, `title`…) |
-| `__xNgotBoot.start()` | boot the stock hub manually |
-| `__xNgotBoot.performance()` / `lowPower(bool)` | runtime stats / low-power mode |
-| `__xNgotBoot.Stage` | `"ready"` once booted |
-
-The loader tries sources in order: **embedded library → local file (`main.lua`) → remote
-URL**, until a window is created.
-
----
-
-## 13. Icons
-
-`Icon = "<name>"` uses icon names, e.g.:
+`Icon = "<icon-name>"`. Over 1,500 icons, referred to by name:
 
 ```
 house · music-2 · sparkles · settings · bell · search · download · trash-2 · play · pause
@@ -622,20 +537,21 @@ skip-forward · skip-back · volume-2 · clock · timer · activity · cpu · wi
 shield · layout-dashboard · wrench · info · circle-check · triangle-alert · sliders-horizontal
 ```
 
-The full set (1,548 icons) lives in `src/modules/50_lucide/040_icons_*.lua`.
-A wrong name is harmless — the icon simply doesn't render.
+A wrong name **never errors** — the icon simply doesn't show. Try the obvious English name,
+most of them exist.
 
 ---
 
-## 14. Complete examples
+## 15. Complete examples
 
-### 14.1. Minimal hub
+### 15.1. Minimal hub
 
 ```lua
 getgenv().xNgotLibraryOnly = true
-local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+local LIB = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
 
-local Window = LIB:CreateWindow({ Title = "Demo", Icon = "music-2", Author = "v1.0" })
+local Window = LIB:CreateWindow({ Title = "Demo", Icon = "music-2" })
 local Tab = Window:Tab({ Title = "Main", Icon = "house" })
 
 Tab:Section({ Title = "Basics", Default = true })
@@ -646,44 +562,54 @@ Tab:Button({ Title = "Notify", Callback = function()
 end })
 ```
 
-### 14.2. Hub + floating panel + music
+### 15.2. Hub with music
 
 ```lua
 getgenv().xNgotLibraryOnly = true
 local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
-local Window = LIB:CreateWindow({ Title = "Music Hub", Icon = "sparkles", SettingsUI = true })
+
+local Window = LIB:CreateWindow({ Title = "Music Hub", Icon = "sparkles" })
 local Island = Window:GetDynamicIsland()
-
 local Tab = Window:Tab({ Title = "Music", Icon = "music-2" })
-Tab:Section({ Title = "Search", Default = true })
 
-local q = Tab:Input({ Title = "Prompt", Default = "chill lofi for the evening" })
+Tab:Section({ Title = "Search", Default = true })
+local q = Tab:Input({ Title = "Describe it", Default = "lofi chill for the evening" })
+
 Tab:Button({ Title = "Search", Callback = function()
     Island:MusicSearch(q.Text)
     Island:Expand("Music")
 end })
+
 Tab:Button({ Title = "Play / pause", Callback = function() Island:PlayMusic() end })
+
 Tab:Slider({ Title = "Volume", Value = { Min = 0, Max = 100, Default = 60 },
     Callback = function(v) Island:MusicVolume(v) end })
-Tab:Button({ Title = "Cache", Callback = function()
+
+Tab:Button({ Title = "Storage used", Callback = function()
     local s = Island:MusicStorage()
-    LIB:Notify({ Title = "Cache", Content = string.format("%d files · %s", s.Count or 0, tostring(s.TotalText)) })
+    LIB:Notify({ Title = "Storage", Content = string.format("%d tracks", s.Count or 0) })
 end })
 ```
 
 ---
 
-## 15. FAQ
+## 16. FAQ
 
 | Question | Answer |
 |---|---|
-| No floating panel? | `SettingsUI = false` means no floating panel. Re-create the window with it enabled. |
-| `Window.DynamicIsland` is `nil`? | Check `Window.DynamicIslandError`; usually a GUI build failure. |
-| Elements overwrite each other? | `CONFIG[tab][Title]` — keep titles unique per tab. |
-| Does `Callback` run at creation? | Yes, once, with the initial value. Don't assume it's only user input. |
+| No floating panel? | `SettingsUI = false` removes it. Turn it back on and create the window again. |
+| `Window.DynamicIsland` is `nil`? | Check `Window.DynamicIslandError` — usually the executor blocks GUI creation. |
+| Two elements overwrite each other? | Same tab + same `Title`. Give them different titles. |
+| Does `Callback` fire on creation? | Yes, once with the initial value. |
 | Change colours / fonts globally? | `Window:SetUISettings{...}` or `Window:ApplyUIPreset("...")`. |
-| Silence search notifications? | `_G.xNgotMusicConfig:Set("notifyOnSearch", false)` |
-| Low-end device? | `_G.xNgotMusicConfig:Preset("lowdata")` + `Island:Set("Ring", false)` |
-| Several windows at once? | Fine — each `CreateWindow` returns its own object; the floating panel belongs to the newest. |
-| `attempt to index nil` on `Island:` | You didn't check for `nil`. Always `if Island then ... end`. |
-| Music doesn't play? | Run `_G.xNgotMusicDoctor()` and look for `fail` entries. |
+| Weak device? | `_G.xNgotMusicConfig:Preset("lowdata")` + `Island:Set("Ring", false)`. |
+| Settings lost on exit? | No — they live in `xNgotLibrary/Config/`. |
+| Multiple windows at once? | Yes, each `CreateWindow` returns its own object. |
+| Release only to key holders? | Pass `KeySystem` when creating the window (section 4). |
+
+---
+
+<p align="center">
+This library is free — if it helps you,
+<a href="../README.md#-support-the-author">buy the author a coffee</a> ☕
+</p>

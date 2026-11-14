@@ -2,320 +2,347 @@
 
 <img src="docs/demo/hero.png" alt="xNgot Library" width="100%">
 
-# xNgot Library · Thư viện UI cho Roblox
+# xNgot Library
 
-**Một thư viện UI gọn nhẹ: cửa sổ, tab, element, thông báo, bảng điều khiển nổi và engine nhạc.**
-Viết bằng Lua/Luau, chia thành 150 module, build và minify bằng Python.
+**Bảng điều khiển xịn cho script Roblox — dựng cửa sổ, tab, nút bấm, thông báo, nhạc chỉ trong vài dòng.**
 
-`v3.0.0` · `26.511 dòng` · `150 module` · `11 loại element` · `MIT`
+`v3.0.0` · `Miễn phí` · `MIT` · `Roblox / Delta / Codex`
 
-[![build](https://img.shields.io/badge/build-python3-3776AB?style=flat-square&logo=python&logoColor=white)](#-build)
-[![modules](https://img.shields.io/badge/modules-150-0A84FF?style=flat-square)](#-cấu-trúc-repo)
-[![minify](https://img.shields.io/badge/minify-light%20%7C%20full-30D158?style=flat-square)](#-build)
-[![license](https://img.shields.io/badge/license-MIT-FF9F0A?style=flat-square)](LICENSE)
-
-**Tiếng Việt** · [English](#english)
+**Tiếng Việt** · [English](#-english)
 
 </div>
 
 ---
 
-## 🇻🇳 Tiếng Việt
+## 🇻🇳 Bạn nhận được gì
 
-### Nó là gì
+Một bộ giao diện hoàn chỉnh, chạy được ngay, không cần cài đặt gì thêm:
 
-`xNgot Library` là thư viện dựng giao diện cho script Roblox: bạn khai báo cửa sổ, tab và element
-bằng bảng Lua, thư viện lo phần vẽ, kéo thả, lưu cấu hình và hiệu ứng.
+- 🪟 **Cửa sổ** kéo được, đổi kích thước được, có nút thu nhỏ, phím tắt và nút nổi trên màn hình.
+- 🗂️ **Tab không giới hạn** — mỗi tab một icon, thêm bao nhiêu cũng được.
+- 🎛️ **11 loại thành phần**: khung nhóm, nút bấm, công tắc, thanh kéo, ô nhập, danh sách chọn, bảng màu, đoạn văn, khối code, hộp thoại, thẻ thông tin.
+- 🔔 **Thông báo trượt** ở góc màn hình: thường / thành công / cảnh báo / lỗi.
+- 🎵 **Nhạc**: gõ mô tả kiểu *"lofi chill buổi tối"* là nó tự tìm, tự chọn bài, tự tải và phát.
+- 🎨 **Đổi giao diện**: 7 bảng màu, 6 màu nhấn, đổi font, chỉnh độ trong suốt, lưu thành profile riêng.
+- 💾 **Tự lưu cài đặt**: tắt game mở lại vẫn còn nguyên lựa chọn của bạn.
+- 🔒 **Khoá bằng key** nếu bạn muốn phát hành riêng cho người có key.
 
 <table>
 <tr>
-<td width="50%"><img src="docs/demo/window.png" alt="Cửa sổ chính"></td>
+<td width="50%"><img src="docs/demo/window.png" alt="Cửa sổ"></td>
 <td width="50%"><img src="docs/demo/overlay.png" alt="Bảng nổi và thông báo"></td>
 </tr>
 <tr>
-<td><b>Cửa sổ</b> — tab, section, toggle, slider, input, dropdown, colorpicker, code, dialog</td>
-<td><b>Bảng nổi & thông báo</b> — thanh điều khiển gọn trên màn hình, thông báo trượt, thanh hoạt động</td>
+<td align="center"><sub>Cửa sổ · tab · thành phần</sub></td>
+<td align="center"><sub>Bảng nổi · thông báo</sub></td>
 </tr>
 </table>
 
-<img src="docs/demo/elements.png" alt="Bộ element" width="100%">
+<img src="docs/demo/elements.png" alt="Bộ thành phần" width="100%">
 
-| Có gì | Chi tiết |
-|---|---|
-| **Cửa sổ** | tiêu đề, icon, kích thước, kéo thả, đổi kích thước, phím tắt, nút nổi, lưu cấu hình, KeySystem |
-| **Tab** | không giới hạn số tab, mỗi tab có icon và nhánh cấu hình riêng |
-| **Element** | Section · Paragraph · Code · Button · Toggle · Slider · Input · Dropdown · Colorpicker · Info · Discord |
-| **Thông báo** | thẻ trượt góc màn hình với 4 mức: info / success / warn / error |
-| **Bảng nổi** | thanh điều khiển gọn: thông báo, thanh hoạt động, hẹn giờ, đồng hồ, nhạc, trợ lý AI |
-| **Engine nhạc** | tìm theo mô tả, chấm điểm, tải và phát từ YouTube / SoundCloud / Audius |
-| **Giao diện** | 7 bảng màu, 6 màu nhấn, font, độ trong suốt, blur, profile giao diện, preset |
-| **Log** | `Log`, `DevTools`, `Debug` để gỡ lỗi |
+---
 
-> Tên API trong mã nguồn được giữ nguyên (`Window.DynamicIsland`, `GetDynamicIsland()`,
-> `IslandActivity()`…) vì chúng là một phần hợp đồng của thư viện — tài liệu chỉ gọi chúng
-> bằng tên thân thiện "bảng nổi".
+## 🚀 Bắt đầu (30 giây)
 
-### Chạy thử
+Dán đoạn này vào executor, bấm chạy:
 
 ```lua
-local LIB = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
 
 local Window = LIB:CreateWindow({
     Title = "My Hub",
     Icon = "sparkles",
-    Author = "v1.0.0",
-    Size = UDim2.fromOffset(580, 420),
+    Version = "v1.0.0",
 })
 
-local Tab = Window:Tab({ Title = "Main", Icon = "house" })
-Tab:Section({ Title = "Cơ bản", Default = true })
+local Tab = Window:Tab({ Title = "Trang chính", Icon = "house" })
+
+Tab:Button({ Title = "Xin chào", Callback = function()
+    LIB:Notify({ Title = "Chào bạn", Content = "Thư viện đã chạy", Kind = "success" })
+end })
 
 Tab:Toggle({ Title = "Bật tính năng", Default = true, Callback = function(on)
-    print("toggle:", on)
+    print("công tắc:", on)
 end })
 
 Tab:Slider({ Title = "Tốc độ", Value = { Min = 16, Max = 200, Default = 50 }, Step = 2 })
-
-Tab:Button({ Title = "Thông báo", Callback = function()
-    LIB:Notify({ Title = "Xin chào", Content = "từ thư viện", Kind = "success", Duration = 4 })
-end })
 ```
 
-Thư viện không tự mở cửa sổ nào nếu bạn không yêu cầu — muốn tự dựng hub riêng:
+Xong. Cửa sổ hiện ra là dùng được ngay.
+
+> 💡 Trên GitHub, rê chuột vào khối code sẽ thấy **biểu tượng copy** ở góc phải — bấm là chép, không cần bôi đen.
+
+### Phím và nút cơ bản
+
+| Muốn gì | Làm gì |
+|---|---|
+| Ẩn / hiện cửa sổ | Bấm **RightShift**, hoặc bấm nút tròn nổi trên màn hình |
+| Đóng hẳn cửa sổ | Nút ✕ ở góc phải trên (có hỏi lại để khỏi bấm nhầm) |
+| Di chuyển cửa sổ | Giữ chuột vào thanh tiêu đề rồi kéo |
+| Đổi kích thước | Kéo mép dưới hoặc góc cửa sổ |
+| Đổi màu, đổi font | Vào tab **Settings Ui** trong cửa sổ |
+
+---
+
+## 🎨 Dùng cho hub riêng của bạn
+
+Mặc định, khi nạp xong thư viện sẽ mở sẵn một cửa sổ demo để bạn xem thử.
+Nếu bạn muốn **chỉ lấy thư viện** rồi tự dựng giao diện của mình, thêm **một dòng** trước khi nạp:
 
 ```lua
-getgenv().xNgotLibraryOnly = true   -- đặt TRƯỚC khi load
-local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
+getgenv().xNgotLibraryOnly = true   -- đặt TRƯỚC khi nạp
+
+local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+
+local Window = LIB:CreateWindow({ Title = "Hub của tôi" })
 ```
 
-📖 **Hướng dẫn đầy đủ** — 43 method `Window`, 11 loại element, ~40 hàm bảng nổi, engine nhạc,
-cấu hình, KeySystem, FAQ: [`docs/LIBRARY.vi.md`](docs/LIBRARY.vi.md)
+Có cờ này thì không có cửa sổ demo nào tự mở — sạch sẽ, đúng ý bạn.
 
-### Build
+> Không có cờ cũng không sao: khi bạn tạo cửa sổ riêng, cửa sổ demo **tự đóng**,
+> nên trên màn hình không bao giờ có 2 bộ giao diện chồng nhau.
 
-Yêu cầu **Python 3.9+**, không cần cài thêm gì.
+### Bản nhẹ
 
-```bash
-python3 src/build.py                          # dev  → dist/xngot_studio.lua
-python3 src/build.py --release                # ship → dist/main.lua
-python3 src/build.py --release --minify        # + dist/main.min.lua (light)
-python3 src/build.py --release --minify full   # + dist/main.min.lua (full: đổi tên + 1 dòng)
-python3 src/build.py --check                   # kiểm tra toàn bộ module
-python3 src/build.py --stats                   # thống kê theo nhóm
+Nếu mạng chậm, đổi `dist/main.lua` thành `dist/main.min.lua` — nhẹ hơn khoảng 25%, dùng y hệt.
+
+---
+
+## 🎵 Bảng nổi và nhạc
+
+Cửa sổ đi kèm một **bảng nổi** nhỏ gọn, bật/tắt bằng nút trên cửa sổ:
+
+```lua
+local Island = Window:GetDynamicIsland()   -- tên hàm giữ nguyên như bản gốc
+
+Island:Notify("Tiêu đề", "Nội dung", "success", 4)   -- thông báo trên bảng nổi
+Island:Timer(300)                                    -- hẹn giờ 5 phút
+Island:Expand("Music")                               -- mở trang nhạc
+
+Island:MusicSearch("lofi chill buổi tối")             -- tìm nhạc bằng mô tả
+Island:PlayMusic()                                   -- phát / dừng
+Island:MusicVolume(65)                               -- âm lượng
 ```
 
-#### Tuỳ chọn minify
+Chế độ nhạc có sẵn 4 preset cho máy yếu / mạng chậm:
 
-| Lệnh | Kết quả | Dòng | Dung lượng |
-|---|---|---:|---:|
-| *(không)* | `main.lua` — nguyên văn, còn comment | 26.055 | 954 KB |
-| `--minify` | bỏ comment + thụt lề, **giữ tên** | 24.226 | 746 KB (−22%) |
-| `--minify full` | bỏ comment, **đổi tên định danh cấp chunk**, dồn **1 dòng** | 1 | 711 KB (−26%) |
-| `--minify full --no-rename` | dồn 1 dòng nhưng giữ nguyên tên | 1 | 721 KB |
-
-Cách minify hoạt động:
-
-1. **Tokenizer Lua/Luau tự viết** (`src/minify.py`) — hiểu chuỗi dài `[[ ]]`, comment, `+=`, `continue`.
-2. **Bỏ comment + khoảng trắng**, chèn space/`;` ở đúng chỗ có thể dính token (`- -`, `1 .. 2`, `f(` đầu dòng).
-3. **`full`: đổi tên 19 định danh cấp chunk** (`Log` → `pK`, `DevTools` → `mp`…) thành tên ngẫu nhiên.
-   Chỉ đổi khi **không bị shadow** và **không dùng trước khi khai báo** (nên `require` bị loại).
-4. **Tự kiểm chứng**: token stream của bản ra được so lại với bản gốc — lệch 1 token là build báo lỗi.
-5. Đầu tệp minify luôn có 1 dòng bản quyền để không mất attribution.
-
-#### Kết quả build hiện tại
-
-| Tệp | Dòng | Dung lượng | Ghi chú |
-|---|---:|---:|---|
-| `dist/xngot_studio.lua` | 26.511 | 993 KB | dev, **trùng bản gốc từng byte** |
-| `dist/xngot_studio.min.lua` | 1 | 725 KB | dev, minify full |
-| `dist/main.lua` | 26.055 | 954 KB | release, bỏ 4 module debug |
-| `dist/main.min.lua` | 1 | 711 KB | release, minify full |
-
-> Tệp `.min.lua` có 1 dòng mã; `wc -l` báo 131 vì dữ liệu base64 nằm trong chuỗi dài `[[ ]]`
-> vẫn giữ ký tự xuống dòng (thứ không thể bỏ mà không làm hỏng dữ liệu).
-
-### Cấu trúc repo
-
-```
-xngot-studio/
-├── src/
-│   ├── build.py          build + minify (Python thuần)
-│   ├── minify.py         tokenizer + minifier Lua/Luau
-│   ├── manifest.json     thứ tự ghép, dòng nguồn, độ lệch khối, sha256
-│   ├── profiles/         release.json
-│   ├── stubs/            4 stub rỗng thay module debug ở bản release
-│   └── modules/          150 module
-├── tools/                split_source.py · verify_roundtrip.py · make_demo_images.py
-├── docs/                 LIBRARY.vi.md · LIBRARY.en.md · demo/*.png
-└── dist/                 4 tệp build
+```lua
+_G.xNgotMusicConfig:Preset("lowdata")     -- nhẹ nhất: ít kết quả, không ảnh bìa
+_G.xNgotMusicConfig:Preset("fast")        -- nhanh
+_G.xNgotMusicConfig:Preset("quality")     -- chất lượng cao
+_G.xNgotMusicConfig:Preset("vietnamese")  -- ưu tiên nhạc Việt
 ```
 
-| Nhóm | Tệp | Dòng | Nội dung |
-|---|---:|---:|---|
-| `00_header` | 1 | 18 | banner |
-| `10_config` | 6 | 181 | cấu hình nhạc (`_G.xNgotMusicConfig`) |
-| `20_lib` | 16 | 2.572 | template giao diện: cửa sổ, tab, notification, dropdown, slider, dialog |
-| `30_overlay` | 41 | 8.312 | bảng nổi, thông báo, hoạt động, hẹn giờ, nhạc, trợ lý AI |
-| `40_window` | 35 | 6.132 | `CreateWindow`, mỗi element một tệp, tab Settings, KeySystem |
-| `45_notify` | 1 | 68 | `LIB:Notify` |
-| `50_icons` | 30 | 7.797 | 16 spritesheet + 1.548 icon dựng sẵn |
-| `60_runtime` | 9 | 937 | Log / DevTools / debug panel |
-| `70_boot` | 11 | 494 | khởi động, chọn nguồn, chế độ library-only |
+---
 
-### Vì sao tin được bản build
+## ❓ Câu hỏi thường gặp
 
-Bản gốc chỉ bị đụng **đúng 6 dòng** (gỡ 2 closure ngoài cùng) — chi tiết ở
-[`docs/PROVENANCE.md`](docs/PROVENANCE.md). Kiểm chứng bất cứ lúc nào:
+**Không thấy cửa sổ đâu cả?**
+Bấm **RightShift** hoặc tìm nút tròn nổi trên màn hình. Nếu vẫn không có, executor của bạn
+chưa hỗ trợ — thử Delta hoặc Codex bản mới nhất.
 
-```bash
-python3 tools/verify_roundtrip.py "main 2.txt" .
-  ✔ A  phủ dòng: 26515 dòng nguồn phủ kín (26513 trong module, 4 dòng bỏ)
-  ✔ B  ghép lại: khớp từng byte (26511 dòng)
-  ✔ C  byte: build 2 lần giống hệt, trùng dist/xngot_studio.lua
-  ✔ D  tái tạo: 150/150 module giống hệt khi chia lại từ bản gốc
+**Nhạc không phát?**
+Chạy `_G.xNgotMusicDoctor()` rồi xem dòng nào báo `FAIL`. Thường là executor thiếu quyền
+`writefile` — đổi executor là xong.
 
-diff "main 2.txt" dist/xngot_studio.lua   # đúng 4 hunk
+**Máy yếu, bị giật?**
+`_G.xNgotMusicConfig:Preset("lowdata")` và tắt vòng tiến trình: `Island:Set("Ring", false)`.
+
+**Cài đặt của tôi có mất khi thoát game không?**
+Không. Thư viện lưu vào `xNgotLibrary/Config/` trong thư mục executor.
+
+**Tự dựng hub mà vẫn thấy cửa sổ demo?**
+Thêm `getgenv().xNgotLibraryOnly = true` **trước** dòng nạp là chắc chắn sạch.
+
+**Dùng thư viện này cho script bán được không?**
+Được — giấy phép MIT, dùng thoải mái, chỉ cần giữ dòng bản quyền trong file.
+
+---
+
+## 📖 Tài liệu đầy đủ
+
+Muốn biết hết mọi thứ: 43 hàm của cửa sổ, 11 loại thành phần, toàn bộ API bảng nổi,
+cấu hình nhạc, khoá key, ví dụ hoàn chỉnh:
+
+- 🇻🇳 [Hướng dẫn tiếng Việt](docs/LIBRARY.vi.md)
+- 🇬🇧 [English manual](docs/LIBRARY.en.md)
+
+---
+
+## 💝 Ủng hộ tác giả
+
+Thư viện miễn phí và không có quảng cáo. Nếu nó giúp ích cho bạn, một ly cà phê là đủ để mình có thêm động lực cập nhật 💛
+
+<p align="center">
+  <img src="docs/demo/donate/mbbank.png" width="76" alt="MB Bank" hspace="14">
+  <img src="docs/demo/donate/momo.png" width="76" alt="MoMo" hspace="14">
+  <img src="docs/demo/donate/paypal.png" width="76" alt="PayPal" hspace="14">
+</p>
+
+### 🏦 MB Bank
+
+```
+258781
 ```
 
-Mỗi module có `sha256` + độ lệch khối ghi trong `manifest.json`; `--check` xác nhận từng tệp
-trước khi ghép.
+<sub>Số tài khoản: **258781** · bấm biểu tượng copy ở góc phải khối trên để chép.</sub>
 
-### Giấy phép
+### 📱 MoMo
 
-MIT — xem [`LICENSE`](LICENSE).
+```
+0394715753
+```
 
-<div align="right"><a href="#xngot-studio--thư-viện-ui-cho-roblox">↑ lên đầu</a></div>
+<sub>Số điện thoại: **0394715753** · bấm biểu tượng copy ở góc phải khối trên để chép.</sub>
+
+### 💳 PayPal
+
+```
+nguyentiendino@gmail.com
+```
+
+<sub>Email PayPal: **nguyentiendino@gmail.com** · bấm biểu tượng copy ở góc phải khối trên để chép.</sub>
+
+> Cảm ơn bạn rất nhiều — dù là 10k hay chỉ một lời cảm ơn, mình đều trân trọng 🙏
+
+---
+
+## 📄 Giấy phép
+
+MIT — xem [`LICENSE`](LICENSE). Dùng, sửa, chia sẻ, dùng trong script bán được — chỉ cần giữ
+dòng bản quyền trong file.
+
+**Tác giả:** xNgot Zume · [github.com/xngotzume123](https://github.com/xngotzume123)
+
+<div align="right"><a href="#xngot-library">↑ lên đầu</a></div>
 
 ---
 
 ## 🇬🇧 English
 
-### What it is
+<div align="center">
 
-`xNgot Library` is a UI library for Roblox scripts: you declare a window, tabs and elements as
-Lua tables, and the library handles drawing, dragging, resizing, config persistence and effects.
+**A polished control panel for Roblox scripts — windows, tabs, buttons, notifications and music in a few lines.**
 
-| <img src="docs/demo/window.png" width="420"> | <img src="docs/demo/overlay.png" width="420"> |
-|---|---|
-| **Window** — tabs, sections, 11 element types, dialogs | **Floating panel & notifications** — compact on-screen bar, sliding toasts, activity bar |
+`v3.0.0` · `Free` · `MIT` · `Roblox / Delta / Codex`
 
-| What you get | Details |
-|---|---|
-| **Window** | title, icon, size, drag, resize, hotkey, floating button, config saving, KeySystem |
-| **Tabs** | unlimited tabs, each with an icon and its own config branch |
-| **Elements** | Section · Paragraph · Code · Button · Toggle · Slider · Input · Dropdown · Colorpicker · Info · Discord |
-| **Notifications** | sliding cards with 4 kinds: info / success / warn / error |
-| **Floating panel** | compact control bar: notifications, activity, timers, stopwatch, music, AI assistant |
-| **Music engine** | prompt search, scoring, download & playback from YouTube / SoundCloud / Audius |
-| **Appearance** | 7 palettes, 6 accents, fonts, opacity, blur, UI profiles, presets |
-| **Logging** | `Log`, `DevTools`, `Debug` for troubleshooting |
+</div>
 
-> API names in the source are unchanged (`Window.DynamicIsland`, `GetDynamicIsland()`,
-> `IslandActivity()`…) because they are part of the library's contract — the docs simply call
-> them "floating panel".
+### What you get
 
-### Run it
+- 🪟 **Window** — draggable, resizable, minimises, hotkey, floating round button on screen.
+- 🗂️ **Unlimited tabs** — each tab gets its own icon.
+- 🎛️ **11 element types**: section, button, toggle, slider, input, dropdown, colorpicker, paragraph, code block, dialog, info card.
+- 🔔 **Sliding notifications** — info / success / warn / error.
+- 🎵 **Music** — type something like *"lofi chill for the evening"* and it finds, picks, downloads and plays it.
+- 🎨 **Themes** — 7 palettes, 6 accent colours, fonts, opacity, saved as profiles.
+- 💾 **Auto-save** — your choices are still there next time.
+- 🔒 **Key system** — if you want to release your hub to key holders only.
+
+### Quick start
 
 ```lua
-local LIB = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
 
-local Window = LIB:CreateWindow({ Title = "My Hub", Icon = "sparkles", Author = "v1.0.0" })
+local Window = LIB:CreateWindow({ Title = "My Hub", Icon = "sparkles", Version = "v1.0.0" })
 local Tab = Window:Tab({ Title = "Main", Icon = "house" })
 
-Tab:Section({ Title = "Basics", Default = true })
-Tab:Toggle({ Title = "Enabled", Default = true, Callback = print })
-Tab:Slider({ Title = "Speed", Value = { Min = 16, Max = 200, Default = 50 }, Step = 2 })
-Tab:Button({ Title = "Notify", Callback = function()
-    LIB:Notify({ Title = "Hello", Content = "from the library", Kind = "success", Duration = 4 })
+Tab:Button({ Title = "Say hi", Callback = function()
+    LIB:Notify({ Title = "Hello", Content = "The library is running", Kind = "success" })
 end })
+
+Tab:Toggle({ Title = "Enable feature", Default = true, Callback = print })
+Tab:Slider({ Title = "Speed", Value = { Min = 16, Max = 200, Default = 50 }, Step = 2 })
 ```
 
-The library opens nothing on its own unless you ask it to. For your own hub:
+> 💡 On GitHub, hover a code block and click the **copy icon** in its top-right corner.
+
+| Want to | Do this |
+|---|---|
+| Hide / show the window | Press **RightShift**, or tap the floating round button |
+| Close it for good | The ✕ button (asks for confirmation first) |
+| Move it | Drag the title bar |
+| Resize it | Drag the bottom edge or corner |
+| Change colours and fonts | Open the **Settings Ui** tab |
+
+### Use it for your own hub
 
 ```lua
 getgenv().xNgotLibraryOnly = true   -- set BEFORE loading
 local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
+local Window = LIB:CreateWindow({ Title = "My Hub" })
 ```
 
-📖 **Full manual** — 43 `Window` methods, 11 element types, ~40 floating-panel functions, music
-engine, config, KeySystem, FAQ: [`docs/LIBRARY.en.md`](docs/LIBRARY.en.md)
+The demo window never opens, and if you do create your own window the demo one closes itself —
+you will never end up with two UIs stacked.
 
-### Build
+### Floating panel and music
 
-Requires **Python 3.9+**, nothing else.
+```lua
+local Island = Window:GetDynamicIsland()   -- function name is kept as-is
 
-```bash
-python3 src/build.py                          # dev  → dist/xngot_studio.lua
-python3 src/build.py --release                # ship → dist/main.lua
-python3 src/build.py --release --minify        # + dist/main.min.lua (light)
-python3 src/build.py --release --minify full   # + dist/main.min.lua (full: renamed + one line)
-python3 src/build.py --check                   # validate every module
-python3 src/build.py --stats                   # per-group stats
+Island:Notify("Title", "Message", "success", 4)
+Island:Timer(300)
+Island:Expand("Music")
+Island:MusicSearch("lofi chill for the evening")
+Island:PlayMusic()
+Island:MusicVolume(65)
+
+_G.xNgotMusicConfig:Preset("lowdata")      -- also: fast · quality · vietnamese
 ```
 
-#### Minify options
+### FAQ
 
-| Command | Output | Lines | Size |
-|---|---|---:|---:|
-| *(none)* | `main.lua` — untouched | 26,055 | 954 KB |
-| `--minify` | comments + indentation stripped, **names kept** | 24,226 | 746 KB (−22%) |
-| `--minify full` | comments stripped, **chunk-level names randomised**, collapsed to **one line** | 1 | 711 KB (−26%) |
-| `--minify full --no-rename` | one line, original names | 1 | 721 KB |
+**I don't see a window.** Press **RightShift** or look for the floating round button. If nothing
+appears, update your executor (Delta or Codex work well).
 
-How it stays safe:
+**No sound?** Run `_G.xNgotMusicDoctor()` and check for a `FAIL` line — usually the executor
+lacks `writefile`.
 
-1. **Hand-written Lua/Luau tokenizer** (`src/minify.py`) — understands `[[ ]]` long strings,
-   comments, `+=`, `continue`.
-2. Comments and whitespace are dropped; spaces / `;` are inserted exactly where tokens could
-   merge (`- -`, `1 .. 2`, a line starting with `(`).
-3. **`full` renames 19 chunk-level identifiers** (`Log` → `pK`, `DevTools` → `mp`…) to random
-   names — only when a name is **not shadowed** and **not referenced before its declaration**
-   (that's why `require` is skipped).
-4. **Self-verification**: the output token stream is compared with the input — one mismatched
-   token fails the build.
-5. Every minified file keeps a one-line MIT/credit header.
+**Laggy on a weak device?** `_G.xNgotMusicConfig:Preset("lowdata")` and `Island:Set("Ring", false)`.
 
-### Repo layout
+**Will I lose my settings?** No — they are stored in `xNgotLibrary/Config/`.
+
+**Can I ship this in a paid script?** Yes — MIT licence, just keep the copyright line.
+
+### Full manual
+
+📘 [English manual](docs/LIBRARY.en.md) · 🇻🇳 [Hướng dẫn tiếng Việt](docs/LIBRARY.vi.md)
+
+### 💝 Support the author
+
+<p align="center">
+  <img src="docs/demo/donate/mbbank.png" width="76" alt="MB Bank" hspace="14">
+  <img src="docs/demo/donate/momo.png" width="76" alt="MoMo" hspace="14">
+  <img src="docs/demo/donate/paypal.png" width="76" alt="PayPal" hspace="14">
+</p>
+
+**MB Bank**
 
 ```
-xngot-studio/
-├── src/          build.py · minify.py · manifest.json · profiles/ · stubs/ · modules/ (150)
-├── tools/        split_source.py · verify_roundtrip.py · make_demo_images.py
-├── docs/         LIBRARY.vi.md · LIBRARY.en.md · PROVENANCE.md · demo/*.png
-└── dist/         xngot_studio.lua · xngot_studio.min.lua · main.lua · main.min.lua
+258781
 ```
 
-| Group | Files | Lines | Content |
-|---|---:|---:|---|
-| `00_header` | 1 | 18 | banner |
-| `10_config` | 6 | 181 | music config (`_G.xNgotMusicConfig`) |
-| `20_lib` | 16 | 2,572 | UI templates: window, tabs, notifications, dropdown, slider, dialog |
-| `30_overlay` | 41 | 8,312 | floating panel, notifications, activity, timers, music, AI assistant |
-| `40_window` | 35 | 6,132 | `CreateWindow`, one file per element, Settings tab, KeySystem |
-| `45_notify` | 1 | 68 | `LIB:Notify` |
-| `50_icons` | 30 | 7,797 | 16 spritesheets + 1,548 bundled icons |
-| `60_runtime` | 9 | 937 | `Log` / `DevTools` / debug panel |
-| `70_boot` | 11 | 494 | boot, source picking, library-only mode |
+**MoMo**
 
-### Why you can trust the build
-
-Only **6 lines** of the original are touched (removing two outer closures) — see
-[`docs/PROVENANCE.md`](docs/PROVENANCE.md). Verify anytime:
-
-```bash
-python3 tools/verify_roundtrip.py "main 2.txt" .
-  ✔ A  line coverage: all 26,515 source lines accounted for
-  ✔ B  re-assembly: byte-identical (26,511 lines)
-  ✔ C  bytes: two builds identical, equal to dist/xngot_studio.lua
-  ✔ D  re-split: 150/150 modules identical when regenerated from source
-
-diff "main 2.txt" dist/xngot_studio.lua   # exactly 4 hunks
 ```
+0394715753
+```
+
+**PayPal**
+
+```
+nguyentiendino@gmail.com
+```
+
+<sub>Click the copy icon at the top-right of each block to copy it.</sub>
+
+Free, no ads, no tracking. A coffee goes a long way — thank you! 💛
 
 ### License
 
 MIT — see [`LICENSE`](LICENSE).
 
-<div align="right"><a href="#xngot-studio--thư-viện-ui-cho-roblox">↑ back to top</a></div>
+**Author:** xNgot Zume · [github.com/xngotzume123](https://github.com/xngotzume123)
+
+<div align="right"><a href="#xngot-library">↑ back to top</a></div>
