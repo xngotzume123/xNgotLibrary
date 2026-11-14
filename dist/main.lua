@@ -11158,6 +11158,10 @@ end)
 			return type(win) == "table" and win.__NgotOwner == OwnerToken
 		end
 
+		-- Cửa sổ do chính thư viện mở lúc khởi động (hub demo). Nếu sau đó script
+		-- của bạn gọi CreateWindow cho hub riêng thì đóng bản demo đi, tránh 2 UI.
+		local SelfWindow = nil
+
 		local function CleanupOtherInstances()
 			pcall(function()
 				local prev = _G.xNgotStudio
@@ -11210,6 +11214,18 @@ end)
 		function LIB:CreateWindow(data)
 			data = data or {}
 			CleanupOtherInstances()
+			local isSelfWindow = data.__xNgotSelf == true
+			if not isSelfWindow and SelfWindow ~= nil then
+				local demo = SelfWindow
+				SelfWindow = nil
+				pcall(function() demo:Destroy() end)
+				-- Đừng để biến toàn cục trỏ vào cửa sổ đã bị huỷ.
+				pcall(function()
+					local boot = _G.xNgotStudio
+					if type(boot) == "table" and boot.Window == demo then boot.Window = nil end
+					if _G.Window == demo then _G.Window = nil end
+				end)
+			end
 			-- Một Title = một cửa sổ: tạo lại cùng Title thì dọn bản cũ trước khi dựng,
 			-- nếu không sẽ có 2 bộ UI chồng nhau (nút nổi + cửa sổ + bảng nổi).
 			local titleKey = tostring(data.Title or "NgotStudio")
@@ -17377,6 +17393,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 			end
 
 			WindowByTitle[Window.Title] = Window
+			if isSelfWindow then SelfWindow = Window end
 			return Window
 		end
 
@@ -26073,6 +26090,10 @@ function __xNgotBoot.start()
 	if type(loadingCfg) == "table" and loadingCfg.Title == nil then loadingCfg.Title = opts.title end
 		local okWindow, built = xpcall(function()
 			return library:CreateWindow({
+				-- Cờ nội bộ: cửa sổ do chính thư viện mở lúc khởi động.
+				-- Khi script của bạn gọi CreateWindow, thư viện tự đóng bản demo này
+				-- để trên màn hình chỉ còn 1 UI.
+				__xNgotSelf = true,
 				Title = opts.title,
 				Author = opts.author,
 				Icon = opts.icon or "music-2",

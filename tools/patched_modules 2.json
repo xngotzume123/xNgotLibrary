@@ -1,0 +1,22 @@
+{
+  "note": "Module đã sửa tay sau khi tách từ 'main 2.txt' (vá lỗi runtime). tools/verify_roundtrip.py bỏ qua các module này khi so byte với bản gốc nhưng vẫn kiểm tra phần còn lại.",
+  "modules": {
+    "20_lib/020_template_01.lua": "dọn mọi GUI xNgot còn sót (nhận diện theo cấu trúc, không chỉ theo tên) -> hết nhân đôi UI",
+    "40_window/010_open.lua": "WindowByTitle + CleanupOtherInstances: dọn bản UI cũ (Destroy cửa sổ cũ để gỡ connection) trước khi dựng cửa sổ mới",
+    "40_window/020_config_io.lua": "SetEmptyTabNotice: tạo bù nhãn NoObjectFoundText và không index vào nil",
+    "40_window/090_tab_list.lua": "dùng SetEmptyTabNotice thay cho Tabs.NoObjectFoundText",
+    "40_window/120_el_button.lua": "dùng SetEmptyTabNotice thay cho Tabs.NoObjectFoundText",
+    "40_window/260_destroy_gate.lua": "xoá print của startup gate + gỡ WindowByTitle khi Destroy",
+    "40_window/280_settings_tab.lua": "xoá print admin avatar",
+    "40_window/320_island_settings.lua": "báo cáo doctor đi vào log thay vì print ra console",
+    "40_window/340_music_fm_tab.lua": "đăng ký WindowByTitle trước khi return Window",
+    "70_boot/030_log.lua": "log boot không in ra console nữa (chỉ ghi log, in khi Opts.verbose = true)",
+    "00_header/010_banner.lua": "đổi tên hiển thị xNgot Studio → xNgot Library (bản của người dùng)",
+    "40_window/330_island_tab.lua": "đổi tên hiển thị xNgot Studio → xNgot Library trong notify mẫu",
+    "60_runtime/070_debug_bridge.lua": "đổi tên hiển thị xNgot Studio → xNgot Library",
+    "60_runtime/080_debug_panel.lua": "đổi tên hiển thị xNgot Studio → xNgot Library",
+    "70_boot/010_state.lua": "đổi remoteUrl sang repo xNgotLibrary",
+    "70_boot/090_library_mode.lua": "đổi wording comment xNgot Studio → xNgot Library",
+    "70_boot/085_start_b.lua": "cửa sổ demo của thư viện được đánh dấu __xNgotSelf = true để tự đóng khi người dùng tạo cửa sổ riêng"
+  }
+}
