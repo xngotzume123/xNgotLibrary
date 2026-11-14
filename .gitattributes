@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+*.lua text eol=lf linguist-language=Luau
+*.md  text eol=lf
+
+# Sản phẩm build: coi là generated, không thống kê ngôn ngữ
+dist/*.lua linguist-generated=true
+
+# Tệp manifest: diff theo dòng cho dễ review
+src/manifest.json text eol=lf

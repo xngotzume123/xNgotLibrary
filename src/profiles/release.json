@@ -1,0 +1,11 @@
+{
+  "name": "release",
+  "description": "Bản phát hành: bỏ DevTools, hook log HTTP, bridge debug và panel debug; giữ nguyên lõi UI + Dynamic Island + engine nhạc.",
+  "replace": {
+    "runtime.devtools": "stubs/devtools.lua",
+    "runtime.http_log": "stubs/http_log.lua",
+    "runtime.debug_bridge": "stubs/debug_bridge.lua",
+    "runtime.debug_panel": "stubs/debug_panel.lua"
+  },
+  "tag": false
+}

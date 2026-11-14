@@ -1,0 +1,1526 @@
+{
+  "name": "xngot-studio",
+  "title": "xNgot Library · Thư viện UI (Roblox)",
+  "version": "3.0.0",
+  "entry": "xngot_studio.lua",
+  "release_entry": "main.lua",
+  "source": {
+    "file": "main 2.txt",
+    "lines": 26515,
+    "sha256": "c1207ab32fba1ecd4c4203a385da3431f30f7413c50b875e9586891b86313429"
+  },
+  "source_transforms": {
+    "dropped_lines": [
+      19,
+      25083,
+      26021,
+      26022
+    ],
+    "replaced_lines": {
+      "201": "local LIB",
+      "25082": "LIB = require(NgotStudio[\"3e\"])"
+    }
+  },
+  "modules": [
+    {
+      "id": "header.banner",
+      "path": "00_header/010_banner.lua",
+      "role": "Banner + bản quyền + hướng dẫn build của bản phát hành",
+      "from": 1,
+      "to": 18,
+      "lines": 18,
+      "delta": 0,
+      "sha256": "5295b1866fce6a96234fd05ebf71158afe900577b7342f0a032246aac87ec053"
+    },
+    {
+      "id": "config.schema",
+      "path": "10_config/010_schema.lua",
+      "role": "Bảng schema cho _G.xNgotMusicConfig (kiểu, min/max, mặc định)",
+      "from": 20,
+      "to": 59,
+      "lines": 40,
+      "delta": 0,
+      "sha256": "11983f3bc84dd7cc739a4082a371a7aa8dc1bb9cba25c033f8a4d7b16843015a"
+    },
+    {
+      "id": "config.coerce",
+      "path": "10_config/020_coerce.lua",
+      "role": "Chuẩn hoá giá trị theo schema + bảng Config + listeners",
+      "from": 60,
+      "to": 82,
+      "lines": 23,
+      "delta": 0,
+      "sha256": "eec8dc43227ed14582524eea36bfd6e0f0bb4c2d79d6c13abd3c5dd65f0225be"
+    },
+    {
+      "id": "config.set",
+      "path": "10_config/030_set.lua",
+      "role": "Hàm set(): ghi giá trị, phát listener, lưu vào engine",
+      "from": 83,
+      "to": 104,
+      "lines": 22,
+      "delta": 0,
+      "sha256": "4369011349fb94d662b3423bdbe95efdefa382d2d9d6fe5e5694101f7a8dc5c0"
+    },
+    {
+      "id": "config.log",
+      "path": "10_config/040_log.lua",
+      "role": "Log riêng của lớp cấu hình (xoay vòng 120 dòng)",
+      "from": 105,
+      "to": 110,
+      "lines": 6,
+      "delta": 0,
+      "sha256": "f8de8754ab0b766fff41ad58c9010f39be711dd58e8968451120c9541c9ee5f8"
+    },
+    {
+      "id": "config.apply",
+      "path": "10_config/050_apply.lua",
+      "role": "Áp cấu hình xuống _G.CrossAIMusic (nguồn, timeout, thư mục...)",
+      "from": 111,
+      "to": 131,
+      "lines": 21,
+      "delta": 0,
+      "sha256": "5ae440820295a4a05c204e0a236c65df9c4b517cf0aff1382111e7e056075e91"
+    },
+    {
+      "id": "config.api",
+      "path": "10_config/060_api.lua",
+      "role": "Api: Get/Set/Schema/OnChange/Apply/Preset/Presets + xuất _G",
+      "from": 132,
+      "to": 200,
+      "lines": 69,
+      "delta": 0,
+      "sha256": "b45f6ef9fce3cb953d1596bfa5149f895440f9b2ba7d058e201a053374672a36"
+    },
+    {
+      "id": "lib.open",
+      "path": "20_lib/010_open.lua",
+      "role": "`local LIB` + CrossAIMusic + bảng NgotStudio (thay closure ngoài cùng)",
+      "from": 201,
+      "to": 206,
+      "lines": 6,
+      "delta": 0,
+      "sha256": "bdf4399c6c2802f7e9f4d3e9654986eb47057081429abaac202229a30a61c03e"
+    },
+    {
+      "id": "lib.template.01",
+      "path": "20_lib/020_template_01.lua",
+      "role": "Template: ScreenGui gốc, Window, TopBar, TabButtons, khung dropdown",
+      "from": 207,
+      "to": 651,
+      "lines": 445,
+      "delta": 0,
+      "sha256": "b534ae48aad6b8e0ada7dd9327a6b1745e01f55fa6bc95e12e71c41b259af86a"
+    },
+    {
+      "id": "lib.template.02",
+      "path": "20_lib/020_template_02.lua",
+      "role": "Template: nút Hide, Tabs, NotificationFrame/List, folder Library/IconModule",
+      "from": 652,
+      "to": 1103,
+      "lines": 452,
+      "delta": 0,
+      "sha256": "6e19077169b342f6334544505b417a270c357f4509d6b0c11b3da8bfad64eee3"
+    },
+    {
+      "id": "lib.template.03",
+      "path": "20_lib/020_template_03.lua",
+      "role": "Template: Ball (nút nổi), Notification toast, Slider",
+      "from": 1104,
+      "to": 1561,
+      "lines": 458,
+      "delta": 0,
+      "sha256": "442f5416801b260c0295054f82a9e3cd40f35268e07271c739e263983abb0869"
+    },
+    {
+      "id": "lib.template.04",
+      "path": "20_lib/020_template_04.lua",
+      "role": "Template: Dropdown list + ô tìm kiếm, Code block",
+      "from": 1562,
+      "to": 2007,
+      "lines": 446,
+      "delta": 0,
+      "sha256": "ab60bb0733be73b55a2d6a7ba7f1eca8a4d863f2d2d5c08168f1aeabbfc1728b"
+    },
+    {
+      "id": "lib.template.05",
+      "path": "20_lib/020_template_05.lua",
+      "role": "Template: Section, Button, Dialog, Notification, TabButton cuối",
+      "from": 2008,
+      "to": 2452,
+      "lines": 445,
+      "delta": 0,
+      "sha256": "aae514e2dfc4b29c7a68bb71e591dcb60efcf8d150374f9be04b00104206fd7b"
+    },
+    {
+      "id": "lib.require",
+      "path": "20_lib/070_require_shim.lua",
+      "role": "Shim require() nội bộ: NgotStudio_MODULES + require gốc",
+      "from": 2453,
+      "to": 2466,
+      "lines": 14,
+      "delta": 0,
+      "sha256": "e46b091f015b1217ea87c1b1686e6f9a23e3f286ecdab29560cc13e23f7c4866"
+    },
+    {
+      "id": "lib.module_open",
+      "path": "20_lib/080_module_open.lua",
+      "role": "Mở module 3e: bảng NgotStudio_MODULES + closure + IconModule",
+      "from": 2467,
+      "to": 2470,
+      "lines": 4,
+      "delta": 1,
+      "sha256": "2563a3eed60ccf378ce2eab5023f5689bc4d786e38560af99d61fc9a2bbe6c24"
+    },
+    {
+      "id": "lib.runtime",
+      "path": "20_lib/090_runtime_refs.lua",
+      "role": "Tham chiếu service, Gui/Templates cũ, bảng TweenConfigs",
+      "from": 2471,
+      "to": 2504,
+      "lines": 34,
+      "delta": 0,
+      "sha256": "4aa5177c269245b9d881e2b8769b6ad2121255da47599e5972dcc047c6b390a2"
+    },
+    {
+      "id": "lib.tween",
+      "path": "20_lib/100_tween.lua",
+      "role": "Hàm Tween() bọc TweenService",
+      "from": 2505,
+      "to": 2511,
+      "lines": 7,
+      "delta": 0,
+      "sha256": "3f06a3c497183e197fcd1a8fb1d4333c22597e7922273a701ef00e123a838955"
+    },
+    {
+      "id": "lib.draggable",
+      "path": "20_lib/110_draggable.lua",
+      "role": "Kéo cửa sổ bằng topbar (chuột + cảm ứng)",
+      "from": 2512,
+      "to": 2591,
+      "lines": 80,
+      "delta": 0,
+      "sha256": "7804da3d92073b3a71ff75313a1da2f5cb6a48042b24a0a7f5f85d264a76be91"
+    },
+    {
+      "id": "lib.resizable",
+      "path": "20_lib/120_resizable.lua",
+      "role": "Kéo góc để đổi kích thước cửa sổ",
+      "from": 2592,
+      "to": 2663,
+      "lines": 72,
+      "delta": 0,
+      "sha256": "890e91cb893d9907250ad434e92d6ff98954dc3086eff47f1a64110259bbd6d0"
+    },
+    {
+      "id": "lib.clipboard",
+      "path": "20_lib/130_clipboard.lua",
+      "role": "CopyText(): clipboard + thông báo 'Copied'",
+      "from": 2664,
+      "to": 2702,
+      "lines": 39,
+      "delta": 0,
+      "sha256": "707c3b7598977d552dd546855d9946f6aec911f856556c86850c4a420bdc22b0"
+    },
+    {
+      "id": "lib.social",
+      "path": "20_lib/140_social_icons.lua",
+      "role": "Icon mạng xã hội (Discord/GitHub) + tip copy link",
+      "from": 2703,
+      "to": 2744,
+      "lines": 42,
+      "delta": 0,
+      "sha256": "b5a9c0bbe25d79de1f29fb67a6609b95742924fd1b7fd31df5389766a1323c15"
+    },
+    {
+      "id": "lib.icon",
+      "path": "20_lib/150_apply_icon.lua",
+      "role": "ApplyIcon(): gán icon hoặc ảnh cho ImageLabel",
+      "from": 2745,
+      "to": 2768,
+      "lines": 24,
+      "delta": 0,
+      "sha256": "ee21bfc8e122def51ab6e17dda08312f42afc12fd9ff2ddb70ffb270c374e2c1"
+    },
+    {
+      "id": "overlay.bootstrap",
+      "path": "30_overlay/010_bootstrap.lua",
+      "role": "Mở hàm createIntegratedDynamicIsland + service + guard",
+      "from": 2769,
+      "to": 2809,
+      "lines": 41,
+      "delta": 1,
+      "sha256": "0b03dc29698ee0c667817852bda549efdee0050c711928529a54378b9d2624e4"
+    },
+    {
+      "id": "overlay.connections",
+      "path": "30_overlay/012_connections.lua",
+      "role": "Bảng connections + track() huỷ kết nối khi destroy",
+      "from": 2810,
+      "to": 2816,
+      "lines": 7,
+      "delta": 0,
+      "sha256": "195b2ab3b08978e4541f071b2eff9d9a50a3f903e48773c7ddeff09d64fc463d"
+    },
+    {
+      "id": "overlay.fonts",
+      "path": "30_overlay/014_fonts.lua",
+      "role": "VERSION, FAMILY font, bảng Fonts, rgb()",
+      "from": 2817,
+      "to": 2830,
+      "lines": 14,
+      "delta": 0,
+      "sha256": "ea33bc2801f52ba01afd2ce5ab9f6e7b09583ed12b7cc1c7833a763d24944972"
+    },
+    {
+      "id": "overlay.palettes",
+      "path": "30_overlay/016_palettes.lua",
+      "role": "Bảng màu Static/Palettes/Accents + Settings mặc định",
+      "from": 2831,
+      "to": 2952,
+      "lines": 122,
+      "delta": 0,
+      "sha256": "a341ef1cb12c4f89cf69566f2cdc92ba58a52f4d12a77f38d9b5774052d8fecc"
+    },
+    {
+      "id": "overlay.i18n",
+      "path": "30_overlay/020_prompt_i18n.lua",
+      "role": "Nhận diện prompt tiếng Việt + từ điển VI_EN/EN_VI",
+      "from": 2953,
+      "to": 3314,
+      "lines": 362,
+      "delta": 0,
+      "sha256": "337279f7501c1becff786861c15ecd861d6812e62ba4652406ae5a8a10668a0e"
+    },
+    {
+      "id": "overlay.i18n_index",
+      "path": "30_overlay/024_i18n_index.lua",
+      "role": "orderedKeys/replacePlain/translate + State/Metrics/P",
+      "from": 3315,
+      "to": 3387,
+      "lines": 73,
+      "delta": 0,
+      "sha256": "1199bfaf72360fc5bba4b4a38db30476fbd9bf5d25053bda7410ef585ba60432"
+    },
+    {
+      "id": "overlay.theme",
+      "path": "30_overlay/028_theme_helpers.lua",
+      "role": "new/paint/applyTheme/applyAccent/corner/stroke/text/box",
+      "from": 3388,
+      "to": 3498,
+      "lines": 111,
+      "delta": 0,
+      "sha256": "b36e0bcd0d6535006e1032e57595258aec49462e4542e55acfe419e48fbd35e4"
+    },
+    {
+      "id": "overlay.glass",
+      "path": "30_overlay/030_glass.lua",
+      "role": "Glass (kính mờ) + Search (chỉ mục tìm kiếm)",
+      "from": 3499,
+      "to": 3788,
+      "lines": 290,
+      "delta": 0,
+      "sha256": "27e44545564cb05dbcd834fea3a39e0eea28d4c3818aa521b43c8d3de9264304"
+    },
+    {
+      "id": "overlay.spring",
+      "path": "30_overlay/034_spring.lua",
+      "role": "Spring vật lý lò xo cho chuyển động island",
+      "from": 3789,
+      "to": 3845,
+      "lines": 57,
+      "delta": 0,
+      "sha256": "48e973fd4ce084c14917aec1b8b1e2d35203b2f8ae7c6ef1a150272d545d7e30"
+    },
+    {
+      "id": "overlay.surface",
+      "path": "30_overlay/036_gui_surface.lua",
+      "role": "GUI nổi: frame gốc + BlurEffect của island",
+      "from": 3846,
+      "to": 3894,
+      "lines": 49,
+      "delta": 0,
+      "sha256": "e1c33449f68dace803394a302681cee1418c7d179f631410bf7f3328d9e95ac2"
+    },
+    {
+      "id": "overlay.hooks",
+      "path": "30_overlay/038_hooks.lua",
+      "role": "Hooks: đăng ký hàm chạy theo Frame/Stride",
+      "from": 3895,
+      "to": 3993,
+      "lines": 99,
+      "delta": 0,
+      "sha256": "f149bb50cb78c19f892b3d224b418d6ef3bbeea9892d946637ed4ba58930ff53"
+    },
+    {
+      "id": "overlay.consts",
+      "path": "30_overlay/040_island_consts.lua",
+      "role": "Kích thước ISLAND, islandState, Media, Ring, layoutGlow",
+      "from": 3994,
+      "to": 4052,
+      "lines": 59,
+      "delta": 0,
+      "sha256": "ee3473a0a6ef28101ec2af0f2849658bc73f82f237fd9664da8dd3339495a669"
+    },
+    {
+      "id": "overlay.ring",
+      "path": "30_overlay/044_ring.lua",
+      "role": "Vòng tiến trình: vẽ mask, glow, ringShow/ringHide",
+      "from": 4053,
+      "to": 4710,
+      "lines": 658,
+      "delta": 0,
+      "sha256": "e88d11cecb2d4285e85e1973ecc75ba013a782e47b2aa9de57bcf190162131b1"
+    },
+    {
+      "id": "overlay.hooks_register",
+      "path": "30_overlay/048_hooks_register.lua",
+      "role": "Hooks.Tasks + Hooks.Frame (vòng cập nhật mỗi frame)",
+      "from": 4711,
+      "to": 4758,
+      "lines": 48,
+      "delta": 0,
+      "sha256": "e22177bdc6d032bd731db4535e54c898c761aff0ac86cf511f2b15af59ace063"
+    },
+    {
+      "id": "overlay.alerts",
+      "path": "30_overlay/052_alerts.lua",
+      "role": "Hàng đợi cảnh báo: KINDS, Isl.*, notify(), History",
+      "from": 4759,
+      "to": 5092,
+      "lines": 334,
+      "delta": 0,
+      "sha256": "397801a2d3d9a6f325710542cb17975b6a3f705c5497007aa0167a8658c25afe"
+    },
+    {
+      "id": "overlay.activities",
+      "path": "30_overlay/056_activities.lua",
+      "role": "Activity: timer, stopwatch, FPS, ping, đồng hồ",
+      "from": 5093,
+      "to": 5334,
+      "lines": 242,
+      "delta": 0,
+      "sha256": "5a996b0a04f00fd93b75bca03bb7ff24fd8cf403abd909c2e56eb847bc8b332a"
+    },
+    {
+      "id": "overlay.cross_state",
+      "path": "30_overlay/060_cross_state.lua",
+      "role": "Bảng Cross (AI chat) + state ban đầu",
+      "from": 5335,
+      "to": 5358,
+      "lines": 24,
+      "delta": 0,
+      "sha256": "b58c756736537a7b6ad5e3725af17ae9c30578c6be47bc8cb1fc371b22e83218"
+    },
+    {
+      "id": "overlay.cross_face",
+      "path": "30_overlay/064_cross_face.lua",
+      "role": "Mặt AI: shell, face, pose, renderLine, cử động",
+      "from": 5359,
+      "to": 6021,
+      "lines": 663,
+      "delta": 0,
+      "sha256": "903352cb56bdf9f75b42d8fb1b836f3fe6ae8d9f7823338c5ea889406b480d2a"
+    },
+    {
+      "id": "overlay.music_core",
+      "path": "30_overlay/068_music_core.lua",
+      "role": "Bảng Music: downloadState, Progress, Sync",
+      "from": 6022,
+      "to": 6277,
+      "lines": 256,
+      "delta": 1,
+      "sha256": "f397d856d9201ff2e1197cb3da3835ef6525490fdb83a45fd7f1ec45da3b8da2"
+    },
+    {
+      "id": "engine.open",
+      "path": "30_overlay/070_engine_open.lua",
+      "role": "Tạo CrossAIMusic: CFG, Sources, Util, request, Llm",
+      "from": 6278,
+      "to": 6559,
+      "lines": 282,
+      "delta": 1,
+      "sha256": "95c66efcacf7212d9035569fa29ad79f59c44921e69f54a3814396a53157742f"
+    },
+    {
+      "id": "engine.crypto",
+      "path": "30_overlay/074_engine_crypto.lua",
+      "role": "SHA-256 + solvePow (proof-of-work) cho API nhạc",
+      "from": 6560,
+      "to": 6664,
+      "lines": 105,
+      "delta": 0,
+      "sha256": "484e29e1cb0a0436108c4e2a061edf1f066b18aac0a4a5e125c3c482b7436f3e"
+    },
+    {
+      "id": "engine.lexicon",
+      "path": "30_overlay/076_engine_lexicon.lua",
+      "role": "LEXICON + put() + STOP: từ điển phân tích prompt",
+      "from": 6665,
+      "to": 6768,
+      "lines": 104,
+      "delta": 0,
+      "sha256": "2ec95f2ccb1af7437132bf934752bd9bad42e3ac6df98a5112db30b35afa8734"
+    },
+    {
+      "id": "engine.parse",
+      "path": "30_overlay/080_engine_parse.lua",
+      "role": "parse()/durationSeconds()/normalizeRow()",
+      "from": 6769,
+      "to": 6916,
+      "lines": 148,
+      "delta": 0,
+      "sha256": "503d75f8783f84706d501254676a29b5b6bf92e4c51a03b96dbf85c1c4058666"
+    },
+    {
+      "id": "engine.score",
+      "path": "30_overlay/084_engine_score.lua",
+      "role": "score() xếp hạng track + learn() học từ lựa chọn",
+      "from": 6917,
+      "to": 7029,
+      "lines": 113,
+      "delta": 0,
+      "sha256": "554a82a56f46bc9271964a916902c6496910864b8d8a5c5f34633efad4e1a98c"
+    },
+    {
+      "id": "engine.search",
+      "path": "30_overlay/088_engine_search.lua",
+      "role": "queryVariants/searchOne/search (đa nguồn)",
+      "from": 7030,
+      "to": 7194,
+      "lines": 165,
+      "delta": 0,
+      "sha256": "0a68a3134ca880b5ca08699fe486c4136626332829cdb9fcc1e287850f7dfeef"
+    },
+    {
+      "id": "engine.download",
+      "path": "30_overlay/092_engine_download.lua",
+      "role": "Token PoW, powHeaders, getPowToken, download()",
+      "from": 7195,
+      "to": 7329,
+      "lines": 135,
+      "delta": 0,
+      "sha256": "3da8f5ec60b2711b7871771024ec6ea070d37ff4bc7ba05247ca3be10ea2a45e"
+    },
+    {
+      "id": "engine.audio",
+      "path": "30_overlay/096_engine_audio.lua",
+      "role": "Nhận dạng audio, đọc ID3, hash, cache, cover, saveBytes",
+      "from": 7330,
+      "to": 7585,
+      "lines": 256,
+      "delta": 0,
+      "sha256": "00501b2793c6c11b38f70bf48b9a9d49dbd1dc4794ac407466148ee64dc121b8"
+    },
+    {
+      "id": "engine.files",
+      "path": "30_overlay/100_engine_files.lua",
+      "role": "File manager engine: liệt kê/xoá/thống kê mp3 đã tải",
+      "from": 7586,
+      "to": 7914,
+      "lines": 329,
+      "delta": 0,
+      "sha256": "b6d574e19e5a5518dc5bed9c5d6f9bba17c3da104153268284c6b91ad9e5cab7"
+    },
+    {
+      "id": "engine.resolve",
+      "path": "30_overlay/104_engine_resolve.lua",
+      "role": "resolve(), rowLabel/rowValue/rowData, say(), enrich()",
+      "from": 7915,
+      "to": 8177,
+      "lines": 263,
+      "delta": 0,
+      "sha256": "2ac301bebdaa406969ed03544b61b217ab6486e79bc2f4e9e17e15baf712a521"
+    },
+    {
+      "id": "overlay.remote",
+      "path": "30_overlay/108_remote.lua",
+      "role": "Remote: dựng catalog từ engine, bảng hàng, refresh",
+      "from": 8178,
+      "to": 8420,
+      "lines": 243,
+      "delta": -1,
+      "sha256": "33031024cdf81976891430c85ddc4f4a1e89e0d91900e6923c8a5115ca438a33"
+    },
+    {
+      "id": "overlay.remote_io",
+      "path": "30_overlay/112_remote_io.lua",
+      "role": "Nạp nhạc đã tải, phát/dừng, next/shuffle/repeat",
+      "from": 8421,
+      "to": 8773,
+      "lines": 353,
+      "delta": -1,
+      "sha256": "5cd942b7e72d04524bd95cb5d4ed3beb1935134438e55ae0e4d604527b21b992"
+    },
+    {
+      "id": "overlay.pages",
+      "path": "30_overlay/116_pages_core.lua",
+      "role": "PAGE_ORDER, View, helper vẽ (label/pressable/action/icon)",
+      "from": 8774,
+      "to": 9067,
+      "lines": 294,
+      "delta": 1,
+      "sha256": "f17c28575416427a8109e156c728fe8dae918d4c3043cb4566dc9929b7e94828"
+    },
+    {
+      "id": "overlay.quick",
+      "path": "30_overlay/120_quick_actions.lua",
+      "role": "Nút hành động nhanh + View.bars",
+      "from": 9068,
+      "to": 9263,
+      "lines": 196,
+      "delta": 0,
+      "sha256": "136868152694329d019fcd52b1ad8a77644247df2932a0882d365895134c594e"
+    },
+    {
+      "id": "overlay.transport",
+      "path": "30_overlay/124_transport.lua",
+      "role": "Nút play/next + seek bằng chuột/cảm ứng",
+      "from": 9264,
+      "to": 9431,
+      "lines": 168,
+      "delta": 0,
+      "sha256": "590854a6cec53819c15732609321a3dcff6d96e6f0c1ead6ce53b3ba1ae189de"
+    },
+    {
+      "id": "overlay.cross_page",
+      "path": "30_overlay/128_cross_page.lua",
+      "role": "Trang Cross: crossActive, crossSend, crossFocus, crossMode",
+      "from": 9432,
+      "to": 9824,
+      "lines": 393,
+      "delta": 0,
+      "sha256": "d9eeebdfb158abdd8adfa6c307335db8cd87254c10d4b06d1443d3471277d3fc"
+    },
+    {
+      "id": "overlay.view_layout",
+      "path": "30_overlay/132_view_layout.lua",
+      "role": "View.available + layoutDock (dàn nút theo bề rộng)",
+      "from": 9825,
+      "to": 9890,
+      "lines": 66,
+      "delta": 0,
+      "sha256": "80ab190ca94a30c35164796f658b3d829a1aa80db8d2cf03a37c7987edc4d872"
+    },
+    {
+      "id": "overlay.view_show",
+      "path": "30_overlay/136_view_show.lua",
+      "role": "View.show/nudge/step/tick/refresh + toast",
+      "from": 9891,
+      "to": 10148,
+      "lines": 258,
+      "delta": 0,
+      "sha256": "05a626cb5cc7db5a864e0060dc1b5507c6ff3852705e6edfef17bc47a69126b5"
+    },
+    {
+      "id": "overlay.expand",
+      "path": "30_overlay/140_expand.lua",
+      "role": "drainToToast, Isl.expand/collapse, xử lý input",
+      "from": 10149,
+      "to": 10347,
+      "lines": 199,
+      "delta": 0,
+      "sha256": "de93397ccb846c9b461859f672db18c9926be37e8d7e3e412538186ad130715b"
+    },
+    {
+      "id": "overlay.bubble",
+      "path": "30_overlay/144_bubble.lua",
+      "role": "Bong bóng thu nhỏ: secondaryKey, bubble, tự thu sau idle",
+      "from": 10348,
+      "to": 10443,
+      "lines": 96,
+      "delta": -1,
+      "sha256": "d38e8c3a92362bd49be7afd98aecf4e732d00390f4dc74e4434a90874599c5a3"
+    },
+    {
+      "id": "overlay.cross_control",
+      "path": "30_overlay/148_cross_control.lua",
+      "role": "refreshIslandScale, Cross.setEnabled/ask/clearChat/shutdown",
+      "from": 10444,
+      "to": 10784,
+      "lines": 341,
+      "delta": 0,
+      "sha256": "a9a240ffd8bc65f7182bcc0cbf367424ad26f579649d52565cab4d47538d49fa"
+    },
+    {
+      "id": "overlay.api",
+      "path": "30_overlay/152_api.lua",
+      "role": "API công khai của island: Notify/Music*/Ai*/Expand/State/Destroy",
+      "from": 10785,
+      "to": 11080,
+      "lines": 296,
+      "delta": -1,
+      "sha256": "5acf54aba67c3bc8333c1f85916c75329e4d5c1fd3e5bdf143a367f3f0fb3373"
+    },
+    {
+      "id": "window.open",
+      "path": "40_window/010_open.lua",
+      "role": "local Windows + function LIB:CreateWindow + opts mặc định",
+      "from": 11081,
+      "to": 11152,
+      "lines": 72,
+      "delta": 1,
+      "sha256": "3654a340aed4996caf7655278b01a6e163dd29a193b1f14c410208e550320256"
+    },
+    {
+      "id": "window.config_io",
+      "path": "40_window/020_config_io.lua",
+      "role": "WRITECONFIG/SAVECONFIG + Window:SaveConfig/GetConfigPath",
+      "from": 11153,
+      "to": 11210,
+      "lines": 58,
+      "delta": 0,
+      "sha256": "43b13b7c6bb12be4e0dfea871ebda4cfb9b5a04ab7ec727e5aad72658a54dc5a"
+    },
+    {
+      "id": "window.values",
+      "path": "40_window/030_value_helpers.lua",
+      "role": "clampNumber/colorToHex/colorFrom/font helpers",
+      "from": 11211,
+      "to": 11381,
+      "lines": 171,
+      "delta": 0,
+      "sha256": "67134e871a1b774ed1bdfe521260336f87e24d5f9d9673f501c1bc91f4d30e2f"
+    },
+    {
+      "id": "window.settings_copy",
+      "path": "40_window/040_settings_copy.lua",
+      "role": "copy/serialize/merge UISettings + capture/restore theme",
+      "from": 11382,
+      "to": 11585,
+      "lines": 204,
+      "delta": 0,
+      "sha256": "c468e7a42525da88fdf0b2fd24e250bedeb6d0f7bcbc4169ce348de022e5de9b"
+    },
+    {
+      "id": "window.size",
+      "path": "40_window/050_size_restore.lua",
+      "role": "Kích thước cửa sổ, restoreOriginalUI, accent, ảnh nền",
+      "from": 11586,
+      "to": 11736,
+      "lines": 151,
+      "delta": 0,
+      "sha256": "74eb90bcf23598c6b89b31e6439746d0e105a16f76e6c9db9fdcbadf4cd43dc8"
+    },
+    {
+      "id": "window.theme_apply",
+      "path": "40_window/060_theme_apply.lua",
+      "role": "applyThemeToObject/applyUITheme/schedule/store",
+      "from": 11737,
+      "to": 11873,
+      "lines": 137,
+      "delta": 0,
+      "sha256": "3386d79eedb3192aafd9adf44c457f4a4c3f95df97f0893b83a79969e883bf4c"
+    },
+    {
+      "id": "window.set_ui_setting",
+      "path": "40_window/070_set_ui_setting.lua",
+      "role": "setUISetting + queueUISettingsSave",
+      "from": 11874,
+      "to": 11919,
+      "lines": 46,
+      "delta": 0,
+      "sha256": "776180338fd0678518af729128dae2278581ac7749fe6218970c89628a1e31df"
+    },
+    {
+      "id": "window.settings_presets",
+      "path": "40_window/080_settings_presets.lua",
+      "role": "applyPreset + API UI: SetUISettings/Export/Import/Profile",
+      "from": 11920,
+      "to": 12166,
+      "lines": 247,
+      "delta": 0,
+      "sha256": "c720b0cbb938d6f3fc9203cf92af7cfda89289186d0f551dd0fb534eab94c982"
+    },
+    {
+      "id": "window.tab_list",
+      "path": "40_window/090_tab_list.lua",
+      "role": "AddTabToList, DropdownPopup, SelectTab (nội bộ)",
+      "from": 12167,
+      "to": 12335,
+      "lines": 169,
+      "delta": 0,
+      "sha256": "303564da4b7c8ed7f17c87d99c6d437884c5fc0637876e61395587c74a5b84fa"
+    },
+    {
+      "id": "window.tab_open",
+      "path": "40_window/100_tab_open.lua",
+      "role": "Window:Tab — khung tab mới, TabData, Tab:_Use, parentElement",
+      "from": 12336,
+      "to": 12421,
+      "lines": 86,
+      "delta": 1,
+      "sha256": "8fc804a3156cdea07d024de020628a11e8748c4f4a8c081c715a1fa0b5970d65"
+    },
+    {
+      "id": "window.el_section",
+      "path": "40_window/110_el_section.lua",
+      "role": "Tab:Section",
+      "from": 12422,
+      "to": 12488,
+      "lines": 67,
+      "delta": 0,
+      "sha256": "07a8c14eeaaab2ab3b717aa426df8d27a3fec15fdb5a701ef870f9ef337ca0b3"
+    },
+    {
+      "id": "window.el_button",
+      "path": "40_window/120_el_button.lua",
+      "role": "Tab:Button",
+      "from": 12489,
+      "to": 12631,
+      "lines": 143,
+      "delta": 0,
+      "sha256": "48a4fed83d19a7e73323054b4dc071cc30b7a8051b0f630ab679badd77a47875"
+    },
+    {
+      "id": "window.el_code",
+      "path": "40_window/130_el_code.lua",
+      "role": "Tab:Code",
+      "from": 12632,
+      "to": 12667,
+      "lines": 36,
+      "delta": 0,
+      "sha256": "3bbee9822d0a4293daf1b5035b618f139368b3c7c0c2c8199fff7a293fe232d0"
+    },
+    {
+      "id": "window.el_paragraph",
+      "path": "40_window/140_el_paragraph.lua",
+      "role": "Tab:Paragraph",
+      "from": 12668,
+      "to": 12711,
+      "lines": 44,
+      "delta": 0,
+      "sha256": "cea70fb94f5620667c905468f29568b0626e2923589e7d6cb61e0dedc4768160"
+    },
+    {
+      "id": "window.el_colorpicker",
+      "path": "40_window/150_el_colorpicker.lua",
+      "role": "Tab:Colorpicker",
+      "from": 12712,
+      "to": 12918,
+      "lines": 207,
+      "delta": 0,
+      "sha256": "e3a08a0e3eb5529b3eb3f324198aa971fa255a28d607ec5f9988148d339c9366"
+    },
+    {
+      "id": "window.el_toggle",
+      "path": "40_window/160_el_toggle.lua",
+      "role": "Tab:Toggle",
+      "from": 12919,
+      "to": 13072,
+      "lines": 154,
+      "delta": 0,
+      "sha256": "398705282bacd459a7b470084cddbbc9efa10b846946d6f5b605fb599fbd449a"
+    },
+    {
+      "id": "window.el_slider",
+      "path": "40_window/170_el_slider.lua",
+      "role": "Tab:Slider",
+      "from": 13073,
+      "to": 13315,
+      "lines": 243,
+      "delta": 0,
+      "sha256": "2a35487ddc0c0c0750acb20b23065f9737f1432c24d494aa12e699afc0704fb5"
+    },
+    {
+      "id": "window.el_input",
+      "path": "40_window/180_el_input.lua",
+      "role": "Tab:Input",
+      "from": 13316,
+      "to": 13489,
+      "lines": 174,
+      "delta": 0,
+      "sha256": "66d0df8b0030bd960c028f7e45605ac92b9e0f140994ef8fa5ea9204dd796370"
+    },
+    {
+      "id": "window.dropdown_helpers",
+      "path": "40_window/185_dropdown_helpers.lua",
+      "role": "AddDropdownButton + TableToString",
+      "from": 13490,
+      "to": 13517,
+      "lines": 28,
+      "delta": 0,
+      "sha256": "06ae276022f4f8d682033146b39b4aa042ef2c8b9b89457fd3f7ed176719368c"
+    },
+    {
+      "id": "window.el_dropdown",
+      "path": "40_window/190_el_dropdown.lua",
+      "role": "Tab:Dropdown",
+      "from": 13518,
+      "to": 13960,
+      "lines": 443,
+      "delta": 0,
+      "sha256": "c05ccfcd7849f01b202b1d9fc014d568032984ee8bf7d4fa85358918a4791aaf"
+    },
+    {
+      "id": "window.el_info",
+      "path": "40_window/200_el_info.lua",
+      "role": "Tab:InfoNguyenNhat",
+      "from": 13961,
+      "to": 14130,
+      "lines": 170,
+      "delta": 0,
+      "sha256": "521e0a2eea82dac88577bfe68fdcb81cd2568bff63a0a11fc01ecbed28d7f7f1"
+    },
+    {
+      "id": "window.el_discord",
+      "path": "40_window/210_el_discord.lua",
+      "role": "Tab:Discord",
+      "from": 14131,
+      "to": 14283,
+      "lines": 153,
+      "delta": -1,
+      "sha256": "e1be930a4e30262c6e129ecdee977cbe3b0b957973aa8a6f43917d2010ac923c"
+    },
+    {
+      "id": "window.actions",
+      "path": "40_window/220_window_actions.lua",
+      "role": "SelectTab(index), OpenUISettings, Divider",
+      "from": 14284,
+      "to": 14309,
+      "lines": 26,
+      "delta": 0,
+      "sha256": "bddf4a458485342c5a064726b7562fb2c5edcd0cf750cc5bd7cbb43e0c7b9abd"
+    },
+    {
+      "id": "window.toggle_key",
+      "path": "40_window/230_toggle_key.lua",
+      "role": "SetToggleKey/SetToggleButtonPlatform/EditOpenButton",
+      "from": 14310,
+      "to": 14366,
+      "lines": 57,
+      "delta": 0,
+      "sha256": "f4f77528da571a8e764e857653d4e7c0c308cc58c0ffb65cbcd3572be802c63f"
+    },
+    {
+      "id": "window.dialog",
+      "path": "40_window/240_dialog.lua",
+      "role": "Window:Dialog + nút xác nhận",
+      "from": 14367,
+      "to": 14508,
+      "lines": 142,
+      "delta": 0,
+      "sha256": "3ee002cd0294a3b249a9425a0f1937f03065c32f927884a26bd6da525817b376"
+    },
+    {
+      "id": "window.toggle_window",
+      "path": "40_window/250_toggle_window.lua",
+      "role": "toggleButtonAllowed, ToggleWindow, Show/Hide/Toggle",
+      "from": 14509,
+      "to": 14597,
+      "lines": 89,
+      "delta": 0,
+      "sha256": "419ae965876d0bbb460d7997632052f0af781c64ed6babab300af690cb31b4c0"
+    },
+    {
+      "id": "window.destroy_gate",
+      "path": "40_window/260_destroy_gate.lua",
+      "role": "Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey",
+      "from": 14598,
+      "to": 15113,
+      "lines": 516,
+      "delta": 0,
+      "sha256": "b6237dbb958fce7475ff74daaaf52cab05530ba10b670ba0ce149b349b0d9266"
+    },
+    {
+      "id": "window.island_bridge",
+      "path": "40_window/270_island_bridge.lua",
+      "role": "GetDynamicIsland / NotifyIsland / IslandActivity",
+      "from": 15114,
+      "to": 15149,
+      "lines": 36,
+      "delta": 1,
+      "sha256": "79bce0a4324683967a6286966129257363ea711901f8f4c160bb9f300fbe8250"
+    },
+    {
+      "id": "window.settings_tab",
+      "path": "40_window/280_settings_tab.lua",
+      "role": "Settings tab: giao diện, theme, preset, slider, profile",
+      "from": 15150,
+      "to": 16103,
+      "lines": 954,
+      "delta": 0,
+      "sha256": "80b136b032a8f245431415ac5e7cbfb5a61a2bc282ecfb12dff8b8b3736ab29e"
+    },
+    {
+      "id": "window.ui_language",
+      "path": "40_window/290_ui_language.lua",
+      "role": "GetUILanguage / SetUILanguage",
+      "from": 16104,
+      "to": 16129,
+      "lines": 26,
+      "delta": 0,
+      "sha256": "30870ca67d631d33b467c56d74e004f852902187c955b5cc9da32ff575650084"
+    },
+    {
+      "id": "window.ui_controls",
+      "path": "40_window/300_ui_controls.lua",
+      "role": "Điều khiển UI: font, scale, kích thước, blur, opacity",
+      "from": 16130,
+      "to": 16287,
+      "lines": 158,
+      "delta": 0,
+      "sha256": "17b2784af43d67e6bc11346a5666b951da6df6cce9d9f4db2839d20e81ee904b"
+    },
+    {
+      "id": "window.ui_profile",
+      "path": "40_window/310_ui_profile.lua",
+      "role": "Lưu/đọc/xoá profile giao diện + import/export JSON",
+      "from": 16288,
+      "to": 16426,
+      "lines": 139,
+      "delta": 0,
+      "sha256": "343e34fb40592f549b9bee8797d92556f80af701f8baff7563406ce86a7d753e"
+    },
+    {
+      "id": "window.island_settings",
+      "path": "40_window/320_island_settings.lua",
+      "role": "Bảng mặc định __NgotIslandSettings + helper đổi setting",
+      "from": 16427,
+      "to": 16814,
+      "lines": 388,
+      "delta": 0,
+      "sha256": "86141a1944b2e56c5313fc753984bccb025e07c04f00017c98714040528387b3"
+    },
+    {
+      "id": "window.island_tab",
+      "path": "40_window/330_island_tab.lua",
+      "role": "Tab bảng nổi: toggle/slider theme/ngôn ngữ",
+      "from": 16815,
+      "to": 17059,
+      "lines": 245,
+      "delta": 0,
+      "sha256": "3ad031a8577212e14fecea696728eae20955bc8fce905a77fb390c3e97f9fba8"
+    },
+    {
+      "id": "window.music_tab",
+      "path": "40_window/340_music_fm_tab.lua",
+      "role": "Tab nhạc + AI prompt + file manager trong tab island",
+      "from": 17060,
+      "to": 17212,
+      "lines": 153,
+      "delta": -2,
+      "sha256": "a69bbd2fffe27c77edb4093459f6dc5673131539eec96864496ca8d7ebb8963e"
+    },
+    {
+      "id": "notify",
+      "path": "45_notify/010_notify.lua",
+      "role": "LIB:Notify - thẻ thông báo, icon, duration, tự đóng",
+      "from": 17213,
+      "to": 17280,
+      "lines": 68,
+      "delta": 0,
+      "sha256": "d0c98db12f10c480fedad8ed4f2245e252579b78e464a37288abcc182862bcc6"
+    },
+    {
+      "id": "lib.module_close",
+      "path": "20_lib/890_module_close.lua",
+      "role": "Đóng closure 3e: return LIB / end; / };",
+      "from": 17281,
+      "to": 17284,
+      "lines": 4,
+      "delta": -1,
+      "sha256": "4a00da197dee9f40bd13c7e9d28a172984e37d8b9176326c7885da66a3bdcee0"
+    },
+    {
+      "id": "icons.iconmodule",
+      "path": "50_icons/010_iconmodule.lua",
+      "role": "Module 3f: IconModule.Icon()/SetIconsType()",
+      "from": 17285,
+      "to": 17314,
+      "lines": 30,
+      "delta": 0,
+      "sha256": "dd0891d0ea46d23b66d6561a9eb1bb798a9ac89ea3f4a8e2bdca4c41e78f6d61"
+    },
+    {
+      "id": "icons.module_open",
+      "path": "50_icons/020_module_open.lua",
+      "role": "Mở module 40 (spritesheet): registry + closure",
+      "from": 17315,
+      "to": 17318,
+      "lines": 4,
+      "delta": 1,
+      "sha256": "d01a49b19d9816d579b2e38610a6f8d7d504b19eb7138ab5f11d93590642a9c9"
+    },
+    {
+      "id": "icons.spritesheets",
+      "path": "50_icons/030_spritesheets.lua",
+      "role": "16 spritesheet rbxassetid + mở bảng Icons",
+      "from": 17319,
+      "to": 17336,
+      "lines": 18,
+      "delta": 0,
+      "sha256": "7ee9f798fefcaf96e794857cb687cb9074de21a7e835a6da43487610ddfd3cf1"
+    },
+    {
+      "id": "icons.icons.a",
+      "path": "50_icons/040_icons_a.lua",
+      "role": "nhóm icon 'a' — 108 icon, tiếp nối bảng Icons",
+      "from": 17337,
+      "to": 17876,
+      "lines": 540,
+      "delta": 0,
+      "sha256": "c87aef6a3a0039476829989398fab59b294b1a87294260a18feb44c104f12963"
+    },
+    {
+      "id": "icons.icons.b",
+      "path": "50_icons/040_icons_b.lua",
+      "role": "nhóm icon 'b' — 126 icon, tiếp nối bảng Icons",
+      "from": 17877,
+      "to": 18506,
+      "lines": 630,
+      "delta": 0,
+      "sha256": "0bf4f48f85332637114b64676e7d2102fc0c2f5babbbdb7c4a59975e3c4117f6"
+    },
+    {
+      "id": "icons.icons.c",
+      "path": "50_icons/040_icons_c.lua",
+      "role": "nhóm icon 'c' — 237 icon, tiếp nối bảng Icons",
+      "from": 18507,
+      "to": 19691,
+      "lines": 1185,
+      "delta": 0,
+      "sha256": "00430ca1e307ad13f53a4653907c62d7deb58768ad8ec41b32207a2ed851ebf0"
+    },
+    {
+      "id": "icons.icons.d",
+      "path": "50_icons/040_icons_d.lua",
+      "role": "nhóm icon 'd' — 44 icon, tiếp nối bảng Icons",
+      "from": 19692,
+      "to": 19911,
+      "lines": 220,
+      "delta": 0,
+      "sha256": "02a8eaa9cb600161a29d8b49c259d30cf79434a0d3015c12b9a0116a542629e3"
+    },
+    {
+      "id": "icons.icons.e",
+      "path": "50_icons/040_icons_e.lua",
+      "role": "nhóm icon 'e' — 21 icon, tiếp nối bảng Icons",
+      "from": 19912,
+      "to": 20016,
+      "lines": 105,
+      "delta": 0,
+      "sha256": "719af04a3d8e0d45a15b2c21f05e93d21def9b42ed91c063318ebd8fc8404685"
+    },
+    {
+      "id": "icons.icons.f",
+      "path": "50_icons/040_icons_f.lua",
+      "role": "nhóm icon 'f' — 135 icon, tiếp nối bảng Icons",
+      "from": 20017,
+      "to": 20691,
+      "lines": 675,
+      "delta": 0,
+      "sha256": "c412e135746c700c86302260371cd10ba4190416ae10aeb98fa3e38cd25c6eb9"
+    },
+    {
+      "id": "icons.icons.g",
+      "path": "50_icons/040_icons_g.lua",
+      "role": "nhóm icon 'g' — 47 icon, tiếp nối bảng Icons",
+      "from": 20692,
+      "to": 20926,
+      "lines": 235,
+      "delta": 0,
+      "sha256": "114817bb914032ecdda18ea5930f9dfab6171d9bd34c4bd43a119a06c69c7dc4"
+    },
+    {
+      "id": "icons.icons.h",
+      "path": "50_icons/040_icons_h.lua",
+      "role": "nhóm icon 'h' — 44 icon, tiếp nối bảng Icons",
+      "from": 20927,
+      "to": 21146,
+      "lines": 220,
+      "delta": 0,
+      "sha256": "05babae69234f4cadde18cf722e50ce08577c2ab3f9670a203b2c6bc1781257b"
+    },
+    {
+      "id": "icons.icons.i",
+      "path": "50_icons/040_icons_i.lua",
+      "role": "nhóm icon 'i' — 24 icon, tiếp nối bảng Icons",
+      "from": 21147,
+      "to": 21266,
+      "lines": 120,
+      "delta": 0,
+      "sha256": "2713505d0f43acfc878968d18fa5cd7ac541d3898d44dbb4b70682e721f57055"
+    },
+    {
+      "id": "icons.icons.j",
+      "path": "50_icons/040_icons_j.lua",
+      "role": "nhóm icon 'j' — 2 icon, tiếp nối bảng Icons",
+      "from": 21267,
+      "to": 21276,
+      "lines": 10,
+      "delta": 0,
+      "sha256": "229c9c8d2e59712453fd8eb0b7a02b5d4b175cd8b822034566333addd0adbdf3"
+    },
+    {
+      "id": "icons.icons.k",
+      "path": "50_icons/040_icons_k.lua",
+      "role": "nhóm icon 'k' — 7 icon, tiếp nối bảng Icons",
+      "from": 21277,
+      "to": 21311,
+      "lines": 35,
+      "delta": 0,
+      "sha256": "eee55aae43b70ee4d22501a7809a81387a147af34ff9548df321ed244c6e5595"
+    },
+    {
+      "id": "icons.icons.l",
+      "path": "50_icons/040_icons_l.lua",
+      "role": "nhóm icon 'l' — 69 icon, tiếp nối bảng Icons",
+      "from": 21312,
+      "to": 21656,
+      "lines": 345,
+      "delta": 0,
+      "sha256": "7ed300ebcf216dddb7d99da91c71e6dbd6b30212e13d1247127e22b1a7842fa8"
+    },
+    {
+      "id": "icons.icons.m",
+      "path": "50_icons/040_icons_m.lua",
+      "role": "nhóm icon 'm' — 117 icon, tiếp nối bảng Icons",
+      "from": 21657,
+      "to": 22241,
+      "lines": 585,
+      "delta": 0,
+      "sha256": "be648b107b92e352a705a2c7b0139fd0a9202dd2b653b24f2c3ed689ef351ded"
+    },
+    {
+      "id": "icons.icons.n",
+      "path": "50_icons/040_icons_n.lua",
+      "role": "nhóm icon 'n' — 15 icon, tiếp nối bảng Icons",
+      "from": 22242,
+      "to": 22316,
+      "lines": 75,
+      "delta": 0,
+      "sha256": "52a3819fb9e8d811afcd2bb78df3c607602d36c247ec6f0ad279f7fe3e302261"
+    },
+    {
+      "id": "icons.icons.o",
+      "path": "50_icons/040_icons_o.lua",
+      "role": "nhóm icon 'o' — 9 icon, tiếp nối bảng Icons",
+      "from": 22317,
+      "to": 22361,
+      "lines": 45,
+      "delta": 0,
+      "sha256": "01af1a817ed39bf6c5888ed5e5a5f0b7cd090214659f914aab90debc0c5a6695"
+    },
+    {
+      "id": "icons.icons.p",
+      "path": "50_icons/040_icons_p.lua",
+      "role": "nhóm icon 'p' — 98 icon, tiếp nối bảng Icons",
+      "from": 22362,
+      "to": 22851,
+      "lines": 490,
+      "delta": 0,
+      "sha256": "8944569b1d49cb5534b0621768f642c107cf6d6dfea4809d6962e8cc4a274e4f"
+    },
+    {
+      "id": "icons.icons.q",
+      "path": "50_icons/040_icons_q.lua",
+      "role": "nhóm icon 'q' — 2 icon, tiếp nối bảng Icons",
+      "from": 22852,
+      "to": 22861,
+      "lines": 10,
+      "delta": 0,
+      "sha256": "114c2c3c4f704b9c26c9a948f27e82a9530201a8182c428b57a68832081725c4"
+    },
+    {
+      "id": "icons.icons.r",
+      "path": "50_icons/040_icons_r.lua",
+      "role": "nhóm icon 'r' — 61 icon, tiếp nối bảng Icons",
+      "from": 22862,
+      "to": 23166,
+      "lines": 305,
+      "delta": 0,
+      "sha256": "357826af0a06598efaa4bca2de73aca7329252c222ccf79e452d22a65cc2ae82"
+    },
+    {
+      "id": "icons.icons.s",
+      "path": "50_icons/040_icons_s.lua",
+      "role": "nhóm icon 's' — 200 icon, tiếp nối bảng Icons",
+      "from": 23167,
+      "to": 24166,
+      "lines": 1000,
+      "delta": 0,
+      "sha256": "182b69de4944d9b347b043a60420cc042aec58815b9fed90a523eaf62b4d7197"
+    },
+    {
+      "id": "icons.icons.t",
+      "path": "50_icons/040_icons_t.lua",
+      "role": "nhóm icon 't' — 90 icon, tiếp nối bảng Icons",
+      "from": 24167,
+      "to": 24616,
+      "lines": 450,
+      "delta": 0,
+      "sha256": "12990c986d69be36b52de862410507e059ce6cc9764ff36a488ea025ae21e07f"
+    },
+    {
+      "id": "icons.icons.u",
+      "path": "50_icons/040_icons_u.lua",
+      "role": "nhóm icon 'u' — 36 icon, tiếp nối bảng Icons",
+      "from": 24617,
+      "to": 24796,
+      "lines": 180,
+      "delta": 0,
+      "sha256": "8b0624a3156286fe6a9fd6f8db27345123ca0a8ccf92728b86b62717cecf1975"
+    },
+    {
+      "id": "icons.icons.v",
+      "path": "50_icons/040_icons_v.lua",
+      "role": "nhóm icon 'v' — 18 icon, tiếp nối bảng Icons",
+      "from": 24797,
+      "to": 24886,
+      "lines": 90,
+      "delta": 0,
+      "sha256": "50f6b1c3ec5712079c1d8e259f30756ec074cf4cfaf2c622516fad02558cc4e2"
+    },
+    {
+      "id": "icons.icons.w",
+      "path": "50_icons/040_icons_w.lua",
+      "role": "nhóm icon 'w' — 32 icon, tiếp nối bảng Icons",
+      "from": 24887,
+      "to": 25046,
+      "lines": 160,
+      "delta": 0,
+      "sha256": "e6487d8028963bf9cf1aa3059bd18ed42984a05d326d7e949d2802d485c0a65a"
+    },
+    {
+      "id": "icons.icons.x",
+      "path": "50_icons/040_icons_x.lua",
+      "role": "nhóm icon 'x' — 1 icon, tiếp nối bảng Icons",
+      "from": 25047,
+      "to": 25051,
+      "lines": 5,
+      "delta": 0,
+      "sha256": "bf089e3431168de2222788d0555e2c22028bf92682a85a938888de76b1efd679"
+    },
+    {
+      "id": "icons.icons.y",
+      "path": "50_icons/040_icons_y.lua",
+      "role": "nhóm icon 'y' — 1 icon, tiếp nối bảng Icons",
+      "from": 25052,
+      "to": 25056,
+      "lines": 5,
+      "delta": 0,
+      "sha256": "cfec7da53ebdf912d4a9d6535a6b7182ac955fe216f33a9dedac7c31d75d65a7"
+    },
+    {
+      "id": "icons.icons.z",
+      "path": "50_icons/040_icons_z.lua",
+      "role": "nhóm icon 'z' — 4 icon, tiếp nối bảng Icons",
+      "from": 25057,
+      "to": 25076,
+      "lines": 20,
+      "delta": 0,
+      "sha256": "210a791fbab4c0b5c10e49c452416b804c43c31652d7f315a6c22064a368b125"
+    },
+    {
+      "id": "icons.close",
+      "path": "50_icons/900_close.lua",
+      "role": "Đóng bảng Icons, bảng trả về, closure, module",
+      "from": 25077,
+      "to": 25081,
+      "lines": 5,
+      "delta": -1,
+      "sha256": "eba8873ba29d2fb78312e2219055135c178feb8259d60d2be07ca9e0c94b76c5"
+    },
+    {
+      "id": "runtime.lib_assign",
+      "path": "60_runtime/000_lib_assign.lua",
+      "role": "LIB = require(module 3e) - bàn giao thư viện cho phần runtime",
+      "from": 25082,
+      "to": 25082,
+      "lines": 1,
+      "delta": 0,
+      "sha256": "cd6cbd26258463217c2bde8290797384b78f5d6bcb6ea37fa378cd899f0f0b0f"
+    },
+    {
+      "id": "runtime.startup_error",
+      "path": "60_runtime/010_startup_error.lua",
+      "role": "Hộp thoại + cảnh báo lỗi khởi động (__xNgotShowStartupError)",
+      "from": 25084,
+      "to": 25172,
+      "lines": 89,
+      "delta": 0,
+      "sha256": "f64db49abf2ee4b034ba3f0b8393fe581a1cf5ca19ace017553e3052467dff2b"
+    },
+    {
+      "id": "runtime.create_window_guard",
+      "path": "60_runtime/020_create_window_guard.lua",
+      "role": "Bọc LIB:CreateWindow bằng xpcall + LIB.ShowStartupError",
+      "from": 25173,
+      "to": 25191,
+      "lines": 19,
+      "delta": 0,
+      "sha256": "863de3a1c873ecd569d7e73d799a98f3ba26179ef8e75fc1158934682fd10fa2"
+    },
+    {
+      "id": "runtime.log_core",
+      "path": "60_runtime/030_log_core.lua",
+      "role": "Bảng Log + trimText/looksLikeSelf/safe",
+      "from": 25192,
+      "to": 25260,
+      "lines": 69,
+      "delta": 0,
+      "sha256": "7695089975c3dca7c95bff50c7ce1f22de6e136c84751d56a1b7787a5bace94f"
+    },
+    {
+      "id": "runtime.log_api",
+      "path": "60_runtime/040_log_api.lua",
+      "role": "Log: add/fromPrint/filter/export/hookConsole + mức log",
+      "from": 25261,
+      "to": 25469,
+      "lines": 209,
+      "delta": 0,
+      "sha256": "d1d3bb41509e43b0b19e53e37708f01a7d11fad7321d2b2f2aef6be657458e7a"
+    },
+    {
+      "id": "runtime.devtools",
+      "path": "60_runtime/050_devtools.lua",
+      "role": "DevTools: note/vars/executors/run/selftest/report",
+      "from": 25470,
+      "to": 25636,
+      "lines": 167,
+      "delta": 0,
+      "sha256": "6c80394b4d51e2c7fcd65c6101e3893273a6b9a4efcbd3c648d121ae480cc90e"
+    },
+    {
+      "id": "runtime.http_log",
+      "path": "60_runtime/060_http_log.lua",
+      "role": "Hook http_request để ghi log request/response",
+      "from": 25637,
+      "to": 25667,
+      "lines": 31,
+      "delta": 0,
+      "sha256": "7e8fd20a90489dfaba97229e4c986ff0731b96a108a4de333e37daefaf135e62"
+    },
+    {
+      "id": "runtime.debug_bridge",
+      "path": "60_runtime/070_debug_bridge.lua",
+      "role": "__xNgotDebugBridge: open/close/show/notify/playMusic/state/report",
+      "from": 25668,
+      "to": 25834,
+      "lines": 167,
+      "delta": 0,
+      "sha256": "d57fef69d2f9d57b077b64b9798328391fa2e596972a0541752f446f5def6c13"
+    },
+    {
+      "id": "runtime.debug_panel",
+      "path": "60_runtime/080_debug_panel.lua",
+      "role": "Debug: panel log, export, toggle/open/close",
+      "from": 25835,
+      "to": 26019,
+      "lines": 185,
+      "delta": 0,
+      "sha256": "d1502e91c7357004052eec8614de639a6dc5c8609dc2953d6cc1e95b4f7ff09c"
+    },
+    {
+      "id": "boot.state",
+      "path": "70_boot/010_state.lua",
+      "role": "_G.__xNgotEmbeddedLibrary + __xNgotBoot + Opts",
+      "from": 26020,
+      "to": 26061,
+      "lines": 40,
+      "delta": 0,
+      "sha256": "e58816b230a6ebb8bb74eb6922a2f3e614f30954907b4d429a74b00bc2fcbc2b"
+    },
+    {
+      "id": "boot.helpers",
+      "path": "70_boot/020_helpers.lua",
+      "role": "bootEnv/bootSafe/bootTrace",
+      "from": 26062,
+      "to": 26077,
+      "lines": 16,
+      "delta": 0,
+      "sha256": "d3a191ec90505dc570b8ca58115faa3975cdd26eabcbca74a0b189b3303dc417"
+    },
+    {
+      "id": "boot.log",
+      "path": "70_boot/030_log.lua",
+      "role": "__xNgotBoot.log/info/warn/error/recordError",
+      "from": 26078,
+      "to": 26101,
+      "lines": 24,
+      "delta": 0,
+      "sha256": "2257161616bbeb236db11bad03bfeaf73e91c27fa4cf9f9a37b405fc0804e739"
+    },
+    {
+      "id": "boot.io",
+      "path": "70_boot/040_io.lua",
+      "role": "bootUserGui / bootRead / bootFetch",
+      "from": 26102,
+      "to": 26130,
+      "lines": 29,
+      "delta": 0,
+      "sha256": "e643341d0e614484b05d76700a3d13114bb8db202c15dec5923b320001310200"
+    },
+    {
+      "id": "boot.sources",
+      "path": "70_boot/050_sources.lua",
+      "role": "bootClean + bootSources (nguồn nhúng / local / remote)",
+      "from": 26131,
+      "to": 26192,
+      "lines": 62,
+      "delta": 0,
+      "sha256": "dcae24d39a197241c58ce76ee4d1f60bb4e1aca2d5cbaf0a023231bbe7b29c5c"
+    },
+    {
+      "id": "boot.debug",
+      "path": "70_boot/060_debug.lua",
+      "role": "__xNgotBoot.openDebug / attachDebug",
+      "from": 26193,
+      "to": 26266,
+      "lines": 74,
+      "delta": 0,
+      "sha256": "871fec519e6ba681e3a34a16826d993f20dcf7e7e2451df709c83519602a2de2"
+    },
+    {
+      "id": "boot.performance",
+      "path": "70_boot/070_performance.lua",
+      "role": "performance() / lowPower() / confirmRun()",
+      "from": 26267,
+      "to": 26297,
+      "lines": 31,
+      "delta": 0,
+      "sha256": "c345828c79573c8b04dd87061f688c676e0c2fb3373c7863cdcf918dcd708178"
+    },
+    {
+      "id": "boot.start_a",
+      "path": "70_boot/080_start_a.lua",
+      "role": "__xNgotBoot.start() phần đầu: nạp cấu hình, chọn nguồn",
+      "from": 26298,
+      "to": 26365,
+      "lines": 68,
+      "delta": 1,
+      "sha256": "c5123f60b926a4b45ef279ebe9380010f4a841a33e18b0ed5a4168c4d0b84867"
+    },
+    {
+      "id": "boot.start_b",
+      "path": "70_boot/085_start_b.lua",
+      "role": "createWindow() + vòng thử nguồn + selftest + Stage=ready",
+      "from": 26366,
+      "to": 26503,
+      "lines": 138,
+      "delta": -1,
+      "sha256": "66309fa1034c5dd77fdcfbc7c17dbe4e271f8b56601641bb02346a3cad164525"
+    },
+    {
+      "id": "boot.library_mode",
+      "path": "70_boot/090_library_mode.lua",
+      "role": "LIB.Version, OpenXNgotHub, cờ xNgotLibraryOnly",
+      "from": 26504,
+      "to": 26514,
+      "lines": 11,
+      "delta": 0,
+      "sha256": "709003e5776515fa8156a05d841c869712cbb1f3b37fa2a3966863191551d4a4"
+    },
+    {
+      "id": "boot.return",
+      "path": "70_boot/099_return.lua",
+      "role": "return LIB - điểm kết thúc chunk",
+      "from": 26515,
+      "to": 26515,
+      "lines": 1,
+      "delta": 0,
+      "sha256": "f9f83cff7648517a66580809c9baff81ba4d15eda5db282e504f6769f8b5feba"
+    }
+  ]
+}
