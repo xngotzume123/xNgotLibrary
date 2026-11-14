@@ -1,6 +1,6 @@
 {
   "name": "xngot-studio",
-  "title": "xNgot Library · Thư viện UI (Roblox)",
+  "title": "xNgot Studio · Thư viện UI (Roblox)",
   "version": "3.0.0",
   "entry": "xngot_studio.lua",
   "release_entry": "main.lua",
@@ -110,7 +110,7 @@
       "to": 651,
       "lines": 445,
       "delta": 0,
-      "sha256": "b534ae48aad6b8e0ada7dd9327a6b1745e01f55fa6bc95e12e71c41b259af86a"
+      "sha256": "b44ed40b742e5817e43a7b4c3fb87cd543712fb9e3de8f39cb7c42c747258711"
     },
     {
       "id": "lib.template.02",
@@ -660,7 +660,7 @@
       "to": 11152,
       "lines": 72,
       "delta": 1,
-      "sha256": "3654a340aed4996caf7655278b01a6e163dd29a193b1f14c410208e550320256"
+      "sha256": "401ea660c18a30b9879127cc0db3cbdd9d165f4a652743762b561ce9b49b083e"
     },
     {
       "id": "window.config_io",
@@ -670,7 +670,7 @@
       "to": 11210,
       "lines": 58,
       "delta": 0,
-      "sha256": "43b13b7c6bb12be4e0dfea871ebda4cfb9b5a04ab7ec727e5aad72658a54dc5a"
+      "sha256": "a22058c5f0865f13da0f112b3cd0ea0e3616f62b11f6d8a4a12f77d06d714148"
     },
     {
       "id": "window.values",
@@ -740,7 +740,7 @@
       "to": 12335,
       "lines": 169,
       "delta": 0,
-      "sha256": "303564da4b7c8ed7f17c87d99c6d437884c5fc0637876e61395587c74a5b84fa"
+      "sha256": "cb46f7ecb22106f14f506cca482e55304182b59130e9964f1a3ba457785b6c32"
     },
     {
       "id": "window.tab_open",
@@ -770,7 +770,7 @@
       "to": 12631,
       "lines": 143,
       "delta": 0,
-      "sha256": "48a4fed83d19a7e73323054b4dc071cc30b7a8051b0f630ab679badd77a47875"
+      "sha256": "1e6c8b71a5c419d28f5e4ff014a4607f8d3ccede1e630d0b09128266ad8ad01c"
     },
     {
       "id": "window.el_code",
@@ -920,7 +920,7 @@
       "to": 15113,
       "lines": 516,
       "delta": 0,
-      "sha256": "b6237dbb958fce7475ff74daaaf52cab05530ba10b670ba0ce149b349b0d9266"
+      "sha256": "5e50a0942b71954a45cbc168f73f52bbd2200139a84dd05e742c567e8e7c52da"
     },
     {
       "id": "window.island_bridge",
@@ -940,7 +940,7 @@
       "to": 16103,
       "lines": 954,
       "delta": 0,
-      "sha256": "80b136b032a8f245431415ac5e7cbfb5a61a2bc282ecfb12dff8b8b3736ab29e"
+      "sha256": "55591a1091ae5108ab9f7e56a4e01f336a242a3f5d17a9e8b35ebe02b1930c19"
     },
     {
       "id": "window.ui_language",
@@ -980,7 +980,7 @@
       "to": 16814,
       "lines": 388,
       "delta": 0,
-      "sha256": "86141a1944b2e56c5313fc753984bccb025e07c04f00017c98714040528387b3"
+      "sha256": "cf9f24c54a2898be51de3e2f1188bc8ecd9f5d45a2618d29ffbc9898230734fe"
     },
     {
       "id": "window.island_tab",
@@ -1000,7 +1000,7 @@
       "to": 17212,
       "lines": 153,
       "delta": -2,
-      "sha256": "a69bbd2fffe27c77edb4093459f6dc5673131539eec96864496ca8d7ebb8963e"
+      "sha256": "a0852d095432eb5a76c83ce32df111de52aba2de3961e7d3b0793023ba00164f"
     },
     {
       "id": "notify",
@@ -1440,7 +1440,7 @@
       "to": 26101,
       "lines": 24,
       "delta": 0,
-      "sha256": "2257161616bbeb236db11bad03bfeaf73e91c27fa4cf9f9a37b405fc0804e739"
+      "sha256": "e2fc62c21ab29ffd273129277db2683780c2edd855f4982986aa002b384822fa"
     },
     {
       "id": "boot.io",

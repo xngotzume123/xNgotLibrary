@@ -2,7 +2,7 @@
      lang   : lua (Luau / Roblox) · executor
      folder : src/modules/70_boot · khởi động, loader, chọn nguồn thư viện
      module : boot.log
-     role   : __xNgotBoot.log/info/warn/error/recordError
+     role   : __xNgotBoot.log/info/warn/error/recordError (chỉ in console khi verbose)
      source : main 2.txt L26078-26101 · 24 dòng · delta +0
 --]]
 function __xNgotBoot.log(level, message)
@@ -11,7 +11,10 @@ function __xNgotBoot.log(level, message)
 	local logApi = _G.xNgotLog
 	if logApi and type(logApi[level]) == "function" then
 		pcall(logApi[level], "boot", line)
-	else
+	elseif bootSafe(level) == "error" then
+		pcall(warn, "[xNgotStudio] " .. line)
+	end
+	if __xNgotBoot.Opts and __xNgotBoot.Opts.verbose == true then
 		pcall(print, "[xNgotStudio] [" .. bootSafe(level) .. "] " .. line)
 	end
 	return line

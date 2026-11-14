@@ -1,0 +1,15 @@
+{
+  "note": "Module đã sửa tay sau khi tách từ 'main 2.txt' (vá lỗi runtime). tools/verify_roundtrip.py bỏ qua các module này khi so byte với bản gốc nhưng vẫn kiểm tra phần còn lại.",
+  "modules": {
+    "20_lib/020_template_01.lua": "dọn ScreenGui của lần chạy trước (_G.__xNgotStudioGui) + nhận diện GUI cũ đã đổi tên theo Window.Title -> không chồng UI",
+    "40_window/010_open.lua": "WindowByTitle: tạo lại cùng Title thì Destroy cửa sổ cũ trước khi dựng",
+    "40_window/020_config_io.lua": "SetEmptyTabNotice: tạo bù nhãn NoObjectFoundText và không index vào nil",
+    "40_window/090_tab_list.lua": "dùng SetEmptyTabNotice thay cho Tabs.NoObjectFoundText",
+    "40_window/120_el_button.lua": "dùng SetEmptyTabNotice thay cho Tabs.NoObjectFoundText",
+    "40_window/260_destroy_gate.lua": "xoá print của startup gate + gỡ WindowByTitle khi Destroy",
+    "40_window/280_settings_tab.lua": "xoá print admin avatar",
+    "40_window/320_island_settings.lua": "báo cáo doctor đi vào log thay vì print ra console",
+    "40_window/340_music_fm_tab.lua": "đăng ký WindowByTitle trước khi return Window",
+    "70_boot/030_log.lua": "log boot không in ra console nữa (chỉ ghi log, in khi Opts.verbose = true)"
+  }
+}

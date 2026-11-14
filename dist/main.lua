@@ -201,6 +201,21 @@ local CrossAIMusic
 
 local NgotStudio = {};
 
+-- Dọn GUI của lần chạy trước. Sau CreateWindow, ScreenGui được đổi tên theo
+-- Window.Title nên bước quét theo tên "NgotStudio" bên dưới không bắt được nó
+-- -> chạy lại script sẽ chồng 2 bộ UI (bảng nổi + thanh gọn + cửa sổ).
+pcall(function()
+	local previous = _G.__xNgotStudioGui
+	if previous ~= nil and (type(previous) == "userdata" or type(previous) == "table") then
+		local isInstance = type(typeof) ~= "function" or typeof(previous) == "Instance"
+		if isInstance then
+			local okParent = pcall(function() return previous.Parent end)
+			if okParent then pcall(function() previous:Destroy() end) end
+		end
+	end
+	_G.__xNgotStudioGui = nil
+end)
+
 NgotStudio["1"] = Instance.new("ScreenGui");
 NgotStudio["1"]["Name"] = [[NgotStudio]];
 NgotStudio["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
@@ -224,7 +239,11 @@ pcall(function()
 	for _, parent in ipairs(parents) do
 		pcall(function()
 			for _, child in ipairs(parent:GetChildren()) do
-				if tostring(child.Name) == "NgotStudio" and child ~= NgotStudio["1"] then
+				local looksLikeUs = tostring(child.Name) == "NgotStudio"
+				if not looksLikeUs and typeof and typeof(child) == "Instance" and child:IsA("ScreenGui") then
+					looksLikeUs = child:FindFirstChild("Window") ~= nil and child:FindFirstChild("Templates") ~= nil
+				end
+				if looksLikeUs and child ~= NgotStudio["1"] then
 					child:Destroy()
 				end
 			end
@@ -241,6 +260,8 @@ elseif pcall(function() game.CoreGui:GetChildren() end) then
 else
 	NgotStudio["1"].Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
+
+pcall(function() _G.__xNgotStudioGui = NgotStudio["1"] end)
 
 NgotStudio["2"] = Instance.new("Frame", NgotStudio["1"]);
 NgotStudio["2"]["ZIndex"] = 0;
@@ -11076,8 +11097,17 @@ end)
 		end
 
 		local Windows = {}
+		local WindowByTitle = {}
 		function LIB:CreateWindow(data)
 			data = data or {}
+			-- Một Title = một cửa sổ: tạo lại cùng Title thì dọn bản cũ trước khi dựng,
+			-- nếu không sẽ có 2 bộ UI chồng nhau (nút nổi + cửa sổ + bảng nổi).
+			local titleKey = tostring(data.Title or "NgotStudio")
+			local previousWindow = WindowByTitle[titleKey]
+			if previousWindow and type(previousWindow.Destroy) == "function" then
+				pcall(function() previousWindow:Destroy() end)
+			end
+			WindowByTitle[titleKey] = nil
 			local Window = {
 				Title = data.Title or "NgotStudio",
 				Icon = data.Icon or "layout-dashboard",
@@ -11185,6 +11215,37 @@ end)
 			local TopFrame = mainFrame.TopFrame
 			local TabButtons = mainFrame.TabButtons
 			local Tabs = mainFrame.Tabs
+
+			-- Nhãn "This tab is empty :(" có thể thiếu trong bản template đang chạy,
+			-- khi đó mọi lần thêm/bớt element đều lỗi "NoObjectFoundText is not a
+			-- valid member of Frame 'Tabs'". Tạo bù (clone từ template cũ nếu có)
+			-- và luôn gán qua hàm này để không bao giờ index vào nil.
+			local function SetEmptyTabNotice(visible)
+				if not Tabs then return nil end
+				local notice = Tabs:FindFirstChild("NoObjectFoundText")
+				if not notice then
+					local sourceTabs = oldWindow and oldWindow:FindFirstChild("Tabs")
+					local sourceNotice = sourceTabs and sourceTabs:FindFirstChild("NoObjectFoundText")
+					if sourceNotice then
+						notice = sourceNotice:Clone()
+					else
+						notice = Instance.new("TextLabel")
+						notice.Name = "NoObjectFoundText"
+						notice.BackgroundTransparency = 1
+						notice.BorderSizePixel = 0
+						notice.TextWrapped = true
+						notice.TextScaled = true
+						notice.TextColor3 = Color3.fromRGB(135, 140, 150)
+						notice.Text = "This tab is empty :("
+						notice.AnchorPoint = Vector2.new(0.5, 0.5)
+						notice.Position = UDim2.new(0.5, 0, 0.45, 0)
+						notice.Size = UDim2.new(1, 0, 0, 16)
+					end
+					notice.Parent = Tabs
+				end
+				notice.Visible = visible == true
+				return notice
+			end
 
 			newWindow.Name = Window.Title
 			TopFrame.TextLabel.Text = Window.Title .. " - " .. Window.Version
@@ -12270,9 +12331,9 @@ end)
 							end
 						end
 						if objectCount == 0 then
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						else
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						end
 					end
 				end
@@ -12575,17 +12636,17 @@ end)
 
 					newTab.ChildAdded:Connect(function()
 						if #GetCurrentElementObjects() > 0 then
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						else
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						end
 					end)
 
 					newTab.ChildRemoved:Connect(function()
 						if #GetCurrentElementObjects() > 0 then
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						else
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						end
 					end)
 
@@ -14611,6 +14672,7 @@ end)
 				if windowResizable then windowResizable:Destroy() end
 				local index = table.find(Windows, newWindow)
 				if index then table.remove(Windows, index) end
+				if WindowByTitle[Window.Title] == Window then WindowByTitle[Window.Title] = nil end
 				if windowFolder and windowFolder.Parent then windowFolder:Destroy() end
 			end
 
@@ -14688,11 +14750,11 @@ end)
 			end)
 
 			-- ============================================================
-			-- XNGOT STARTUP GATE: loader + key system chay bang ENGINE CUA xNgot Library
+			-- XNGOT STARTUP GATE: loader + key system chay bang ENGINE CUA XNGOT STUDIO
 			-- (theme UISettings, font/icon/Tween cua cua so) - day du tinh nang nhu engine
 			-- loader cua Airflow (_showLoader/_playIntro): the CanvasGroup, icon nay Back,
 			-- progress + shimmer, status theo step, morph the -> cua so. Khac ban goc:
-			-- progress chay theo ASSET TAI THAT (PreloadAsync), hien menu xNgot Library,
+			-- progress chay theo ASSET TAI THAT (PreloadAsync), hien menu xNgot Studio,
 			-- kem Key System (nho key vinh vien, sai rung the, Get Key) dung chung the.
 			-- ============================================================
 			local startupGateLoading = Window.Loading
@@ -14731,7 +14793,7 @@ end)
 						local G_ERROR = Color3.fromRGB(240, 120, 120)
 						local G_SUCCESS = Color3.fromRGB(150, 220, 170)
 						local G_RADIUS = math.clamp(tonumber(UISettings.CornerRadius) or 12, 8, 28)
-						local G_FONT = "rbxassetid://11702779517" -- font cua UI xNgot Library
+						local G_FONT = "rbxassetid://11702779517" -- font cua UI xNgot Studio
 						-- Dong bo font theo nhan tieu de cua cua so goc (TopFrame.TextLabel)
 						pcall(function()
 							local menuLabel = TopFrame and TopFrame:FindFirstChild("TextLabel")
@@ -14749,7 +14811,7 @@ end)
 
 						-- ===== Cau hinh loader / key (Window.Loading + Window.KeySystem) =====
 						local loadCfg = type(startupGateLoading) == "table" and startupGateLoading or {}
-						local loadTitle = tostring(loadCfg.Title or Window.Title or "xNgot Library")
+						local loadTitle = tostring(loadCfg.Title or Window.Title or "xNgot Studio")
 						local loadText = tostring(loadCfg.Text or "Loading")
 						local loadSteps = type(loadCfg.Steps) == "table" and loadCfg.Steps or { "Preparing interface", "Loading icons", "Almost there" }
 						local loadDuration = math.clamp(tonumber(loadCfg.Duration) or 1.6, 0.6, 8)
@@ -15015,7 +15077,6 @@ end)
 							if (pendingBatches <= 0 and elapsed >= minLoadTime) or elapsed >= 9 then break end
 							task.wait(0.12)
 						end
-						print("[xNgotStudio] Startup gate: preloaded " .. tostring(loadedAssets) .. "/" .. tostring(totalAssets) .. " assets")
 						gTween(fill, { Size = UDim2.fromScale(1, 1) }, 0.25, Enum.EasingStyle.Quint)
 						task.wait(0.25)
 						if windowDestroyed or not card.Parent then return end
@@ -15034,7 +15095,6 @@ end)
 							task.wait(0.3)
 							if windowDestroyed or not card.Parent then return end
 							gTween(keyGroup, { GroupTransparency = 0 }, 0.25)
-							print("[xNgotStudio] Startup gate: waiting for key")
 							pcall(function() keyInput:CaptureFocus() end)
 							while not gateDone do
 								if windowDestroyed or not card.Parent then return end
@@ -15054,7 +15114,6 @@ end)
 						task.wait(0.28)
 						if windowDestroyed or not card.Parent then return end
 						startupGatePassed = true
-						print("[xNgotStudio] Startup gate: passed")
 						newWindow.Size = oldWindowSize
 						newWindow.Visible = true
 						do local dropShadow = newWindow:FindFirstChild("DropShadow") if dropShadow then pcall(function() dropShadow.Visible = true end) end end
@@ -16042,7 +16101,6 @@ Zcn8654+9HUdOKd7CTsf/9k=
 									cachedPath = embeddedPath
 									pcall(writefile, avatarManifest, embeddedPath)
 									keepAvatarApplied(embeddedAsset)
-									print("[xNgotStudio] Admin avatar: embedded applied")
 								end
 								if not embeddedAsset then warn("[xNgotStudio] Admin avatar: embedded fallback failed - " .. tostring(embeddedPath)) end
 							end
@@ -16073,7 +16131,6 @@ Zcn8654+9HUdOKd7CTsf/9k=
 								if ok and currentSerial == avatarRefreshSerial and self.AdminInfoCard == adminCard then
 									pcall(adminCard.SetAvatar, adminCard, result.Asset)
 									keepAvatarApplied(result.Asset)
-									print("[xNgotStudio] Admin avatar: fresh download applied")
 									pcall(writefile, avatarManifest, result.Path)
 									if cachedPath and cachedPath ~= result.Path then deleteAvatarFile(cachedPath) end
 									if avatarLegacyPath ~= result.Path then deleteAvatarFile(avatarLegacyPath) end
@@ -16673,6 +16730,12 @@ Zcn8654+9HUdOKd7CTsf/9k=
 						report.checks[#report.checks + 1] = { name = name, status = status, detail = detail }
 					end
 
+					-- Báo cáo đi vào log của thư viện (xem panel debug), không in ra console.
+					local function out(message)
+						local logApi = _G.xNgotLog
+						if logApi and type(logApi.info) == "function" then pcall(logApi.info, "doctor", message) end
+					end
+
 					add("writefile", has("writefile") and "ok" or "fail",
 						"required to cache mp3 files")
 					add("readfile", has("readfile") and "ok" or "warn", "read back cache files (ID3)")
@@ -16720,18 +16783,16 @@ Zcn8654+9HUdOKd7CTsf/9k=
 					add("cached mp3 files", n and "ok" or "n/a", n and (tostring(n) .. " tracks") or "executor does not support listfiles")
 
 					local fails, warns = 0, 0
-					print("=========== xNgot Audio - DIAGNOSTICS ===========")
 					for _, c in ipairs(report.checks) do
-						local icon = c.status == "ok" and "[ OK ]" or (c.status == "fail" and "[FAIL]" or "[ !! ]")
+						local icon = c.status == "ok" and "OK" or (c.status == "fail" and "FAIL" or "!!")
 						if c.status == "fail" then fails = fails + 1
 						elseif c.status ~= "ok" then warns = warns + 1 end
-						print(string.format("%s %-18s %s", icon, c.name, tostring(c.detail or "")))
+						out(string.format("[%s] %s · %s", icon, tostring(c.name), tostring(c.detail or "")))
 					end
-					print(string.format("---- %d errors, %d warnings ----", fails, warns))
+					out(string.format("doctor: %d errors, %d warnings", fails, warns))
 					if fails > 0 then
-						print("Hint: missing writefile/getcustomasset -> music cannot play (switch executor).")
+						out("thiếu writefile/getcustomasset -> không phát được nhạc (đổi executor).")
 					end
-					print("==============================================")
 					report.fails, report.warns = fails, warns
 					return report
 				end
@@ -16838,7 +16899,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 				addToggle("Expand on Interaction", "Expand")
 				addSlider("Notification Duration", "Duration", 1, 12)
 				IslandTab:Button({Title = "Send Test Notification", Callback = function()
-					Window:NotifyIsland("xNgot Library", "Notification sent from the built-in library", "success", 3.5)
+					Window:NotifyIsland("xNgot Studio", "Notification sent from the built-in library", "success", 3.5)
 				end})
 
 				IslandTab:Section({Title = "Appearance", Default = false})
@@ -17204,6 +17265,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 
 			end
 
+			WindowByTitle[Window.Title] = Window
 			return Window
 		end
 
@@ -25556,7 +25618,7 @@ __xNgotBoot.Version = "3.0.0"
 __xNgotBoot.Opts = {
 	localFile = "main.lua",
 	configFile = "xNgotLibrary/Config/xNgotMusic.config.lua",
-	remoteUrl = "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua",
+	remoteUrl = "https://raw.githubusercontent.com/xngotzume123/xNgotHub/refs/heads/main/dist/main.lua",
 	title = "xNgọt Studio",
 	author = "Dynamic Island · AI Music · Assistant",
 	icon = "music-2", -- icon cua so goc; loader/key copy thang tu TopFrame.Icon nen luon trung
@@ -25609,7 +25671,10 @@ function __xNgotBoot.log(level, message)
 	local logApi = _G.xNgotLog
 	if logApi and type(logApi[level]) == "function" then
 		pcall(logApi[level], "boot", line)
-	else
+	elseif bootSafe(level) == "error" then
+		pcall(warn, "[xNgotStudio] " .. line)
+	end
+	if __xNgotBoot.Opts and __xNgotBoot.Opts.verbose == true then
 		pcall(print, "[xNgotStudio] [" .. bootSafe(level) .. "] " .. line)
 	end
 	return line
@@ -26031,8 +26096,8 @@ function __xNgotBoot.start()
 end
 
 -- LIBRARY MODE (kieu Orion/Rayfield): dat getgenv().xNgotLibraryOnly = true truoc khi
--- loadstring de chi lay LIB lam UI cho hub rieng (khong tu mo hub xNgot Library).
--- Chay truc tiep file nay thi hub xNgot Library van tu mo nhu cu. Xem HUONG_DAN_LIBRARY.md.
+-- loadstring de chi lay LIB lam UI cho hub rieng (khong tu mo hub xNgot Studio).
+-- Chay truc tiep file nay thi hub xNgot Studio van tu mo nhu cu. Xem HUONG_DAN_LIBRARY.md.
 LIB.Version = __xNgotBoot.Version
 LIB.OpenXNgotHub = function() return __xNgotBoot.start() end
 local __xngotEnv = (type(getgenv) == "function" and getgenv()) or _G

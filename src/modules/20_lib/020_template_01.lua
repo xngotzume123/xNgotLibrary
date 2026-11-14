@@ -5,6 +5,21 @@
      role   : Template: ScreenGui gốc, Window, TopBar, TabButtons, khung dropdown
      source : main 2.txt L207-651 · 445 dòng · delta +0
 --]]
+-- Dọn GUI của lần chạy trước. Sau CreateWindow, ScreenGui được đổi tên theo
+-- Window.Title nên bước quét theo tên "NgotStudio" bên dưới không bắt được nó
+-- -> chạy lại script sẽ chồng 2 bộ UI (bảng nổi + thanh gọn + cửa sổ).
+pcall(function()
+	local previous = _G.__xNgotStudioGui
+	if previous ~= nil and (type(previous) == "userdata" or type(previous) == "table") then
+		local isInstance = type(typeof) ~= "function" or typeof(previous) == "Instance"
+		if isInstance then
+			local okParent = pcall(function() return previous.Parent end)
+			if okParent then pcall(function() previous:Destroy() end) end
+		end
+	end
+	_G.__xNgotStudioGui = nil
+end)
+
 NgotStudio["1"] = Instance.new("ScreenGui");
 NgotStudio["1"]["Name"] = [[NgotStudio]];
 NgotStudio["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
@@ -28,7 +43,11 @@ pcall(function()
 	for _, parent in ipairs(parents) do
 		pcall(function()
 			for _, child in ipairs(parent:GetChildren()) do
-				if tostring(child.Name) == "NgotStudio" and child ~= NgotStudio["1"] then
+				local looksLikeUs = tostring(child.Name) == "NgotStudio"
+				if not looksLikeUs and typeof and typeof(child) == "Instance" and child:IsA("ScreenGui") then
+					looksLikeUs = child:FindFirstChild("Window") ~= nil and child:FindFirstChild("Templates") ~= nil
+				end
+				if looksLikeUs and child ~= NgotStudio["1"] then
 					child:Destroy()
 				end
 			end
@@ -45,6 +64,8 @@ elseif pcall(function() game.CoreGui:GetChildren() end) then
 else
 	NgotStudio["1"].Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
+
+pcall(function() _G.__xNgotStudioGui = NgotStudio["1"] end)
 
 NgotStudio["2"] = Instance.new("Frame", NgotStudio["1"]);
 NgotStudio["2"]["ZIndex"] = 0;
