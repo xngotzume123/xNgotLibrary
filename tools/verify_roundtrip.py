@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""xNgot Library - kiểm chứng vòng tròn (round-trip) giữa bản gốc và repo.
+"""xNgot Studio - kiểm chứng vòng tròn (round-trip) giữa bản gốc và repo.
 
 Cách dùng:
     python3 tools/verify_roundtrip.py "main 2.txt" .
 
 Bốn lớp kiểm chứng:
     A. PHỦ DÒNG      mỗi dòng 1..N của bản gốc thuộc đúng một module (hoặc thuộc 4 dòng đã bỏ)
-    B. GHÉP LẠI      thân 150 module ghép theo manifest == bản gốc sau khi áp source_transforms
+    B. GHÉP LẠI      từng module == lát cắt gốc (module trong tools/patched_modules.json được bỏ qua)
     C. BYTE          build 2 lần cho ra tệp giống hệt; dist hiện có trùng bản vừa build
-    D. TÁI TẠO       chạy lại split_source.py vào thư mục tạm -> từng module khớp bản trong repo
+    D. TÁI TẠO       chạy lại split_source.py vào thư mục tạm -> module chưa vá khớp bản trong repo
 """
 from __future__ import annotations
 
@@ -29,6 +29,30 @@ def load_build(repo: str):
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def load_patched(repo: str) -> dict:
+    """Module đã sửa tay sau khi tách (vá lỗi). Xem tools/patched_modules.json."""
+    path = os.path.join(repo, "tools", "patched_modules.json")
+    if not os.path.exists(path):
+        return {}
+    import json
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    return {str(k): str(v) for k, v in (data.get("modules") or {}).items()}
+
+
+def slice_original(original: str, mod: dict, transforms: dict) -> str:
+    """Lát cắt gốc của một module: dòng from..to, bỏ dòng dropped, áp replaced_lines."""
+    lines = original.split("\n")
+    dropped = set(transforms.get("dropped_lines") or [])
+    replaced = transforms.get("replaced_lines") or {}
+    piece = []
+    for no in range(mod["from"], mod["to"] + 1):
+        if no in dropped:
+            continue
+        piece.append(replaced.get(str(no), lines[no - 1]))
+    return "\n".join(piece) + "\n"
 
 
 def main() -> int:
@@ -66,17 +90,26 @@ def main() -> int:
 
     # ── B. ghép lại ───────────────────────────────────────────────────────────
     payload = build.assemble(items, False)
-    expected = build.apply_source_transforms(original, manifest["source_transforms"])
-    if payload == expected:
-        print("  ✔ B  ghép lại: khớp từng byte (%d dòng)" % payload.count("\n"))
-    else:
-        print("  ✘ B  ghép lại: KHÔNG khớp")
-        want, got = expected.split("\n"), payload.split("\n")
-        for no, (a, b) in enumerate(zip(want, got), 1):
-            if a != b:
-                print("       dòng %d\n       gốc: %r\n       ra : %r" % (no, a[:90], b[:90]))
-                break
+    patched = load_patched(repo)
+    transforms = manifest["source_transforms"]
+    same_b, diff_b = 0, []
+    for item in items:
+        mod = item["mod"]
+        if mod["path"] in patched:
+            continue
+        if item["body"] == slice_original(original, mod, transforms):
+            same_b += 1
+        else:
+            diff_b.append(mod["path"])
+    if diff_b:
+        print("  ✘ B  ghép lại: %d module lệch bản gốc: %s"
+              % (len(diff_b), ", ".join(diff_b[:6])))
         ok = False
+    elif patched:
+        print("  ✔ B  ghép lại: %d module khớp byte bản gốc, %d module đã vá (%s)"
+              % (same_b, len(patched), ", ".join(sorted(patched)[:3]) + ("…" if len(patched) > 3 else "")))
+    else:
+        print("  ✔ B  ghép lại: khớp từng byte (%d dòng)" % payload.count("\n"))
 
     # ── C. byte & ổn định ─────────────────────────────────────────────────────
     tmp = tempfile.mkdtemp(prefix="xngot-verify-")
@@ -118,13 +151,20 @@ def main() -> int:
             print("  ✘ D  split_source lỗi:\n%s%s" % (code.stdout, code.stderr))
             ok = False
         else:
-            same, diff = 0, []
+            same, diff, skipped = 0, [], 0
             for mod in manifest["modules"]:
                 a = os.path.join(repo, "src", "modules", mod["path"])
                 b = os.path.join(tmp, "src", "modules", mod["path"])
                 if not os.path.exists(b):
                     diff.append(mod["path"] + " (thiếu)")
-                elif open(a, "rb").read() == open(b, "rb").read():
+                    continue
+                if mod["path"] in patched:
+                    if os.path.exists(a):
+                        skipped += 1
+                    else:
+                        diff.append(mod["path"] + " (thiếu)")
+                    continue
+                if open(a, "rb").read() == open(b, "rb").read():
                     same += 1
                 else:
                     diff.append(mod["path"])
@@ -132,8 +172,9 @@ def main() -> int:
                 print("  ✘ D  %d module khác bản tái tạo: %s" % (len(diff), ", ".join(diff[:5])))
                 ok = False
             else:
-                print("  ✔ D  tái tạo: %d/%d module giống hệt khi chia lại từ bản gốc"
-                      % (same, len(manifest["modules"])))
+                extra = (" · %d module đã vá được giữ nguyên" % skipped) if skipped else ""
+                print("  ✔ D  tái tạo: %d/%d module giống hệt khi chia lại từ bản gốc%s"
+                      % (same, len(manifest["modules"]), extra))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

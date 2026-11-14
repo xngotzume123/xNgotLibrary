@@ -44,6 +44,37 @@
 			local TabButtons = mainFrame.TabButtons
 			local Tabs = mainFrame.Tabs
 
+			-- Nhãn "This tab is empty :(" có thể thiếu trong bản template đang chạy,
+			-- khi đó mọi lần thêm/bớt element đều lỗi "NoObjectFoundText is not a
+			-- valid member of Frame 'Tabs'". Tạo bù (clone từ template cũ nếu có)
+			-- và luôn gán qua hàm này để không bao giờ index vào nil.
+			local function SetEmptyTabNotice(visible)
+				if not Tabs then return nil end
+				local notice = Tabs:FindFirstChild("NoObjectFoundText")
+				if not notice then
+					local sourceTabs = oldWindow and oldWindow:FindFirstChild("Tabs")
+					local sourceNotice = sourceTabs and sourceTabs:FindFirstChild("NoObjectFoundText")
+					if sourceNotice then
+						notice = sourceNotice:Clone()
+					else
+						notice = Instance.new("TextLabel")
+						notice.Name = "NoObjectFoundText"
+						notice.BackgroundTransparency = 1
+						notice.BorderSizePixel = 0
+						notice.TextWrapped = true
+						notice.TextScaled = true
+						notice.TextColor3 = Color3.fromRGB(135, 140, 150)
+						notice.Text = "This tab is empty :("
+						notice.AnchorPoint = Vector2.new(0.5, 0.5)
+						notice.Position = UDim2.new(0.5, 0, 0.45, 0)
+						notice.Size = UDim2.new(1, 0, 0, 16)
+					end
+					notice.Parent = Tabs
+				end
+				notice.Visible = visible == true
+				return notice
+			end
+
 			newWindow.Name = Window.Title
 			TopFrame.TextLabel.Text = Window.Title .. " - " .. Window.Version
 			ApplyIcon(TopFrame.Icon, Window.Icon)

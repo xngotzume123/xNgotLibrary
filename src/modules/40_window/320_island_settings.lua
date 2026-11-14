@@ -257,6 +257,12 @@
 						report.checks[#report.checks + 1] = { name = name, status = status, detail = detail }
 					end
 
+					-- Báo cáo đi vào log của thư viện (xem panel debug), không in ra console.
+					local function out(message)
+						local logApi = _G.xNgotLog
+						if logApi and type(logApi.info) == "function" then pcall(logApi.info, "doctor", message) end
+					end
+
 					add("writefile", has("writefile") and "ok" or "fail",
 						"required to cache mp3 files")
 					add("readfile", has("readfile") and "ok" or "warn", "read back cache files (ID3)")
@@ -304,18 +310,16 @@
 					add("cached mp3 files", n and "ok" or "n/a", n and (tostring(n) .. " tracks") or "executor does not support listfiles")
 
 					local fails, warns = 0, 0
-					print("=========== xNgot Audio - DIAGNOSTICS ===========")
 					for _, c in ipairs(report.checks) do
-						local icon = c.status == "ok" and "[ OK ]" or (c.status == "fail" and "[FAIL]" or "[ !! ]")
+						local icon = c.status == "ok" and "OK" or (c.status == "fail" and "FAIL" or "!!")
 						if c.status == "fail" then fails = fails + 1
 						elseif c.status ~= "ok" then warns = warns + 1 end
-						print(string.format("%s %-18s %s", icon, c.name, tostring(c.detail or "")))
+						out(string.format("[%s] %s · %s", icon, tostring(c.name), tostring(c.detail or "")))
 					end
-					print(string.format("---- %d errors, %d warnings ----", fails, warns))
+					out(string.format("doctor: %d errors, %d warnings", fails, warns))
 					if fails > 0 then
-						print("Hint: missing writefile/getcustomasset -> music cannot play (switch executor).")
+						out("thiếu writefile/getcustomasset -> không phát được nhạc (đổi executor).")
 					end
-					print("==============================================")
 					report.fails, report.warns = fails, warns
 					return report
 				end

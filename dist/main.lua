@@ -201,19 +201,85 @@ local CrossAIMusic
 
 local NgotStudio = {};
 
--- Dọn GUI của lần chạy trước. Sau CreateWindow, ScreenGui được đổi tên theo
--- Window.Title nên bước quét theo tên "NgotStudio" bên dưới không bắt được nó
--- -> chạy lại script sẽ chồng 2 bộ UI (bảng nổi + thanh gọn + cửa sổ).
-pcall(function()
-	local previous = _G.__xNgotStudioGui
-	if previous ~= nil and (type(previous) == "userdata" or type(previous) == "table") then
-		local isInstance = type(typeof) ~= "function" or typeof(previous) == "Instance"
-		if isInstance then
-			local okParent = pcall(function() return previous.Parent end)
-			if okParent then pcall(function() previous:Destroy() end) end
-		end
+-- XN-GUI-CLEANUP: dọn MỌI bản UI còn sót của lần chạy trước (kể cả bản cũ
+-- chưa có cờ _G.__xNgotStudioGui). Sau CreateWindow, ScreenGui được đổi tên
+-- theo Window.Title nên quét theo tên "NgotStudio" là không đủ; ở đây nhận
+-- diện theo cấu trúc do template này dựng ra: NotificationList, ModuleScript
+-- "3e", hoặc Folder chứa cửa sổ có TopFrame + TabButtons.
+local __xNgotIsInstance = function(value)
+	if value == nil then return false end
+	if type(typeof) ~= "function" then return type(value) == "table" or type(value) == "userdata" end
+	local ok, kind = pcall(typeof, value)
+	return ok and kind == "Instance"
+end
+
+local __xNgotIsOurGui = function(inst)
+	if not __xNgotIsInstance(inst) then return false end
+	local okGui, isGui = pcall(function() return inst:IsA("ScreenGui") end)
+	if not okGui or not isGui then return false end
+	local okName, name = pcall(function() return tostring(inst.Name) end)
+	if not okName then return false end
+	if name == "NgotStudio" or name == "xNgotStudio_FullDynamicIsland" or name == "xNgotStudio_FullIsland" then
+		return true
 	end
+	local okLook, looks = pcall(function()
+		if inst:FindFirstChild("NotificationList") ~= nil then return true end
+		if inst:FindFirstChild("3e") ~= nil then return true end
+		for _, child in ipairs(inst:GetChildren()) do
+			if child:IsA("Folder") then
+				for _, win in ipairs(child:GetChildren()) do
+					if win:FindFirstChild("TopFrame") and win:FindFirstChild("TabButtons") then return true end
+				end
+			end
+		end
+		return false
+	end)
+	return okLook and looks == true
+end
+
+local __xNgotGuiParents = function()
+	local parents = {}
+	local function push(inst)
+		if __xNgotIsInstance(inst) then parents[#parents + 1] = inst end
+	end
+	pcall(function() if gethui then push(gethui()) end end)
+	pcall(function() push(game:GetService("CoreGui")) end)
+	pcall(function() push(game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui")) end)
+	return parents
+end
+
+local __xNgotDestroyGui = function(inst, keep)
+	if inst == nil or inst == keep then return false end
+	if not __xNgotIsOurGui(inst) then return false end
+	local ok = pcall(function() inst:Destroy() end)
+	return ok
+end
+
+pcall(function()
+	local tracked = _G.__xNgotStudioGuis
+	if type(tracked) == "table" then
+		for inst in pairs(tracked) do __xNgotDestroyGui(inst, nil) end
+	end
+	__xNgotDestroyGui(_G.__xNgotStudioGui, nil)
 	_G.__xNgotStudioGui = nil
+	_G.__xNgotStudioGuis = setmetatable({}, { __mode = "k" })
+end)
+
+pcall(function()
+	for _, parent in ipairs(__xNgotGuiParents()) do
+		pcall(function()
+			for _, child in ipairs(parent:GetChildren()) do
+				__xNgotDestroyGui(child, nil)
+			end
+		end)
+	end
+	local okLight, Lighting = pcall(function() return game:GetService("Lighting") end)
+	if okLight and Lighting then
+		pcall(function()
+			local blur = Lighting:FindFirstChild("xNgotStudio_FullIslandBlur")
+			if blur then blur:Destroy() end
+		end)
+	end
 end)
 
 NgotStudio["1"] = Instance.new("ScreenGui");
@@ -228,28 +294,6 @@ end)
 
 local cloneref = cloneref or function(...) return ... end
 
-pcall(function()
-	local parents = {}
-	local okHui, hui = pcall(function() return gethui and gethui() end)
-	if okHui and hui then parents[#parents + 1] = hui end
-	local okCore, core = pcall(function() return cloneref(game:GetService("CoreGui")) end)
-	if okCore and core then parents[#parents + 1] = core end
-	local okPg, pg = pcall(function() return game.Players.LocalPlayer:WaitForChild("PlayerGui", 2) end)
-	if okPg and pg then parents[#parents + 1] = pg end
-	for _, parent in ipairs(parents) do
-		pcall(function()
-			for _, child in ipairs(parent:GetChildren()) do
-				local looksLikeUs = tostring(child.Name) == "NgotStudio"
-				if not looksLikeUs and typeof and typeof(child) == "Instance" and child:IsA("ScreenGui") then
-					looksLikeUs = child:FindFirstChild("Window") ~= nil and child:FindFirstChild("Templates") ~= nil
-				end
-				if looksLikeUs and child ~= NgotStudio["1"] then
-					child:Destroy()
-				end
-			end
-		end)
-	end
-end)
 
 if protect_gui then
 	protect_gui(NgotStudio["1"])
@@ -261,7 +305,11 @@ else
 	NgotStudio["1"].Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
-pcall(function() _G.__xNgotStudioGui = NgotStudio["1"] end)
+pcall(function()
+	_G.__xNgotStudioGui = NgotStudio["1"]
+	local tracked = _G.__xNgotStudioGuis
+	if type(tracked) == "table" then tracked[NgotStudio["1"]] = true end
+end)
 
 NgotStudio["2"] = Instance.new("Frame", NgotStudio["1"]);
 NgotStudio["2"]["ZIndex"] = 0;
@@ -11098,8 +11146,70 @@ end)
 
 		local Windows = {}
 		local WindowByTitle = {}
+		-- Dấu nhận chủ: mỗi lần nạp thư viện sinh một table riêng, gắn vào Window
+		-- để phân biệt cửa sổ của bản này với cửa sổ của bản nạp trước.
+		local OwnerToken = {}
+
+		-- XN-SINGLETON: trước khi dựng cửa sổ, dọn mọi bản UI khác của thư viện
+		-- (bản cũ còn trong executor, hoặc thư viện bị nạp 2 lần) để không bao
+		-- giờ tồn tại 2 bộ UI cùng lúc. Cửa sổ cũ được Destroy() trước để các
+		-- connection của nó được gỡ, rồi mới quét GUI còn sót.
+		local function WindowIsOurs(win)
+			return type(win) == "table" and win.__NgotOwner == OwnerToken
+		end
+
+		local function CleanupOtherInstances()
+			pcall(function()
+				local prev = _G.xNgotStudio
+				if type(prev) == "table" and not WindowIsOurs(prev.Window) then
+					if type(prev.Window) == "table" and type(prev.Window.Destroy) == "function" then
+						pcall(function() prev.Window:Destroy() end)
+					end
+				end
+				local prevWindow = _G.Window
+				if type(prevWindow) == "table" and not WindowIsOurs(prevWindow)
+					and type(prevWindow.Destroy) == "function" then
+					pcall(function() prevWindow:Destroy() end)
+				end
+			end)
+			local parents = {}
+			pcall(function() if gethui then parents[#parents + 1] = gethui() end end)
+			pcall(function() parents[#parents + 1] = game:GetService("CoreGui") end)
+			pcall(function()
+				local pg = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui")
+				if pg then parents[#parents + 1] = pg end
+			end)
+			for _, parent in ipairs(parents) do
+				pcall(function()
+					for _, child in ipairs(parent:GetChildren()) do
+						if child ~= Gui and child:IsA("ScreenGui") then
+							local foreign = child:FindFirstChild("NotificationList") ~= nil
+								or child:FindFirstChild("3e") ~= nil
+								or tostring(child.Name) == "NgotStudio"
+								or tostring(child.Name):find("xNgotStudio_Full", 1, true) ~= nil
+							if not foreign then
+								for _, sub in ipairs(child:GetChildren()) do
+									if sub:IsA("Folder") then
+										for _, win in ipairs(sub:GetChildren()) do
+											if win:FindFirstChild("TopFrame") and win:FindFirstChild("TabButtons") then
+												foreign = true
+												break
+											end
+										end
+									end
+									if foreign then break end
+								end
+							end
+							if foreign then child:Destroy() end
+						end
+					end
+				end)
+			end
+		end
+
 		function LIB:CreateWindow(data)
 			data = data or {}
+			CleanupOtherInstances()
 			-- Một Title = một cửa sổ: tạo lại cùng Title thì dọn bản cũ trước khi dựng,
 			-- nếu không sẽ có 2 bộ UI chồng nhau (nút nổi + cửa sổ + bảng nổi).
 			local titleKey = tostring(data.Title or "NgotStudio")
@@ -11109,6 +11219,7 @@ end)
 			end
 			WindowByTitle[titleKey] = nil
 			local Window = {
+				__NgotOwner = OwnerToken,
 				Title = data.Title or "NgotStudio",
 				Icon = data.Icon or "layout-dashboard",
 				Version = data.Author or data.Version or "v1.0",
@@ -16899,7 +17010,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 				addToggle("Expand on Interaction", "Expand")
 				addSlider("Notification Duration", "Duration", 1, 12)
 				IslandTab:Button({Title = "Send Test Notification", Callback = function()
-					Window:NotifyIsland("xNgot Studio", "Notification sent from the built-in library", "success", 3.5)
+					Window:NotifyIsland("xNgot Library", "Notification sent from the built-in library", "success", 3.5)
 				end})
 
 				IslandTab:Section({Title = "Appearance", Default = false})
@@ -25618,7 +25729,7 @@ __xNgotBoot.Version = "3.0.0"
 __xNgotBoot.Opts = {
 	localFile = "main.lua",
 	configFile = "xNgotLibrary/Config/xNgotMusic.config.lua",
-	remoteUrl = "https://raw.githubusercontent.com/xngotzume123/xNgotHub/refs/heads/main/dist/main.lua",
+	remoteUrl = "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua",
 	title = "xNgọt Studio",
 	author = "Dynamic Island · AI Music · Assistant",
 	icon = "music-2", -- icon cua so goc; loader/key copy thang tu TopFrame.Icon nen luon trung
@@ -26096,8 +26207,8 @@ function __xNgotBoot.start()
 end
 
 -- LIBRARY MODE (kieu Orion/Rayfield): dat getgenv().xNgotLibraryOnly = true truoc khi
--- loadstring de chi lay LIB lam UI cho hub rieng (khong tu mo hub xNgot Studio).
--- Chay truc tiep file nay thi hub xNgot Studio van tu mo nhu cu. Xem HUONG_DAN_LIBRARY.md.
+-- loadstring de chi lay LIB lam UI cho hub rieng (khong tu mo hub xNgot Library).
+-- Chay truc tiep file nay thi hub xNgot Library van tu mo nhu cu. Xem HUONG_DAN_LIBRARY.md.
 LIB.Version = __xNgotBoot.Version
 LIB.OpenXNgotHub = function() return __xNgotBoot.start() end
 local __xngotEnv = (type(getgenv) == "function" and getgenv()) or _G

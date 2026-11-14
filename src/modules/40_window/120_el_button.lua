@@ -97,17 +97,17 @@
 
 					newTab.ChildAdded:Connect(function()
 						if #GetCurrentElementObjects() > 0 then
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						else
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						end
 					end)
 
 					newTab.ChildRemoved:Connect(function()
 						if #GetCurrentElementObjects() > 0 then
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						else
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						end
 					end)
 

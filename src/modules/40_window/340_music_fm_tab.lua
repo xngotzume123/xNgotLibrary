@@ -155,6 +155,7 @@
 
 			end
 
+			WindowByTitle[Window.Title] = Window
 			return Window
 		end
 

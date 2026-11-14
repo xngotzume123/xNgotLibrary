@@ -24,6 +24,7 @@
 				if windowResizable then windowResizable:Destroy() end
 				local index = table.find(Windows, newWindow)
 				if index then table.remove(Windows, index) end
+				if WindowByTitle[Window.Title] == Window then WindowByTitle[Window.Title] = nil end
 				if windowFolder and windowFolder.Parent then windowFolder:Destroy() end
 			end
 
@@ -101,11 +102,11 @@
 			end)
 
 			-- ============================================================
-			-- XNGOT STARTUP GATE: loader + key system chay bang ENGINE CUA xNgot Library
+			-- XNGOT STARTUP GATE: loader + key system chay bang ENGINE CUA XNGOT STUDIO
 			-- (theme UISettings, font/icon/Tween cua cua so) - day du tinh nang nhu engine
 			-- loader cua Airflow (_showLoader/_playIntro): the CanvasGroup, icon nay Back,
 			-- progress + shimmer, status theo step, morph the -> cua so. Khac ban goc:
-			-- progress chay theo ASSET TAI THAT (PreloadAsync), hien menu xNgot Library,
+			-- progress chay theo ASSET TAI THAT (PreloadAsync), hien menu xNgot Studio,
 			-- kem Key System (nho key vinh vien, sai rung the, Get Key) dung chung the.
 			-- ============================================================
 			local startupGateLoading = Window.Loading
@@ -144,7 +145,7 @@
 						local G_ERROR = Color3.fromRGB(240, 120, 120)
 						local G_SUCCESS = Color3.fromRGB(150, 220, 170)
 						local G_RADIUS = math.clamp(tonumber(UISettings.CornerRadius) or 12, 8, 28)
-						local G_FONT = "rbxassetid://11702779517" -- font cua UI xNgot Library
+						local G_FONT = "rbxassetid://11702779517" -- font cua UI xNgot Studio
 						-- Dong bo font theo nhan tieu de cua cua so goc (TopFrame.TextLabel)
 						pcall(function()
 							local menuLabel = TopFrame and TopFrame:FindFirstChild("TextLabel")
@@ -162,7 +163,7 @@
 
 						-- ===== Cau hinh loader / key (Window.Loading + Window.KeySystem) =====
 						local loadCfg = type(startupGateLoading) == "table" and startupGateLoading or {}
-						local loadTitle = tostring(loadCfg.Title or Window.Title or "xNgot Library")
+						local loadTitle = tostring(loadCfg.Title or Window.Title or "xNgot Studio")
 						local loadText = tostring(loadCfg.Text or "Loading")
 						local loadSteps = type(loadCfg.Steps) == "table" and loadCfg.Steps or { "Preparing interface", "Loading icons", "Almost there" }
 						local loadDuration = math.clamp(tonumber(loadCfg.Duration) or 1.6, 0.6, 8)
@@ -428,7 +429,6 @@
 							if (pendingBatches <= 0 and elapsed >= minLoadTime) or elapsed >= 9 then break end
 							task.wait(0.12)
 						end
-						print("[xNgotStudio] Startup gate: preloaded " .. tostring(loadedAssets) .. "/" .. tostring(totalAssets) .. " assets")
 						gTween(fill, { Size = UDim2.fromScale(1, 1) }, 0.25, Enum.EasingStyle.Quint)
 						task.wait(0.25)
 						if windowDestroyed or not card.Parent then return end
@@ -447,7 +447,6 @@
 							task.wait(0.3)
 							if windowDestroyed or not card.Parent then return end
 							gTween(keyGroup, { GroupTransparency = 0 }, 0.25)
-							print("[xNgotStudio] Startup gate: waiting for key")
 							pcall(function() keyInput:CaptureFocus() end)
 							while not gateDone do
 								if windowDestroyed or not card.Parent then return end
@@ -467,7 +466,6 @@
 						task.wait(0.28)
 						if windowDestroyed or not card.Parent then return end
 						startupGatePassed = true
-						print("[xNgotStudio] Startup gate: passed")
 						newWindow.Size = oldWindowSize
 						newWindow.Visible = true
 						do local dropShadow = newWindow:FindFirstChild("DropShadow") if dropShadow then pcall(function() dropShadow.Visible = true end) end end

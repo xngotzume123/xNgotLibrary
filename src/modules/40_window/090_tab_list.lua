@@ -114,9 +114,9 @@
 							end
 						end
 						if objectCount == 0 then
-							Tabs.NoObjectFoundText.Visible = true
+							SetEmptyTabNotice(true)
 						else
-							Tabs.NoObjectFoundText.Visible = false
+							SetEmptyTabNotice(false)
 						end
 					end
 				end

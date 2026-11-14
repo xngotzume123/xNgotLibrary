@@ -903,7 +903,6 @@ Zcn8654+9HUdOKd7CTsf/9k=
 									cachedPath = embeddedPath
 									pcall(writefile, avatarManifest, embeddedPath)
 									keepAvatarApplied(embeddedAsset)
-									print("[xNgotStudio] Admin avatar: embedded applied")
 								end
 								if not embeddedAsset then warn("[xNgotStudio] Admin avatar: embedded fallback failed - " .. tostring(embeddedPath)) end
 							end
@@ -934,7 +933,6 @@ Zcn8654+9HUdOKd7CTsf/9k=
 								if ok and currentSerial == avatarRefreshSerial and self.AdminInfoCard == adminCard then
 									pcall(adminCard.SetAvatar, adminCard, result.Asset)
 									keepAvatarApplied(result.Asset)
-									print("[xNgotStudio] Admin avatar: fresh download applied")
 									pcall(writefile, avatarManifest, result.Path)
 									if cachedPath and cachedPath ~= result.Path then deleteAvatarFile(cachedPath) end
 									if avatarLegacyPath ~= result.Path then deleteAvatarFile(avatarLegacyPath) end
