@@ -17,6 +17,26 @@
 					if c and type(c.Set) == "function" then return c:Set(key, value) end
 					return false
 				end
+				local musicConfig = _G.xNgotMusicConfig
+				local regionLabels = { auto = "Auto", global = "Global", VN = "Vietnam", US = "United States", KR = "Korea", JP = "Japan" }
+				local regionCodes = { Auto = "auto", Global = "global", Vietnam = "VN", ["United States"] = "US", Korea = "KR", Japan = "JP" }
+				local initialRegion = musicConfig and musicConfig:Get("region") or "auto"
+				IslandTab:Dropdown({Title = "Music region", Desc = "Auto uses Roblox region / locale. Region is a search preference, not a guaranteed language filter.",
+					Values = {"Auto", "Global", "Vietnam", "United States", "Korea", "Japan"}, Value = regionLabels[initialRegion] or "Auto",
+					Callback = function(label) cfgSet("region", regionCodes[tostring(label)] or "auto") end})
+				local sourceLabels = { youtube = "YouTube", soundcloud = "SoundCloud", audius = "Audius" }
+				local sourceCodes = { YouTube = "youtube", SoundCloud = "soundcloud", Audius = "audius" }
+				local initialSources = musicConfig and musicConfig:Get("sources") or {}
+				local initialSource = #initialSources == 1 and sourceLabels[initialSources[1]] or "All"
+				IslandTab:Dropdown({Title = "Music platform", Desc = "All searches YouTube, SoundCloud and Audius. Availability depends on the search service.",
+					Values = {"All", "YouTube", "SoundCloud", "Audius"}, Value = initialSource or "All",
+					Callback = function(label)
+						local code = sourceCodes[tostring(label)]
+						cfgSet("sources", code and {code} or {"youtube", "soundcloud", "audius"})
+					end})
+				IslandTab:Toggle({Title = "Preload next track", Desc = "Prepare the next track from the current results at 50%; Auto play must be on.",
+					Default = not musicConfig or musicConfig:Get("prefetchNext") ~= false,
+					Callback = function(v) cfgSet("prefetchNext", v) end})
 				IslandTab:Slider({Title = "Results per search", Value = {Min = 4, Max = 30, Default = 12},
 					Callback = function(v) cfgSet("topN", v) end})
 				IslandTab:Slider({Title = "Parallel downloads", Value = {Min = 1, Max = 4, Default = 2},
@@ -155,6 +175,7 @@
 
 			end
 
+			if windowDestroyed then return Window end
 			WindowByTitle[Window.Title] = Window
 			startupMenuBuilt = true
 			releaseStartupIsland()

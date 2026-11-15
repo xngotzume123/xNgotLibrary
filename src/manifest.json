@@ -38,9 +38,9 @@
       "role": "Bảng schema cho _G.xNgotMusicConfig (kiểu, min/max, mặc định)",
       "from": 20,
       "to": 59,
-      "lines": 39,
+      "lines": 41,
       "delta": 0,
-      "sha256": "dd3aeb85b411538ba515b4318c6d26651d48b059e652027e4e6e41eeb9deee3e"
+      "sha256": "f1a7f7726e6297581aa7e25c463525ab13be76c6d8462d1dac586f9bf49cc332"
     },
     {
       "id": "config.coerce",
@@ -78,9 +78,9 @@
       "role": "Áp cấu hình xuống _G.CrossAIMusic (nguồn, timeout, thư mục...)",
       "from": 111,
       "to": 131,
-      "lines": 21,
+      "lines": 23,
       "delta": 0,
-      "sha256": "5ae440820295a4a05c204e0a236c65df9c4b517cf0aff1382111e7e056075e91"
+      "sha256": "cb15c6d106b9dac38abc1e8321a4fbd06c9cc372776fa30d83b359e41ba88ab7"
     },
     {
       "id": "config.api",
@@ -90,7 +90,7 @@
       "to": 200,
       "lines": 69,
       "delta": 0,
-      "sha256": "b45f6ef9fce3cb953d1596bfa5149f895440f9b2ba7d058e201a053374672a36"
+      "sha256": "3c87627da30672a39a6f2d479148cd6630dff0b19892d314f7accfe1c19acc6f"
     },
     {
       "id": "lib.ophyn_vendor",
@@ -118,9 +118,9 @@
       "role": "Template: ScreenGui gốc, Window, TopBar, TabButtons, khung dropdown",
       "from": 207,
       "to": 651,
-      "lines": 514,
+      "lines": 523,
       "delta": 0,
-      "sha256": "442b3828462a8bebb8f8a8ba6591de6b3953bacc6c5ccec9231fd009742eb7fc"
+      "sha256": "bafc115252c94b34b771cfba106286bfba05183ae9cb68165e09a941a14873ac"
     },
     {
       "id": "lib.template.02",
@@ -400,7 +400,7 @@
       "to": 5092,
       "lines": 334,
       "delta": 0,
-      "sha256": "397801a2d3d9a6f325710542cb17975b6a3f705c5497007aa0167a8658c25afe"
+      "sha256": "80bcd0550c8df2421a6db75b94a7ae04328810326bdacf6149019338ee904df7"
     },
     {
       "id": "overlay.activities",
@@ -448,9 +448,9 @@
       "role": "Tạo CrossAIMusic: CFG, Sources, Util, request, Llm",
       "from": 6278,
       "to": 6559,
-      "lines": 282,
+      "lines": 284,
       "delta": 1,
-      "sha256": "95c66efcacf7212d9035569fa29ad79f59c44921e69f54a3814396a53157742f"
+      "sha256": "e084681ea60619c16b4647a1709e1350b4004a7ea42afc0d4f5e433ed08118de"
     },
     {
       "id": "engine.crypto",
@@ -498,9 +498,9 @@
       "role": "queryVariants/searchOne/search (đa nguồn)",
       "from": 7030,
       "to": 7194,
-      "lines": 165,
+      "lines": 192,
       "delta": 0,
-      "sha256": "0a68a3134ca880b5ca08699fe486c4136626332829cdb9fcc1e287850f7dfeef"
+      "sha256": "d6aa1627ee15897960fa82289af50637fbe7b3e7341faa8aba5dd98f22095286"
     },
     {
       "id": "engine.download",
@@ -558,9 +558,9 @@
       "role": "Nạp nhạc đã tải, phát/dừng, next/shuffle/repeat",
       "from": 8421,
       "to": 8773,
-      "lines": 353,
+      "lines": 440,
       "delta": -1,
-      "sha256": "82f40e24d528ce5794500cf69d978346dc0ddc8549ed50a5d74c2ab4672202f8"
+      "sha256": "29b564b50960a8841df0eff3cb357dccb241a3cdef4c7a5f4ecb666a133f6cbc"
     },
     {
       "id": "overlay.pages",
@@ -568,9 +568,9 @@
       "role": "PAGE_ORDER, View, helper vẽ (label/pressable/action/icon)",
       "from": 8774,
       "to": 9067,
-      "lines": 294,
+      "lines": 304,
       "delta": 1,
-      "sha256": "f17c28575416427a8109e156c728fe8dae918d4c3043cb4566dc9929b7e94828"
+      "sha256": "73b45ebea85844fcc2eb2b09a6bbf020344dd729ff777156ce461b980040cb3b"
     },
     {
       "id": "overlay.quick",
@@ -628,9 +628,9 @@
       "role": "drainToToast, Isl.expand/collapse, xử lý input",
       "from": 10149,
       "to": 10347,
-      "lines": 199,
+      "lines": 210,
       "delta": 0,
-      "sha256": "de93397ccb846c9b461859f672db18c9926be37e8d7e3e412538186ad130715b"
+      "sha256": "7a7296cbc00cfc14201e7a3877b0e6dff4956b6fd96c15b269c4ed3133bf2ee0"
     },
     {
       "id": "overlay.bubble",
@@ -668,9 +668,9 @@
       "role": "local Windows + function LIB:CreateWindow + opts mặc định",
       "from": 11081,
       "to": 11152,
-      "lines": 144,
+      "lines": 143,
       "delta": 1,
-      "sha256": "e128323bb6f2424299dff2122a95131f31066e53a60412324069337339263265"
+      "sha256": "bd855240b4b2ab5b5dbceacf2cc022ecbd02454b73d029c965a2393ba0320fab"
     },
     {
       "id": "window.config_io",
@@ -678,9 +678,9 @@
       "role": "WRITECONFIG/SAVECONFIG + Window:SaveConfig/GetConfigPath",
       "from": 11153,
       "to": 11210,
-      "lines": 89,
+      "lines": 145,
       "delta": 0,
-      "sha256": "4367a0cd93ca630f9c1e1653c548cbe2e3592001273af7c9ac4436c3045172cd"
+      "sha256": "fda96f362ab539995c714ac767e588370f90f75a2043d5450fc2c63bea568c5a"
     },
     {
       "id": "window.values",
@@ -748,9 +748,9 @@
       "role": "AddTabToList, DropdownPopup, SelectTab (nội bộ)",
       "from": 12167,
       "to": 12335,
-      "lines": 169,
+      "lines": 138,
       "delta": 0,
-      "sha256": "cb46f7ecb22106f14f506cca482e55304182b59130e9964f1a3ba457785b6c32"
+      "sha256": "02403c824df7f76fd687b22457b56dfa0187bc703307cd291f33a92aec65db9c"
     },
     {
       "id": "window.tab_open",
@@ -760,7 +760,7 @@
       "to": 12421,
       "lines": 86,
       "delta": 1,
-      "sha256": "8fc804a3156cdea07d024de020628a11e8748c4f4a8c081c715a1fa0b5970d65"
+      "sha256": "649bdcce44ee7b6e0a982deb63c5015765890256b3efe91f1779a12e1d4b429a"
     },
     {
       "id": "window.el_section",
@@ -770,7 +770,7 @@
       "to": 12488,
       "lines": 67,
       "delta": 0,
-      "sha256": "07a8c14eeaaab2ab3b717aa426df8d27a3fec15fdb5a701ef870f9ef337ca0b3"
+      "sha256": "2cc99ca1ec4e1400bd7743813f48a44a4ad836025b7c593e131ec33c2c4082b8"
     },
     {
       "id": "window.el_button",
@@ -778,9 +778,9 @@
       "role": "Tab:Button",
       "from": 12489,
       "to": 12631,
-      "lines": 143,
+      "lines": 129,
       "delta": 0,
-      "sha256": "1e6c8b71a5c419d28f5e4ff014a4607f8d3ccede1e630d0b09128266ad8ad01c"
+      "sha256": "fcf8e3e3bea1ce469882351062c140c34d7bd9ed2d97c89ab30e6d615c1ac54f"
     },
     {
       "id": "window.el_code",
@@ -818,9 +818,9 @@
       "role": "Tab:Toggle",
       "from": 12919,
       "to": 13072,
-      "lines": 154,
+      "lines": 174,
       "delta": 0,
-      "sha256": "398705282bacd459a7b470084cddbbc9efa10b846946d6f5b605fb599fbd449a"
+      "sha256": "338abb8e88a7b924e04ea28d35ce1682f72da176e0222c44947efd37c7219584"
     },
     {
       "id": "window.el_slider",
@@ -828,9 +828,9 @@
       "role": "Tab:Slider",
       "from": 13073,
       "to": 13315,
-      "lines": 243,
+      "lines": 268,
       "delta": 0,
-      "sha256": "2a35487ddc0c0c0750acb20b23065f9737f1432c24d494aa12e699afc0704fb5"
+      "sha256": "82851eb803be6cc87a536a13574e325d4f87b62074aa8f42331eb4aef781f826"
     },
     {
       "id": "window.el_input",
@@ -840,7 +840,7 @@
       "to": 13489,
       "lines": 174,
       "delta": 0,
-      "sha256": "66d0df8b0030bd960c028f7e45605ac92b9e0f140994ef8fa5ea9204dd796370"
+      "sha256": "859d41d77e35675563b0f621122a648abdbf0361afbabd0cc1b2fa8737f1e2bb"
     },
     {
       "id": "window.dropdown_helpers",
@@ -858,9 +858,9 @@
       "role": "Tab:Dropdown",
       "from": 13518,
       "to": 13960,
-      "lines": 443,
+      "lines": 445,
       "delta": 0,
-      "sha256": "c05ccfcd7849f01b202b1d9fc014d568032984ee8bf7d4fa85358918a4791aaf"
+      "sha256": "7429e1ac9de41f707c6fbbf316aa4019ccb2bfaa8d958edb34dc8f8d667de4fa"
     },
     {
       "id": "window.el_info",
@@ -928,9 +928,9 @@
       "role": "Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey",
       "from": 14598,
       "to": 15113,
-      "lines": 642,
+      "lines": 654,
       "delta": 0,
-      "sha256": "5c644ef08c8ed6764a1f6dc71a346762621218755b612a6e928fae6d5deb520e"
+      "sha256": "0525d0e3882e31a2ee1b9141093958b7807dfa3ac3d5f7186c11136a5659581b"
     },
     {
       "id": "window.island_bridge",
@@ -1008,9 +1008,9 @@
       "role": "Tab nhạc + AI prompt + file manager trong tab island",
       "from": 17060,
       "to": 17212,
-      "lines": 156,
+      "lines": 177,
       "delta": -2,
-      "sha256": "88e8ab8be36488e4fc3a7398a0f124f8c8327f7fe0e1937b72bf7c8dc82a71c1"
+      "sha256": "d5a40e0c0ddf3daf67c16303ab34c5d1d816fd343584ca5cbb3bf5a714764e2f"
     },
     {
       "id": "notify",
@@ -1448,7 +1448,7 @@
       "role": "__xNgotBoot.log/info/warn/error/recordError",
       "from": 26078,
       "to": 26101,
-      "lines": 24,
+      "lines": 27,
       "delta": 0,
       "sha256": "e2fc62c21ab29ffd273129277db2683780c2edd855f4982986aa002b384822fa"
     },

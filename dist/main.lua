@@ -20,6 +20,8 @@ topN={type="number",min=1,max=40,default=12,
 desc="Số kết quả trả về cho dropdown"},
 sources={type="table",default={"youtube","soundcloud","audius"},
 desc="Nguồn tìm nhạc (youtube / soundcloud / audius / tiktok / audiomack)"},
+region={type="string",default="auto",desc="Khu vực tìm nhạc: auto / global / VN / US / KR / JP"},
+prefetchNext={type="boolean",default=true,desc="Tải trước bài tiếp theo khi nghe tới 50%"},
 searchTimeout={type="number",min=2,max=60,default=12,
 desc="Giây tối đa cho 1 lượt tìm"},
 preferShort={type="number",min=0,max=7200,default=600,
@@ -101,6 +103,8 @@ if type(engine)~="table"or type(engine.Config)~="table"then return false end
 local c=engine.Config
 c.TopN=Config.topN
 c.Sources=Config.sources
+c.Region=Config.region
+c.PrefetchNext=Config.prefetchNext
 c.SearchTimeout=Config.searchTimeout
 c.PreferShort=Config.preferShort
 c.Folder=Config.folder
@@ -158,7 +162,7 @@ sources={"youtube","audius"}},
 sources={"youtube","soundcloud","audius"}},
 ["lowdata"]={raceTracks=1,topN=6,searchTimeout=8,coverArt=false,
 sources={"youtube"}},
-["vietnamese"]={sources={"soundcloud","youtube"},topN=15,
+["vietnamese"]={sources={"soundcloud","youtube"},region="VN",topN=15,
 preferShort=420},
 }
 function Api:Preset(name)
@@ -5459,12 +5463,14 @@ local okGui,isGui=pcall(function()return inst:IsA("ScreenGui")end)
 if not okGui or not isGui then return false end
 local okName,name=pcall(function()return tostring(inst.Name)end)
 if not okName then return false end
-if name=="NgotStudio"or name=="xNgotStudio_FullDynamicIsland"or name=="xNgotStudio_FullIsland"then
+local marked=false
+pcall(function()marked=inst:GetAttribute("xNgotStudioOwned")==true end)
+if marked or name=="NgotStudio"or name=="xNgotStudio_FullDynamicIsland"or name=="xNgotStudio_FullIsland"then
 return true
 end
 local okLook,looks=pcall(function()
-if inst:FindFirstChild("NotificationList")~=nil then return true end
-if inst:FindFirstChild("3e")~=nil then return true end
+if inst:FindFirstChild("3e")~=nil and inst:FindFirstChild("NotificationList")~=nil then return true end
+if not inst:FindFirstChild("NotificationList")then return false end
 for _,child in ipairs(inst:GetChildren())do
 if child:IsA("Folder")then
 for _,win in ipairs(child:GetChildren())do
@@ -5492,6 +5498,11 @@ if not __xNgotIsOurGui(inst)then return false end
 local ok=pcall(function()inst:Destroy()end)
 return ok
 end
+pcall(function()
+local active=_G.__xNgotActiveWindow
+if type(active)=="table"and type(active.Destroy)=="function"then active:Destroy()end
+_G.__xNgotActiveWindow=nil
+end)
 pcall(function()
 local tracked=_G.__xNgotStudioGuis
 if type(tracked)=="table"then
@@ -5521,6 +5532,7 @@ NgotStudio["1"]=Instance.new("ScreenGui");
 NgotStudio["1"]["Name"]=[[NgotStudio]];
 NgotStudio["1"]["ZIndexBehavior"]=Enum.ZIndexBehavior.Sibling;
 NgotStudio["1"]["ResetOnSpawn"]=false;
+pcall(function()NgotStudio["1"]:SetAttribute("xNgotStudioOwned",true)end)
 NgotStudio["1"].IgnoreGuiInset=true
 pcall(function()
 NgotStudio["1"].ScreenInsets=Enum.ScreenInsets.DeviceSafeInsets
@@ -9889,7 +9901,7 @@ Isl.runQueue()
 end
 end
 Isl.islandHit.MouseEnter:Connect(function()
-Spr.springIslandHover:Set(1.05)
+if UserInputService:GetLastInputType()~=Enum.UserInputType.Touch then Spr.springIslandHover:Set(1.05)end
 end)
 Isl.islandHit.MouseLeave:Connect(function()
 Spr.springIslandHover:Set(1)
@@ -9898,7 +9910,7 @@ Isl.islandHit.MouseButton1Down:Connect(function()
 Spr.springIslandHover:Set(0.94)
 end)
 Isl.islandHit.MouseButton1Up:Connect(function()
-Spr.springIslandHover:Set(UserInputService.MouseEnabled and 1.05 or 1)
+Spr.springIslandHover:Set(UserInputService:GetLastInputType()~=Enum.UserInputType.Touch and UserInputService.MouseEnabled and 1.05 or 1)
 end)
 Isl.islandHit.MouseButton1Click:Connect(function()
 if not State.Ready then
@@ -11041,6 +11053,8 @@ Retries=2,
 PreferShort=600,
 RaceTracks=2,
 Sources={"youtube","soundcloud","audius"},
+Region="auto",
+PrefetchNext=true,
 MaxTrackSeconds=1200,
 }
 CrossAIMusic.Config=CFG
@@ -11685,6 +11699,26 @@ if#CrossAIMusic._banned>40 then table.remove(CrossAIMusic._banned,1)end
 end
 return CrossAIMusic._banned
 end
+local detectedRegion=""
+pcall(function()
+local loc=game:GetService("LocalizationService")
+local locale=""
+pcall(function()locale=tostring(loc.RobloxLocaleId or"")end)
+local suffix=locale:match("[-_]([%a][%a])$")
+if suffix then detectedRegion=suffix:upper()
+elseif locale:lower():match("^vi")then detectedRegion="VN"end
+task.spawn(function()
+local ok,code=pcall(function()return loc:GetCountryRegionForPlayerAsync(game:GetService("Players").LocalPlayer)end)
+if ok and type(code)=="string"and code:match("^%a%a$")then detectedRegion=code:upper()end
+end)
+end)
+local regionTerms={VN="nhac viet nam",US="american music",KR="kpop korean music",JP="japanese music"}
+function CrossAIMusic.searchRegion()
+local region=tostring(CFG.Region or"auto"):upper()
+if region=="AUTO"then region=detectedRegion end
+if region=="GLOBAL"then return""end
+return regionTerms[region]and region or""
+end
 function CrossAIMusic.queryVariants(plan,prompt)
 local raw=tostring((prompt or plan.raw or"")):gsub("^%s+",""):gsub("%s+$","")
 local main=tostring(plan.query or"")
@@ -11718,8 +11752,14 @@ if plan.vietnam or(plan.tags and plan.tags.ctx=="vietnam")then
 add(main.." viet nam")
 end
 plan.weak=plan.weak~=false
-local trimmed={}
-for i=1,math.min(#out,3)do trimmed[i]=out[i]end
+local region=CrossAIMusic.searchRegion()
+local term=regionTerms[region]
+local trimmed,unique={},{}
+for i=1,math.min(#out,3)do
+local q=term and trim(out[i].." "..term)or out[i]
+if not unique[q:lower()]then trimmed[#trimmed+1]=q;unique[q:lower()]=true end
+end
+plan.region=region
 return trimmed
 end
 local function searchOne(sourceId,query,page)
@@ -12953,6 +12993,9 @@ Remote.Error=nil
 Remote.Notify()
 return#files
 end
+local nextPrefetch=nil
+local prefetchBusy=false
+local attemptedToken=nil
 local function fetchRemote(token,track)
 if not Remote.Supported()then
 Music.Playing=false
@@ -13090,10 +13133,26 @@ local api=_G.xNgotMusicConfig
 if api and type(api.Apply)=="function"then api.Apply()end
 end)
 local function startLoad(token,track)
-if track.Remote then
-fetchRemote(token,track)
-else
+if not track then return end
+if not track.Remote then
 waitAndPlay(token,currentSound.SoundId)
+return
+end
+local job=nextPrefetch
+if job and job.track==track and job.pending then
+Music.Loading=true
+task.spawn(function()
+local deadline=os.clock()+(tonumber(Remote.Engine.Config.DownloadTimeout)or 200)
+while job.pending and token==loadToken and gui.Parent and os.clock()<deadline do task.wait(0.1)end
+if token~=loadToken or not gui.Parent then return end
+if track.Asset then currentSound.SoundId=track.Asset;waitAndPlay(token,track.Asset)
+else fetchRemote(token,track)end
+end)
+elseif track.Asset then
+currentSound.SoundId=track.Asset
+waitAndPlay(token,track.Asset)
+else
+fetchRemote(token,track)
 end
 end
 function Music.Select(index,play)
@@ -13182,7 +13241,13 @@ end
 if Music.RepeatOne then
 Music.Select(Music.Index,true)
 elseif Music.Auto then
+local job=nextPrefetch
+if Remote.Engine.Config.PrefetchNext~=false and job and job.token==loadToken and job.current==TRACKS[Music.Index]
+and job.shuffle==Music.Shuffle and TRACKS[job.index]==job.track then
+Music.Select(job.index,true)
+else
 Music.Next(1)
+end
 else
 Music.Playing=false
 Music.Position=0
@@ -13191,6 +13256,66 @@ broadcast()
 end
 end)
 Music.Sync()
+task.spawn(function()
+while gui.Parent do
+task.wait(0.5)
+if Music.Playing and Music.Auto and not Music.RepeatOne and not Music.Loading and#TRACKS>1
+and Remote.Engine.Config.PrefetchNext~=false and currentSound.TimeLength>0
+and currentSound.TimePosition>=currentSound.TimeLength*0.5
+and attemptedToken~=loadToken and not prefetchBusy then
+local nextIndex=Music.Index%#TRACKS+1
+if Music.Shuffle then
+nextIndex=math.random(1,#TRACKS-1)
+if nextIndex>=Music.Index then nextIndex=nextIndex+1 end
+end
+local candidate=TRACKS[nextIndex]
+local job={token=loadToken,current=TRACKS[Music.Index],index=nextIndex,
+track=candidate,shuffle=Music.Shuffle,pending=true}
+nextPrefetch,attemptedToken,prefetchBusy=job,loadToken,true
+notify(Settings.Language=="en"and"Up next"or"Bài tiếp theo",
+tostring(candidate.Name or"Track")..(Settings.Language=="en"and" · preparing"or" · đang chuẩn bị"),"info",3,true)
+task.spawn(function()
+local ok,asset,path=pcall(function()
+if candidate.Asset then return candidate.Asset,candidate.CachedPath end
+if not candidate.Remote then return"rbxassetid://"..tostring(candidate.Id)end
+if candidate.CachedPath then
+local getter=getcustomasset or getsynasset
+if type(getter)=="function"and(type(isfile)~="function"or isfile(candidate.CachedPath))then
+local got,cached=pcall(getter,candidate.CachedPath)
+if got and type(cached)=="string"and cached~=""then return cached,candidate.CachedPath end
+end
+end
+if not Remote.Supported()then return nil end
+local lookup={id=candidate.Id,url=candidate.Url,source=candidate.Source or"youtube",name=candidate.Name}
+if lookup.source=="audius"and lookup.id then
+lookup.directUrl="https://api.audius.co/v1/tracks/"..tostring(lookup.id):gsub("^audius:","").."/stream"
+end
+return Remote.Engine.assetFor(lookup,function()end)
+end)
+if ok and type(asset)=="string"and asset~=""then
+if candidate.Remote then candidate.Asset=asset end
+if type(path)=="string"and path~=""then
+candidate.CachedPath,candidate.Downloaded=path,true
+candidate.FileName=path:match("([^/]+)$")or candidate.FileName
+if Remote.Engine.writeDownloadedMeta then
+pcall(Remote.Engine.writeDownloadedMeta,path,{Title=candidate.Name,Artist=candidate.Artist,
+Duration=candidate.Duration,Thumbnail=candidate.Thumbnail,Source=candidate.Source,Url=candidate.Url,Id=candidate.Id})
+end
+end
+local sound
+pcall(function()
+sound=Instance.new("Sound")
+sound.SoundId=asset
+sound.Parent=SoundService
+game:GetService("ContentProvider"):PreloadAsync({sound})
+end)
+if sound then pcall(function()sound:Destroy()end)end
+end
+job.pending,prefetchBusy=false,false
+end)
+end
+end
+end)
 Hooks.Register(function(dt)
 if not Music.Playing then return end
 local levels=Music.Levels
@@ -13313,6 +13438,16 @@ local scale=new("UIScale",{Parent=button})
 local spring=Spring.new(1,600,30,function(value)
 scale.Scale=value
 end,0.001)
+local pressInput
+button.InputBegan:Connect(function(input)
+if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then pressInput=input end
+end)
+track(UserInputService.InputEnded:Connect(function(input)
+if input==pressInput or(pressInput and pressInput.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseButton1)then
+pressInput=nil
+spring:Set(1)
+end
+end))
 button.MouseButton1Down:Connect(function()
 spring:Set(0.92)
 end)
@@ -14699,6 +14834,17 @@ elseif-dy>limit and ay>ax*1.3 then
 Isl.collapse()
 end
 end))
+local islandPressInput
+Isl.islandHit.InputBegan:Connect(function(input)
+if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then islandPressInput=input end
+end)
+track(UserInputService.InputEnded:Connect(function(input)
+if input==islandPressInput or(islandPressInput and islandPressInput.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseButton1)then
+islandPressInput=nil
+Island.Pressing=false
+Spr.springIslandHover:Set(1)
+end
+end))
 Isl.islandHit.MouseButton1Down:Connect(function()
 Island.HoldDone=false
 Island.Pressing=true
@@ -15413,9 +15559,8 @@ if type(prev.Window)=="table"and type(prev.Window.Destroy)=="function"then
 pcall(function()prev.Window:Destroy()end)
 end
 end
-local prevWindow=_G.Window
-if type(prevWindow)=="table"and not WindowIsOurs(prevWindow)
-and type(prevWindow.Destroy)=="function"then
+local prevWindow=_G.__xNgotActiveWindow
+if type(prevWindow)=="table"and type(prevWindow.Destroy)=="function"then
 pcall(function()prevWindow:Destroy()end)
 end
 end)
@@ -15430,11 +15575,11 @@ for _,parent in ipairs(parents)do
 pcall(function()
 for _,child in ipairs(parent:GetChildren())do
 if child~=Gui and child:IsA("ScreenGui")then
-local foreign=child:FindFirstChild("NotificationList")~=nil
-or child:FindFirstChild("3e")~=nil
+local foreign=child:GetAttribute("xNgotStudioOwned")==true
+or(child:FindFirstChild("NotificationList")~=nil and child:FindFirstChild("3e")~=nil)
 or tostring(child.Name)=="NgotStudio"
 or tostring(child.Name):find("xNgotStudio_Full",1,true)~=nil
-if not foreign then
+if not foreign and child:FindFirstChild("NotificationList")then
 for _,sub in ipairs(child:GetChildren())do
 if sub:IsA("Folder")then
 for _,win in ipairs(sub:GetChildren())do
@@ -15546,6 +15691,61 @@ return WRITECONFIG(true)
 end
 function Window:GetConfigPath()
 return Window.ConfigPath
+end
+local touchStarts=setmetatable({},{__mode="k"})
+local presses=setmetatable({},{__mode="k"})
+local touchConnections={}
+local function isTouchInput()
+local ok,kind=pcall(function()return UIS:GetLastInputType()end)
+return ok and kind==Enum.UserInputType.Touch
+end
+local function BindSafeActivate(button,callback)
+button.InputBegan:Connect(function(input)
+if input.UserInputType==Enum.UserInputType.Touch then
+touchStarts[input]={x=input.Position.X,y=input.Position.Y,moved=false}
+end
+end)
+button.Activated:Connect(function(input)
+if input and input.UserInputType==Enum.UserInputType.Touch then
+local start=touchStarts[input]
+if not start or start.moved or input.UserInputState==Enum.UserInputState.Cancel then return end
+local dx,dy=input.Position.X-start.x,input.Position.Y-start.y
+if dx*dx+dy*dy>144 then return end
+end
+callback()
+end)
+end
+local function BindPressFeedback(button,pressed,released)
+button.InputBegan:Connect(function(input)
+local kind=input.UserInputType
+if kind==Enum.UserInputType.Touch or kind==Enum.UserInputType.MouseButton1 then
+presses[input]=released
+pressed()
+end
+end)
+button.MouseLeave:Connect(function()released()end)
+end
+touchConnections[#touchConnections+1]=UIS.InputChanged:Connect(function(input)
+local start=touchStarts[input]
+if start then
+local dx,dy=input.Position.X-start.x,input.Position.Y-start.y
+if dx*dx+dy*dy>144 then start.moved=true end
+end
+end)
+touchConnections[#touchConnections+1]=UIS.InputEnded:Connect(function(input)
+local release=presses[input]
+presses[input]=nil
+if release then pcall(release)end
+if touchStarts[input]then task.delay(0.5,function()touchStarts[input]=nil end)end
+end)
+touchConnections[#touchConnections+1]=UIS.WindowFocusReleased:Connect(function()
+for key,release in pairs(presses)do pcall(release);presses[key]=nil end
+table.clear(touchStarts)
+end)
+local function touchCleanup()
+for _,connection in ipairs(touchConnections)do connection:Disconnect()end
+table.clear(touchConnections)
+for key,release in pairs(presses)do pcall(release);presses[key]=nil end
 end
 local windowFolder=Instance.new("Folder")
 windowFolder.Parent=Gui
@@ -16485,50 +16685,39 @@ end
 end
 local SelectedDropdown=nil
 local DropdownState=false
+local dropdownTransition=0
 local function DropdownPopup(state,name)
-if name and DropdownState==false then
+local opening=state==nil and not DropdownState or state==true
+if opening and name then
+local folder=newWindow.DropdownSelection.Dropdowns:FindFirstChild(name)
+if not folder then return end
 SelectedDropdown=name
-for _,v in newWindow.DropdownSelection.Dropdowns:GetChildren()do
-if v:IsA("Folder")then
-v:FindFirstChild("DropdownItems").Visible=false
-v:FindFirstChild("DropdownItemsSearch").Visible=false
+for _,item in newWindow.DropdownSelection.Dropdowns:GetChildren()do
+if item:IsA("Folder")then
+item:FindFirstChild("DropdownItems").Visible=false
+item:FindFirstChild("DropdownItemsSearch").Visible=false
 end
 end
 newWindow.DropdownSelection.TopBar.Title.Text=name
-newWindow.DropdownSelection.Dropdowns:FindFirstChild(name):FindFirstChild("DropdownItems").Visible=true
-newWindow.DropdownSelection.Dropdowns:FindFirstChild(name):FindFirstChild("DropdownItemsSearch").Visible=false
+folder:FindFirstChild("DropdownItems").Visible=true
+folder:FindFirstChild("DropdownItemsSearch").Visible=false
 end
-if state==true then
-newWindow.DropdownSelection.Size=UDim2 .new(0,0,0,0)
+dropdownTransition=dropdownTransition+1
+local token=dropdownTransition
+DropdownState=opening
+if opening then
+newWindow.DropdownSelection.Size=UDim2 .new(0.728,0,0.684,0)
 newWindow.DarkOverlay.BackgroundTransparency=1
 newWindow.DropdownSelection.Visible=true
 newWindow.DarkOverlay.Visible=true
-newWindow.DropdownSelection.Size=UDim2 .new(0.728,0,0.684,0)
 Tween(newWindow.DarkOverlay,{BackgroundTransparency=0.6},TweenConfigs.PopupOpen)
-DropdownState=state
-elseif state==false then
-newWindow.DropdownSelection.Size=UDim2 .new(0,0,0,0)
-local tw2=Tween(newWindow.DarkOverlay,{BackgroundTransparency=1},TweenConfigs.PopupClose)
-tw2 .Completed:Wait()
-newWindow.DropdownSelection.Visible=false
-newWindow.DarkOverlay.Visible=false
-DropdownState=state
-else
-if DropdownState then
-newWindow.DropdownSelection.Size=UDim2 .new(0,0,0,0)
-local tw2=Tween(newWindow.DarkOverlay,{BackgroundTransparency=1},TweenConfigs.PopupClose)
-tw2 .Completed:Wait()
-newWindow.DropdownSelection.Visible=false
-newWindow.DarkOverlay.Visible=false
-DropdownState=false
 else
 newWindow.DropdownSelection.Size=UDim2 .new(0,0,0,0)
-newWindow.DarkOverlay.BackgroundTransparency=1
-newWindow.DropdownSelection.Visible=true
-newWindow.DarkOverlay.Visible=true
-newWindow.DropdownSelection.Size=UDim2 .new(0.728,0,0.684,0)
-Tween(newWindow.DarkOverlay,{BackgroundTransparency=0.6},TweenConfigs.PopupOpen)
-DropdownState=true
+local tw=Tween(newWindow.DarkOverlay,{BackgroundTransparency=1},TweenConfigs.PopupClose)
+tw.Completed:Wait()
+if token==dropdownTransition and not DropdownState then
+newWindow.DropdownSelection.Visible=false
+newWindow.DarkOverlay.Visible=false
 end
 end
 end
@@ -16645,7 +16834,7 @@ newTabButton.ImageButton.ImageTransparency=0.5
 newTabButton.Bar.Size=UDim2 .new(0,5,0,0)
 newTabButton.Bar.BackgroundTransparency=1
 end
-newTabButton.MouseButton1Click:Connect(function()
+BindSafeActivate(newTabButton,function()
 SelectTab(TabData.Title)
 end)
 local function GetCurrentElementObjects()
@@ -16686,7 +16875,7 @@ newSection.Visible=true
 newSection.Parent=newTab
 newSection.Frame.Visible=Section.State
 newSection.Button.Title.Arrow.Rotation=Section.State and 90 or 0
-newSection.Button.MouseButton1Click:Connect(function()
+BindSafeActivate(newSection.Button,function()
 if Section.State==true then
 newSection.Frame.Visible=false
 Tween(newSection.Button.Title.Arrow,{Rotation=0},TweenConfigs.Global)
@@ -16763,40 +16952,29 @@ selectedGrad.Enabled=true
 return selectedGrad
 end
 GetRandomGradient()
-newButton.MouseEnter:Connect(function()
-if not ButtonData.Locked then
-Tween(newButton.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
-end
-end)
-newButton.MouseLeave:Connect(function()
-if not ButtonData.Locked then
+local function resetButtonPress()
+if ButtonData.Locked or not newButton.Parent then return end
 Tween(newButton.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)
-newButton.BackgroundColor3=Color3 .fromRGB(42,45,52)
 Tween(newButton.Frame.Title,{TextColor3=UISettings.TextColor},TweenConfigs.Global)
+Tween(newButton.Frame.Title.ClickIcon,{ImageColor3=UISettings.TextColor},TweenConfigs.Global)
 Tween(newButton.Frame.Description,{TextColor3=UISettings.TextColor},TweenConfigs.Global)
+Tween(newButton.Frame,{BackgroundTransparency=1},TweenConfigs.Global)
 end
+newButton.MouseEnter:Connect(function()
+if not ButtonData.Locked and not isTouchInput()then Tween(newButton.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)end
 end)
-newButton.MouseButton1Down:Connect(function()
-if not ButtonData.Locked then
+BindPressFeedback(newButton,function()
+if ButtonData.Locked then return end
 GetRandomGradient()
+Tween(newButton.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
 Tween(newButton.Frame.Title,{TextColor3=Color3 .fromRGB(255,255,255)},TweenConfigs.Global)
 Tween(newButton.Frame.Title.ClickIcon,{ImageColor3=Color3 .fromRGB(255,255,255)},TweenConfigs.Global)
 Tween(newButton.Frame.Description,{TextColor3=Color3 .fromRGB(255,255,255)},TweenConfigs.Global)
 Tween(newButton.Frame,{BackgroundTransparency=0},TweenConfigs.Global)
-end
-end)
-newButton.MouseButton1Up:Connect(function()
-if not ButtonData.Locked then
-Tween(newButton.Frame.Title,{TextColor3=UISettings.TextColor},TweenConfigs.Global)
-Tween(newButton.Frame.Title.ClickIcon,{ImageColor3=UISettings.TextColor},TweenConfigs.Global)
-Tween(newButton.Frame.Description,{TextColor3=UISettings.TextColor},TweenConfigs.Global)
-local tw=Tween(newButton.Frame,{BackgroundTransparency=1},TweenConfigs.Global)
-end
-end)
-newButton.MouseButton1Click:Connect(function()
-if not ButtonData.Locked then
-ButtonData.Callback()
-end
+end,resetButtonPress)
+BindSafeActivate(newButton,function()
+resetButtonPress()
+if not ButtonData.Locked then ButtonData.Callback()end
 end)
 newTab.ChildAdded:Connect(function()
 if#GetCurrentElementObjects()>0 then
@@ -16823,6 +17001,7 @@ newButton.Frame.Description.Text=ButtonData.Desc
 newButton.Frame.Description.Visible=ButtonData.Desc~=""
 end
 function Button:Lock()
+resetButtonPress()
 ButtonData.Locked=true
 Tween(newButton,{BackgroundColor3=Color3 .fromRGB(32,35,40)},TweenConfigs.Global)
 Tween(newButton.UIStroke,{Color=Color3 .fromRGB(47,47,58)},TweenConfigs.Global)
@@ -17143,7 +17322,7 @@ newToggle.Title.Fill.Ball.BackgroundTransparency=0.7
 end
 newToggle.Visible=true
 newToggle.Title.Fill.MouseEnter:Connect(function()
-if not Toggle.Locked then
+if not Toggle.Locked and not isTouchInput()then
 Tween(newToggle.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
 end
 end)
@@ -17178,7 +17357,27 @@ Toggle.Callback(Toggle.State)
 CONFIG[NAMETAB][name]=Toggle.State
 SAVECONFIG()
 end
-newToggle.Title.Fill.MouseButton1Click:Connect(function()
+local toggleHit=newToggle.Title.Fill
+if UIS.TouchEnabled then
+toggleHit=Instance.new("TextButton")
+toggleHit.Name="TouchTarget"
+toggleHit.BackgroundTransparency=1
+toggleHit.Text=""
+toggleHit.AutoButtonColor=false
+toggleHit.AnchorPoint=Vector2 .new(1,0.5)
+toggleHit.Position=UDim2 .new(1,0,0.5,0)
+toggleHit.Size=UDim2 .fromOffset(56,44)
+toggleHit.ZIndex=newToggle.Title.Fill.ZIndex+2
+toggleHit.Parent=newToggle.Title
+newToggle.Title.Fill.Active=false
+pcall(function()newToggle.Title.Fill.Interactable=false end)
+end
+BindPressFeedback(toggleHit,function()
+if not Toggle.Locked then Tween(newToggle.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)end
+end,function()
+if not Toggle.Locked and newToggle.Parent then Tween(newToggle.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)end
+end)
+BindSafeActivate(toggleHit,function()
 if not Toggle.Locked then
 SetState()
 end
@@ -17250,7 +17449,6 @@ if Slider.Value.Max<Slider.Value.Min then
 Slider.Value.Min,Slider.Value.Max=Slider.Value.Max,Slider.Value.Min
 end
 Slider.Value.Default=math.clamp(tonumber(Slider.Value.Default)or Slider.Value.Min,Slider.Value.Min,Slider.Value.Max)
-local Mouse=game.Players.LocalPlayer:GetMouse()
 local newSlider=Templates.Slider:Clone()
 newSlider.Parent=parentElement
 newSlider.Name=Slider.Title
@@ -17315,27 +17513,29 @@ return math.clamp((value-min)/(max-min),0,1)
 end
 Label.Text=tostring(default)or tostring(min)
 Fill.Size=UDim2 .fromScale(convertValueToScale(default),1)
-local function Slide()
-if Slider.Locked then return end
-MouseDown=true
-local sliderBar=newSlider.SliderFrame.Frame.Slider
-repeat
-task.wait()
-local width=math.max(sliderBar.AbsoluteSize.X,1)
-Percent=math.clamp((Mouse.X-sliderBar.AbsolutePosition.X)/width,0,1)
-perc=min+(Percent*(max-min))
-local roundedValue=math.round(perc/increment)*increment
-perc=math.clamp(roundedValue,min,max)
-Tween(Fill,{Size=UDim2 .fromScale(convertValueToScale(perc),1)},TweenConfigs.Global)
-Label.Text=tostring(perc)
-Slider.Value=perc
-task.spawn(Slider.Callback,perc)
-CONFIG[NAMETAB][name]=perc
-until MouseDown==false or Slider.Locked==true
-SAVECONFIG()
-if not Hovering then
-Tween(newSlider.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)
+local activeInput,dragMode,startX,startY=nil,nil,0,0
+local inputChangedConnection,inputEndedConnection,focusLostConnection
+local sliderDisposed=false
+local function applyPosition(x)
+if Slider.Locked or sliderDisposed then return end
+local bar=newSlider.SliderFrame.Frame.Slider
+local width=math.max(bar.AbsoluteSize.X,1)
+Percent=math.clamp((x-bar.AbsolutePosition.X)/width,0,1)
+local value=math.clamp(math.round((min+Percent*(max-min))/increment)*increment,min,max)
+if value==perc then return end
+perc=value
+Tween(Fill,{Size=UDim2 .fromScale(convertValueToScale(value),1)},TweenConfigs.Global)
+Label.Text=tostring(value)
+Slider.Value=value
+CONFIG[NAMETAB][name]=value
+task.spawn(Slider.Callback,value)
 end
+local function finishDrag(save)
+local wasDragging=MouseDown
+MouseDown,activeInput,dragMode=false,nil,nil
+Hovering=false
+if not Slider.Locked and newSlider.Parent then Tween(newSlider.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)end
+if wasDragging and save and not sliderDisposed then SAVECONFIG()end
 end
 local function Update(value)
 value=tonumber(value)
@@ -17353,25 +17553,57 @@ SAVECONFIG()
 return perc
 end
 Trigger.MouseEnter:Connect(function()
+if isTouchInput()then return end
 Hovering=true
-if not Slider.Locked then
-Tween(newSlider.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
-end
+if not Slider.Locked then Tween(newSlider.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)end
 end)
 Trigger.MouseLeave:Connect(function()
 Hovering=false
-if not Slider.Locked and not MouseDown then
-Tween(newSlider.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)
+if not Slider.Locked and not MouseDown then Tween(newSlider.UIStroke,{Color=Color3 .fromRGB(60,60,74)},TweenConfigs.Global)end
+end)
+Trigger.InputBegan:Connect(function(input)
+if Slider.Locked or activeInput then return end
+local kind=input.UserInputType
+if kind~=Enum.UserInputType.Touch and kind~=Enum.UserInputType.MouseButton1 then return end
+activeInput,MouseDown=input,true
+startX,startY=input.Position.X,input.Position.Y
+dragMode=kind==Enum.UserInputType.Touch and"pending"or"mouse"
+Tween(newSlider.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
+if dragMode=="mouse"then applyPosition(startX)end
+end)
+inputChangedConnection=UIS.InputChanged:Connect(function(input)
+if not activeInput or Slider.Locked then return end
+if activeInput.UserInputType==Enum.UserInputType.Touch then
+if input~=activeInput then return end
+local dx,dy=input.Position.X-startX,input.Position.Y-startY
+if dragMode=="pending"and(math.abs(dx)>8 or math.abs(dy)>8)then
+dragMode=math.abs(dx)>math.abs(dy)and"horizontal"or"scroll"
+end
+if dragMode=="horizontal"then applyPosition(input.Position.X)end
+elseif input.UserInputType==Enum.UserInputType.MouseMovement then
+applyPosition(input.Position.X)
 end
 end)
-Trigger.MouseButton1Down:Connect(function()
-Slide()
-end)
-local inputEndedConnection=UIS.InputEnded:Connect(function(input)
-if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
-MouseDown=false
+inputEndedConnection=UIS.InputEnded:Connect(function(input)
+if not activeInput then return end
+local isTouch=activeInput.UserInputType==Enum.UserInputType.Touch
+if(isTouch and input~=activeInput)or(not isTouch and input.UserInputType~=Enum.UserInputType.MouseButton1)then return end
+if isTouch and dragMode=="pending"and input.UserInputState~=Enum.UserInputState.Cancel then
+local dx,dy=input.Position.X-startX,input.Position.Y-startY
+if dx*dx+dy*dy<=144 then applyPosition(input.Position.X)end
 end
+finishDrag(dragMode~="scroll")
 end)
+focusLostConnection=UIS.WindowFocusReleased:Connect(function()finishDrag(false)end)
+local function disposeSlider()
+if sliderDisposed then return end
+sliderDisposed=true
+finishDrag(false)
+if inputChangedConnection then inputChangedConnection:Disconnect()end
+if inputEndedConnection then inputEndedConnection:Disconnect()end
+if focusLostConnection then focusLostConnection:Disconnect()end
+end
+newSlider.Destroying:Connect(disposeSlider)
 function Slider:SetTitle(newText)
 Slider.Title=tostring(newText or"Slider")
 newSlider.Title.Text=Slider.Title
@@ -17387,6 +17619,7 @@ return Update(value)
 end
 function Slider:Lock()
 Slider.Locked=true
+finishDrag(false)
 Tween(newSlider,{BackgroundColor3=Color3 .fromRGB(32,35,40)},TweenConfigs.Global)
 Tween(newSlider.UIStroke,{Color=Color3 .fromRGB(47,47,58)},TweenConfigs.Global)
 Tween(newSlider.Title,{TextColor3=Color3 .fromRGB(75,77,83)},TweenConfigs.Global)
@@ -17410,8 +17643,7 @@ Tween(newSlider.SliderFrame.Frame.Slider.Fill.BackgroundGradient,{BackgroundTran
 Tween(newSlider.SliderFrame.Frame.ValueText,{TextTransparency=0},TweenConfigs.Global)
 end
 function Slider:Destroy()
-MouseDown=false
-if inputEndedConnection then inputEndedConnection:Disconnect()end
+disposeSlider()
 newSlider:Destroy()
 end
 Slider.Callback(default)
@@ -17472,7 +17704,7 @@ end
 newInput.BoxFrame.Frame.TextBox.ClearTextOnFocus=Input.ClearTextOnFocus
 newInput.Visible=true
 newInput.BoxFrame.Frame.TextBox.MouseEnter:Connect(function()
-if not Input.Locked then
+if not Input.Locked and not isTouchInput()then
 Tween(newInput.UIStroke,{Color=UISettings.AccentColor},TweenConfigs.Global)
 end
 end)
@@ -17772,20 +18004,22 @@ newDropdownButtonSearch.UIStroke.Color=UISettings.AccentColor
 newDropdownButtonSearch.Frame.BackgroundTransparency=0
 newDropdownButtonSearch.Frame.Title.TextColor3=Color3 .fromRGB(255,255,255)
 end
-newDropdownButton.MouseButton1Click:Connect(function()
+BindSafeActivate(newDropdownButton,function()
 if not Dropdown.Locked then
 local value=SelectValue(false,buttonName)
 if value then
+if isTouchInput()then task.defer(function()if DropdownState and SelectedDropdown==Dropdown.Title then DropdownPopup(false)end end)end
 Dropdown.Callback(value)
 CONFIG[NAMETAB][name]=Dropdown.Value
 SAVECONFIG()
 end
 end
 end)
-newDropdownButtonSearch.MouseButton1Click:Connect(function()
+BindSafeActivate(newDropdownButtonSearch,function()
 if not Dropdown.Locked then
 local value=SelectValue(false,buttonName)
 if value then
+if isTouchInput()then task.defer(function()if DropdownState and SelectedDropdown==Dropdown.Title then DropdownPopup(false)end end)end
 Dropdown.Callback(value)
 CONFIG[NAMETAB][name]=Dropdown.Value
 SAVECONFIG()
@@ -17819,7 +18053,7 @@ newDropdownButtonSearch.UIStroke.Color=UISettings.AccentColor
 newDropdownButtonSearch.Frame.BackgroundTransparency=0
 newDropdownButtonSearch.Frame.Title.TextColor3=Color3 .fromRGB(255,255,255)
 end
-newDropdownButton.MouseButton1Click:Connect(function()
+BindSafeActivate(newDropdownButton,function()
 if not Dropdown.Locked then
 local value=SelectValue(true,{buttonName})
 if value then
@@ -17829,7 +18063,7 @@ SAVECONFIG()
 end
 end
 end)
-newDropdownButtonSearch.MouseButton1Click:Connect(function()
+BindSafeActivate(newDropdownButtonSearch,function()
 if not Dropdown.Locked then
 local value=SelectValue(true,{buttonName})
 if value then
@@ -17855,7 +18089,7 @@ selected=Dropdown.Value or{}
 newDropdown.Title.BoxFrame.Trigger.Title.Text=TableToString(selected)
 AddButtons(Dropdown.Values)
 end
-newDropdown.Title.BoxFrame.Trigger.MouseButton1Click:Connect(function()
+BindSafeActivate(newDropdown.Title.BoxFrame.Trigger,function()
 if not Dropdown.Locked then DropdownPopup(nil,Dropdown.Title)end
 end)
 function Dropdown:SetTitle(newText)
@@ -18501,9 +18735,13 @@ function Window:Toggle(state)
 if not startupGatePassed then return end
 ToggleWindow(state)
 end
+local guiDestroyConnection
 function Window:Destroy()
 if windowDestroyed then return end
 windowDestroyed=true
+if _G.__xNgotActiveWindow==self then _G.__xNgotActiveWindow=nil end
+if guiDestroyConnection then guiDestroyConnection:Disconnect();guiDestroyConnection=nil end
+if touchCleanup then touchCleanup()end
 if self.__OphynWindow and self.__OphynWindow.Gui then
 pcall(function()self.__OphynWindow.Gui:Destroy()end)
 self.__OphynWindow=nil
@@ -18527,6 +18765,9 @@ if index then table.remove(Windows,index)end
 if WindowByTitle[Window.Title]==Window then WindowByTitle[Window.Title]=nil end
 if windowFolder and windowFolder.Parent then windowFolder:Destroy()end
 end
+_G.__xNgotActiveWindow=Window
+WindowByTitle[Window.Title]=Window
+guiDestroyConnection=Gui.Destroying:Connect(function()if not windowDestroyed then Window:Destroy()end end)
 newWindow.TopFrame.Hide.MouseButton1Click:Connect(function()
 if not timeout then
 timeout=true
@@ -18694,6 +18935,10 @@ if not cbOk then warn("[xNgot/Ophyn] Callback: "..tostring(cbErr))end
 end
 end
 local gate=ophyn.new(options)
+if windowDestroyed then
+if gate and gate.Gui then pcall(function()gate.Gui:Destroy()end)end
+return
+end
 Window.__OphynWindow=gate
 gate.Gui.Destroying:Connect(function()
 Window.__OphynWindow=nil
@@ -20962,6 +21207,26 @@ local c=_G.xNgotMusicConfig
 if c and type(c.Set)=="function"then return c:Set(key,value)end
 return false
 end
+local musicConfig=_G.xNgotMusicConfig
+local regionLabels={auto="Auto",global="Global",VN="Vietnam",US="United States",KR="Korea",JP="Japan"}
+local regionCodes={Auto="auto",Global="global",Vietnam="VN",["United States"]="US",Korea="KR",Japan="JP"}
+local initialRegion=musicConfig and musicConfig:Get("region")or"auto"
+IslandTab:Dropdown({Title="Music region",Desc="Auto uses Roblox region / locale. Region is a search preference, not a guaranteed language filter.",
+Values={"Auto","Global","Vietnam","United States","Korea","Japan"},Value=regionLabels[initialRegion]or"Auto",
+Callback=function(label)cfgSet("region",regionCodes[tostring(label)]or"auto")end})
+local sourceLabels={youtube="YouTube",soundcloud="SoundCloud",audius="Audius"}
+local sourceCodes={YouTube="youtube",SoundCloud="soundcloud",Audius="audius"}
+local initialSources=musicConfig and musicConfig:Get("sources")or{}
+local initialSource=#initialSources==1 and sourceLabels[initialSources[1]]or"All"
+IslandTab:Dropdown({Title="Music platform",Desc="All searches YouTube, SoundCloud and Audius. Availability depends on the search service.",
+Values={"All","YouTube","SoundCloud","Audius"},Value=initialSource or"All",
+Callback=function(label)
+local code=sourceCodes[tostring(label)]
+cfgSet("sources",code and{code}or{"youtube","soundcloud","audius"})
+end})
+IslandTab:Toggle({Title="Preload next track",Desc="Prepare the next track from the current results at 50%; Auto play must be on.",
+Default=not musicConfig or musicConfig:Get("prefetchNext")~=false,
+Callback=function(v)cfgSet("prefetchNext",v)end})
 IslandTab:Slider({Title="Results per search",Value={Min=4,Max=30,Default=12},
 Callback=function(v)cfgSet("topN",v)end})
 IslandTab:Slider({Title="Parallel downloads",Value={Min=1,Max=4,Default=2},
@@ -21095,6 +21360,7 @@ fmRefresh(true)
 end)
 Window:SetUILanguage()
 end
+if windowDestroyed then return Window end
 WindowByTitle[Window.Title]=Window
 startupMenuBuilt=true
 releaseStartupIsland()

@@ -112,11 +112,15 @@ Window:SetToggleKey(Enum.KeyCode.RightShift)
 -- Window:Destroy() -- closes and cleans up
 ```
 
+Creating another xNgot window replaces the previous active xNgot window, even if the title differs. Its window, island, key screen and associated connections are cleaned up; unrelated game interfaces are not intentionally removed.
+
 The window and island are held until the key screen completes. If the user closes the key screen before authentication, the window is destroyed rather than unlocked.
 
 ---
 
 # UI components
+
+On touch devices, controls retain their original visual size while touch handling reduces accidental taps. Slider taps and horizontal drags adjust the value; vertical swipes are treated as scrolling. Single-select dropdowns close after a touch selection, while multi-select stays open. The selection highlight indicates the selected value, not a stuck press.
 
 Add elements to a tab using `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input`, `Tab:Dropdown`, `Tab:Colorpicker`, `Tab:Section`, `Tab:Paragraph`, `Tab:Code`, `Tab:Discord` and `Tab:InfoNguyenNhat`.
 
@@ -388,6 +392,16 @@ end
 _G.xNgotMusicConfig:Preset("lowdata")
 _G.xNgotMusicConfig:Set("topN", 8)
 print(_G.xNgotMusicConfig:Get("topN"))
+```
+
+Use **Music region** and **Music platform** in the island settings. Auto region uses Roblox country when available, then its locale; choose Global to disable regional preference. Vietnam, United States, Korea and Japan are supported. This adds regional search terms, so results are not a verified country/language filter. Platforms in the UI are YouTube, SoundCloud and Audius; search and downloads depend on external services.
+
+When **Preload next track** and Auto play are enabled, the player prepares the next item from the current list at 50%, including a best-effort audio preload. Shuffle chooses one next item; Repeat One takes priority. If there is only one item, preloading is skipped. If preparation is incomplete or fails, normal loading is used; gapless playback is not guaranteed. Downloads use network and local storage. Region detection does not use a third-party IP lookup.
+
+```lua
+_G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
+_G.xNgotMusicConfig:Set("sources", {"youtube"}) -- or soundcloud, audius
+_G.xNgotMusicConfig:Set("prefetchNext", true)
 ```
 
 Available presets: `fast`, `quality`, `lowdata`, `vietnamese`. Other island methods include `MusicCatalog`, `MusicRows`, `MusicSelect`, `MusicSelectValue`, `NextMusic`, `MusicSpeed`, `MusicFiles`, `MusicPlayFile`, `MusicDeleteFile` and `MusicClearDownloaded`.

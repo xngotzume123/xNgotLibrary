@@ -72,7 +72,7 @@
 					newInput.Visible = true
 
 					newInput.BoxFrame.Frame.TextBox.MouseEnter:Connect(function()
-						if not Input.Locked then
+						if not Input.Locked and not isTouchInput() then
 							Tween(newInput.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global)
 						end
 					end)

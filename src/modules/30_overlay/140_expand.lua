@@ -180,6 +180,17 @@
 		            end
 		        end))
 
+		        local islandPressInput
+		        Isl.islandHit.InputBegan:Connect(function(input)
+		            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then islandPressInput = input end
+		        end)
+		        track(UserInputService.InputEnded:Connect(function(input)
+		            if input == islandPressInput or (islandPressInput and islandPressInput.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseButton1) then
+		                islandPressInput = nil
+		                Island.Pressing = false
+		                Spr.springIslandHover:Set(1)
+		            end
+		        end))
 		        Isl.islandHit.MouseButton1Down:Connect(function()
 		            Island.HoldDone = false
 		            Island.Pressing = true

@@ -22,70 +22,39 @@
 
 			local SelectedDropdown = nil
 			local DropdownState = false
+			local dropdownTransition = 0
 			local function DropdownPopup(state, name)
-
-				if name and DropdownState == false then
+				local opening = state == nil and not DropdownState or state == true
+				if opening and name then
+					local folder = newWindow.DropdownSelection.Dropdowns:FindFirstChild(name)
+					if not folder then return end
 					SelectedDropdown = name
-					for _,v in newWindow.DropdownSelection.Dropdowns:GetChildren() do
-						if v:IsA("Folder") then
-							v:FindFirstChild("DropdownItems").Visible = false
-							v:FindFirstChild("DropdownItemsSearch").Visible = false
+					for _, item in newWindow.DropdownSelection.Dropdowns:GetChildren() do
+						if item:IsA("Folder") then
+							item:FindFirstChild("DropdownItems").Visible = false
+							item:FindFirstChild("DropdownItemsSearch").Visible = false
 						end
 					end
 					newWindow.DropdownSelection.TopBar.Title.Text = name
-					newWindow.DropdownSelection.Dropdowns:FindFirstChild(name):FindFirstChild("DropdownItems").Visible = true
-					newWindow.DropdownSelection.Dropdowns:FindFirstChild(name):FindFirstChild("DropdownItemsSearch").Visible = false
+					folder:FindFirstChild("DropdownItems").Visible = true
+					folder:FindFirstChild("DropdownItemsSearch").Visible = false
 				end
-				if state == true then
-
-					newWindow.DropdownSelection.Size = UDim2.new(0,0,0,0)
+				dropdownTransition = dropdownTransition + 1
+				local token = dropdownTransition
+				DropdownState = opening
+				if opening then
+					newWindow.DropdownSelection.Size = UDim2.new(0.728, 0, 0.684, 0)
 					newWindow.DarkOverlay.BackgroundTransparency = 1
-
 					newWindow.DropdownSelection.Visible = true
 					newWindow.DarkOverlay.Visible = true
-
-					newWindow.DropdownSelection.Size = UDim2.new(0.728, 0,0.684, 0)
-
 					Tween(newWindow.DarkOverlay, {BackgroundTransparency = 0.6}, TweenConfigs.PopupOpen)
-					DropdownState = state
-				elseif state == false then
-
-					newWindow.DropdownSelection.Size = UDim2.new(0,0,0,0)
-
-					local tw2 = Tween(newWindow.DarkOverlay, {BackgroundTransparency = 1}, TweenConfigs.PopupClose)
-
-					tw2.Completed:Wait()
-
-					newWindow.DropdownSelection.Visible = false
-					newWindow.DarkOverlay.Visible = false
-
-					DropdownState = state
 				else
-					if DropdownState then
-
-						newWindow.DropdownSelection.Size = UDim2.new(0,0,0,0)
-
-						local tw2 = Tween(newWindow.DarkOverlay, {BackgroundTransparency = 1}, TweenConfigs.PopupClose)
-
-						tw2.Completed:Wait()
-
+					newWindow.DropdownSelection.Size = UDim2.new(0, 0, 0, 0)
+					local tw = Tween(newWindow.DarkOverlay, {BackgroundTransparency = 1}, TweenConfigs.PopupClose)
+					tw.Completed:Wait()
+					if token == dropdownTransition and not DropdownState then
 						newWindow.DropdownSelection.Visible = false
 						newWindow.DarkOverlay.Visible = false
-
-						DropdownState = false
-					else
-
-						newWindow.DropdownSelection.Size = UDim2.new(0,0,0,0)
-						newWindow.DarkOverlay.BackgroundTransparency = 1
-
-						newWindow.DropdownSelection.Visible = true
-						newWindow.DarkOverlay.Visible = true
-
-						newWindow.DropdownSelection.Size = UDim2.new(0.728, 0,0.684, 0)
-
-						Tween(newWindow.DarkOverlay, {BackgroundTransparency = 0.6}, TweenConfigs.PopupOpen)
-
-						DropdownState = true
 					end
 				end
 			end

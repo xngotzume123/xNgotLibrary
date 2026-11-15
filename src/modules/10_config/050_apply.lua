@@ -10,6 +10,8 @@ local function applyToEngine(engine)
 	local c = engine.Config
 	c.TopN = Config.topN
 	c.Sources = Config.sources
+	c.Region = Config.region
+	c.PrefetchNext = Config.prefetchNext
 	c.SearchTimeout = Config.searchTimeout
 	c.PreferShort = Config.preferShort
 	c.Folder = Config.folder

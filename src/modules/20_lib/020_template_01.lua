@@ -23,12 +23,14 @@ local __xNgotIsOurGui = function(inst)
 	if not okGui or not isGui then return false end
 	local okName, name = pcall(function() return tostring(inst.Name) end)
 	if not okName then return false end
-	if name == "NgotStudio" or name == "xNgotStudio_FullDynamicIsland" or name == "xNgotStudio_FullIsland" then
+	local marked = false
+	pcall(function() marked = inst:GetAttribute("xNgotStudioOwned") == true end)
+	if marked or name == "NgotStudio" or name == "xNgotStudio_FullDynamicIsland" or name == "xNgotStudio_FullIsland" then
 		return true
 	end
 	local okLook, looks = pcall(function()
-		if inst:FindFirstChild("NotificationList") ~= nil then return true end
-		if inst:FindFirstChild("3e") ~= nil then return true end
+		if inst:FindFirstChild("3e") ~= nil and inst:FindFirstChild("NotificationList") ~= nil then return true end
+		if not inst:FindFirstChild("NotificationList") then return false end
 		for _, child in ipairs(inst:GetChildren()) do
 			if child:IsA("Folder") then
 				for _, win in ipairs(child:GetChildren()) do
@@ -58,6 +60,12 @@ local __xNgotDestroyGui = function(inst, keep)
 	local ok = pcall(function() inst:Destroy() end)
 	return ok
 end
+
+pcall(function()
+	local active = _G.__xNgotActiveWindow
+	if type(active) == "table" and type(active.Destroy) == "function" then active:Destroy() end
+	_G.__xNgotActiveWindow = nil
+end)
 
 pcall(function()
 	local tracked = _G.__xNgotStudioGuis
@@ -90,6 +98,7 @@ NgotStudio["1"] = Instance.new("ScreenGui");
 NgotStudio["1"]["Name"] = [[NgotStudio]];
 NgotStudio["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 NgotStudio["1"]["ResetOnSpawn"] = false;
+pcall(function() NgotStudio["1"]:SetAttribute("xNgotStudioOwned", true) end)
 
 NgotStudio["1"].IgnoreGuiInset = true
 pcall(function()

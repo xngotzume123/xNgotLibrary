@@ -27,9 +27,8 @@
 						pcall(function() prev.Window:Destroy() end)
 					end
 				end
-				local prevWindow = _G.Window
-				if type(prevWindow) == "table" and not WindowIsOurs(prevWindow)
-					and type(prevWindow.Destroy) == "function" then
+				local prevWindow = _G.__xNgotActiveWindow
+				if type(prevWindow) == "table" and type(prevWindow.Destroy) == "function" then
 					pcall(function() prevWindow:Destroy() end)
 				end
 			end)
@@ -44,11 +43,11 @@
 				pcall(function()
 					for _, child in ipairs(parent:GetChildren()) do
 						if child ~= Gui and child:IsA("ScreenGui") then
-							local foreign = child:FindFirstChild("NotificationList") ~= nil
-								or child:FindFirstChild("3e") ~= nil
+							local foreign = child:GetAttribute("xNgotStudioOwned") == true
+								or (child:FindFirstChild("NotificationList") ~= nil and child:FindFirstChild("3e") ~= nil)
 								or tostring(child.Name) == "NgotStudio"
 								or tostring(child.Name):find("xNgotStudio_Full", 1, true) ~= nil
-							if not foreign then
+							if not foreign and child:FindFirstChild("NotificationList") then
 								for _, sub in ipairs(child:GetChildren()) do
 									if sub:IsA("Folder") then
 										for _, win in ipairs(sub:GetChildren()) do

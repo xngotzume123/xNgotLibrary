@@ -5,6 +5,27 @@
      role   : queryVariants/searchOne/search (đa nguồn)
      source : main 2.txt L7030-7194 · 165 dòng · delta +0
 --]]
+		local detectedRegion = ""
+		pcall(function()
+			local loc = game:GetService("LocalizationService")
+			local locale = ""
+			pcall(function() locale = tostring(loc.RobloxLocaleId or "") end)
+			local suffix = locale:match("[-_]([%a][%a])$")
+			if suffix then detectedRegion = suffix:upper()
+			elseif locale:lower():match("^vi") then detectedRegion = "VN" end
+			task.spawn(function()
+				local ok, code = pcall(function() return loc:GetCountryRegionForPlayerAsync(game:GetService("Players").LocalPlayer) end)
+				if ok and type(code) == "string" and code:match("^%a%a$") then detectedRegion = code:upper() end
+			end)
+		end)
+		local regionTerms = { VN = "nhac viet nam", US = "american music", KR = "kpop korean music", JP = "japanese music" }
+		function CrossAIMusic.searchRegion()
+			local region = tostring(CFG.Region or "auto"):upper()
+			if region == "AUTO" then region = detectedRegion end
+			if region == "GLOBAL" then return "" end
+			return regionTerms[region] and region or ""
+		end
+
 		function CrossAIMusic.queryVariants(plan, prompt)
 			local raw = tostring((prompt or plan.raw or "")):gsub("^%s+", ""):gsub("%s+$", "")
 			local main = tostring(plan.query or "")
@@ -48,8 +69,14 @@
 
 			plan.weak = plan.weak ~= false
 
-			local trimmed = {}
-			for i = 1, math.min(#out, 3) do trimmed[i] = out[i] end
+			local region = CrossAIMusic.searchRegion()
+			local term = regionTerms[region]
+			local trimmed, unique = {}, {}
+			for i = 1, math.min(#out, 3) do
+				local q = term and trim(out[i] .. " " .. term) or out[i]
+				if not unique[q:lower()] then trimmed[#trimmed + 1] = q; unique[q:lower()] = true end
+			end
+			plan.region = region
 			return trimmed
 		end
 

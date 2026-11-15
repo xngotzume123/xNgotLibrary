@@ -27,6 +27,8 @@
 			RaceTracks     = 2,
 
 			Sources        = { "youtube", "soundcloud", "audius" },
+			Region         = "auto",
+			PrefetchNext   = true,
 
 			MaxTrackSeconds = 1200,
 		}

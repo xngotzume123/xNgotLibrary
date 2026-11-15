@@ -299,7 +299,7 @@
 		    end
 
 		    Isl.islandHit.MouseEnter:Connect(function()
-		        Spr.springIslandHover:Set(1.05)
+		        if UserInputService:GetLastInputType() ~= Enum.UserInputType.Touch then Spr.springIslandHover:Set(1.05) end
 		    end)
 		    Isl.islandHit.MouseLeave:Connect(function()
 		        Spr.springIslandHover:Set(1)
@@ -308,7 +308,7 @@
 		        Spr.springIslandHover:Set(0.94)
 		    end)
 		    Isl.islandHit.MouseButton1Up:Connect(function()
-		        Spr.springIslandHover:Set(UserInputService.MouseEnabled and 1.05 or 1)
+		        Spr.springIslandHover:Set(UserInputService:GetLastInputType() ~= Enum.UserInputType.Touch and UserInputService.MouseEnabled and 1.05 or 1)
 		    end)
 		    Isl.islandHit.MouseButton1Click:Connect(function()
 		        if not State.Ready then

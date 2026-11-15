@@ -162,6 +162,8 @@ Window:SetToggleKey(Enum.KeyCode.RightShift)
 -- Window:Destroy() -- closes and cleans up
 ```
 
+Creating another xNgot window replaces the previous active xNgot window, even if the title differs. Its window, island, key screen and associated connections are cleaned up; unrelated game interfaces are not intentionally removed.
+
 The window and island are held until the key screen completes. If the user closes the key screen before authentication, the window is destroyed rather than unlocked.
 ''',r'''# Cửa sổ và tab
 
@@ -208,9 +210,13 @@ Window:SetToggleKey(Enum.KeyCode.RightShift)
 -- Window:Destroy() -- đóng và dọn dẹp
 ```
 
+Khi tạo cửa sổ xNgot mới, cửa sổ xNgot đang hoạt động sẽ được thay thế kể cả khi khác tên. Thư viện dọn cửa sổ, Island, màn hình key và kết nối liên quan; không chủ đích xóa giao diện khác của game.
+
 Cửa sổ và bảng nổi chờ đến khi màn hình key hoàn tất. Nếu đóng màn hình key trước khi xác thực, cửa sổ sẽ được đóng thay vì tự mở khóa.
 '''),
  ('controls','BUILD A HUB','TẠO HUB','UI components','Thành phần UI','04',r'''# UI components
+
+On touch devices, controls retain their original visual size while touch handling reduces accidental taps. Slider taps and horizontal drags adjust the value; vertical swipes are treated as scrolling. Single-select dropdowns close after a touch selection, while multi-select stays open. The selection highlight indicates the selected value, not a stuck press.
 
 Add elements to a tab using `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input`, `Tab:Dropdown`, `Tab:Colorpicker`, `Tab:Section`, `Tab:Paragraph`, `Tab:Code`, `Tab:Discord` and `Tab:InfoNguyenNhat`.
 
@@ -263,6 +269,8 @@ Main:Colorpicker({
 
 Use distinct element titles within each tab: titles are used as configuration keys. `Multi = true` enables a multi-select dropdown; `AllowNone = true` permits no selection. Many controls also expose `:SetTitle`, `:SetDesc`, `:Lock`, `:Unlock` and `:Destroy`; check the specific component before relying on a method.
 ''',r'''# Thành phần UI
+
+Trên thiết bị cảm ứng, điều khiển giữ kích thước hiển thị như cũ và xử lý chạm để giảm nhấn lộn. Slider nhận chạm hoặc kéo ngang; vuốt dọc được xem là cuộn. Dropdown chọn một mục sẽ đóng sau khi chạm chọn, còn chọn nhiều mục vẫn mở. Màu của mục đã chọn là trạng thái lựa chọn, không phải hiệu ứng nhấn bị kẹt.
 
 Thêm thành phần vào tab bằng `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input`, `Tab:Dropdown`, `Tab:Colorpicker`, `Tab:Section`, `Tab:Paragraph`, `Tab:Code`, `Tab:Discord` và `Tab:InfoNguyenNhat`.
 
@@ -701,6 +709,16 @@ _G.xNgotMusicConfig:Set("topN", 8)
 print(_G.xNgotMusicConfig:Get("topN"))
 ```
 
+Use **Music region** and **Music platform** in the island settings. Auto region uses Roblox country when available, then its locale; choose Global to disable regional preference. Vietnam, United States, Korea and Japan are supported. This adds regional search terms, so results are not a verified country/language filter. Platforms in the UI are YouTube, SoundCloud and Audius; search and downloads depend on external services.
+
+When **Preload next track** and Auto play are enabled, the player prepares the next item from the current list at 50%, including a best-effort audio preload. Shuffle chooses one next item; Repeat One takes priority. If there is only one item, preloading is skipped. If preparation is incomplete or fails, normal loading is used; gapless playback is not guaranteed. Downloads use network and local storage. Region detection does not use a third-party IP lookup.
+
+```lua
+_G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
+_G.xNgotMusicConfig:Set("sources", {"youtube"}) -- or soundcloud, audius
+_G.xNgotMusicConfig:Set("prefetchNext", true)
+```
+
 Available presets: `fast`, `quality`, `lowdata`, `vietnamese`. Other island methods include `MusicCatalog`, `MusicRows`, `MusicSelect`, `MusicSelectValue`, `NextMusic`, `MusicSpeed`, `MusicFiles`, `MusicPlayFile`, `MusicDeleteFile` and `MusicClearDownloaded`.
 
 ## Diagnose support
@@ -733,6 +751,16 @@ end
 _G.xNgotMusicConfig:Preset("lowdata")
 _G.xNgotMusicConfig:Set("topN", 8)
 print(_G.xNgotMusicConfig:Get("topN"))
+```
+
+Chọn **Music region** và **Music platform** trong cài đặt Island. Auto ưu tiên quốc gia do Roblox cung cấp, sau đó dùng locale; chọn Global để bỏ ưu tiên vùng. Có Việt Nam, Mỹ, Hàn Quốc và Nhật Bản. Đây là thêm từ khóa khu vực khi tìm, không phải bộ lọc xác minh ngôn ngữ hay quốc tịch. Giao diện hỗ trợ YouTube, SoundCloud, Audius; kết quả và tải nhạc phụ thuộc dịch vụ bên ngoài.
+
+Khi bật **Preload next track** và Auto play, lúc phát đến 50% trình phát chuẩn bị bài kế tiếp trong danh sách hiện tại và cố tải trước âm thanh. Shuffle chọn trước một bài; Repeat One được ưu tiên. Nếu chỉ có một bài thì bỏ qua tải trước. Nếu chưa tải xong hoặc tải lỗi, trình phát tiếp tục xử lý bình thường; không đảm bảo chuyển bài hoàn toàn không trễ. Tải trước dùng mạng và bộ nhớ. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
+
+```lua
+_G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
+_G.xNgotMusicConfig:Set("sources", {"youtube"}) -- hoặc soundcloud, audius
+_G.xNgotMusicConfig:Set("prefetchNext", true)
 ```
 
 Các preset: `fast`, `quality`, `lowdata`, `vietnamese`. Các hàm khác gồm `MusicCatalog`, `MusicRows`, `MusicSelect`, `MusicSelectValue`, `NextMusic`, `MusicSpeed`, `MusicFiles`, `MusicPlayFile`, `MusicDeleteFile` và `MusicClearDownloaded`.

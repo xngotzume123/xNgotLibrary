@@ -62,7 +62,7 @@
 					newTabButton.Bar.BackgroundTransparency = 1
 				end
 
-				newTabButton.MouseButton1Click:Connect(function()
+				BindSafeActivate(newTabButton, function()
 					SelectTab(TabData.Title)
 				end)
 

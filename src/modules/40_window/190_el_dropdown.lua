@@ -238,10 +238,11 @@
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 								end
 
-								newDropdownButton.MouseButton1Click:Connect(function()
+								BindSafeActivate(newDropdownButton, function()
 									if not Dropdown.Locked then
 										local value = SelectValue(false, buttonName)
 										if value then
+											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == Dropdown.Title then DropdownPopup(false) end end) end
 											Dropdown.Callback(value)
                                             CONFIG[NAMETAB][name] = Dropdown.Value
 						                    SAVECONFIG()
@@ -249,10 +250,11 @@
 									end
 								end)
 
-								newDropdownButtonSearch.MouseButton1Click:Connect(function()
+								BindSafeActivate(newDropdownButtonSearch, function()
 									if not Dropdown.Locked then
 										local value = SelectValue(false, buttonName)
 										if value then
+											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == Dropdown.Title then DropdownPopup(false) end end) end
 											Dropdown.Callback(value)
                                             CONFIG[NAMETAB][name] = Dropdown.Value
 						                    SAVECONFIG()
@@ -292,7 +294,7 @@
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 								end
 
-								newDropdownButton.MouseButton1Click:Connect(function()
+								BindSafeActivate(newDropdownButton, function()
 									if not Dropdown.Locked then
 										local value = SelectValue(true, {buttonName})
 										if value then
@@ -303,7 +305,7 @@
 									end
 								end)
 
-								newDropdownButtonSearch.MouseButton1Click:Connect(function()
+								BindSafeActivate(newDropdownButtonSearch, function()
 									if not Dropdown.Locked then
 										local value = SelectValue(true, {buttonName})
 										if value then
@@ -336,7 +338,7 @@
 						AddButtons(Dropdown.Values)
 					end
 
-					newDropdown.Title.BoxFrame.Trigger.MouseButton1Click:Connect(function()
+					BindSafeActivate(newDropdown.Title.BoxFrame.Trigger, function()
 						if not Dropdown.Locked then DropdownPopup(nil, Dropdown.Title) end
 					end)
 

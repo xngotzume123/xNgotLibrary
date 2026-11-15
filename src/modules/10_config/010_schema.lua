@@ -10,6 +10,8 @@ local ConfigSchema = {
 		desc = "Số kết quả trả về cho dropdown" },
 	sources = { type = "table", default = { "youtube", "soundcloud", "audius" },
 		desc = "Nguồn tìm nhạc (youtube / soundcloud / audius / tiktok / audiomack)" },
+	region = { type = "string", default = "auto", desc = "Khu vực tìm nhạc: auto / global / VN / US / KR / JP" },
+	prefetchNext = { type = "boolean", default = true, desc = "Tải trước bài tiếp theo khi nghe tới 50%" },
 	searchTimeout = { type = "number", min = 2, max = 60, default = 12,
 		desc = "Giây tối đa cho 1 lượt tìm" },
 	preferShort = { type = "number", min = 0, max = 7200, default = 600,

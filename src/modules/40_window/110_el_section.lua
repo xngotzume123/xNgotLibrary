@@ -23,7 +23,7 @@
 					newSection.Frame.Visible = Section.State
 					newSection.Button.Title.Arrow.Rotation = Section.State and 90 or 0
 
-					newSection.Button.MouseButton1Click:Connect(function()
+					BindSafeActivate(newSection.Button, function()
 						if Section.State == true then
 
 							newSection.Frame.Visible = false

@@ -61,7 +61,7 @@
 					newToggle.Visible = true
 
 					newToggle.Title.Fill.MouseEnter:Connect(function()
-						if not Toggle.Locked then
+						if not Toggle.Locked and not isTouchInput() then
 							Tween(newToggle.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global)
 						end
 					end)
@@ -106,7 +106,27 @@
 
 					end
 
-					newToggle.Title.Fill.MouseButton1Click:Connect(function()
+					local toggleHit = newToggle.Title.Fill
+					if UIS.TouchEnabled then
+						toggleHit = Instance.new("TextButton")
+						toggleHit.Name = "TouchTarget"
+						toggleHit.BackgroundTransparency = 1
+						toggleHit.Text = ""
+						toggleHit.AutoButtonColor = false
+						toggleHit.AnchorPoint = Vector2.new(1, 0.5)
+						toggleHit.Position = UDim2.new(1, 0, 0.5, 0)
+						toggleHit.Size = UDim2.fromOffset(56, 44)
+						toggleHit.ZIndex = newToggle.Title.Fill.ZIndex + 2
+						toggleHit.Parent = newToggle.Title
+						newToggle.Title.Fill.Active = false
+						pcall(function() newToggle.Title.Fill.Interactable = false end)
+					end
+					BindPressFeedback(toggleHit, function()
+						if not Toggle.Locked then Tween(newToggle.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global) end
+					end, function()
+						if not Toggle.Locked and newToggle.Parent then Tween(newToggle.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global) end
+					end)
+					BindSafeActivate(toggleHit, function()
 						if not Toggle.Locked then
 							SetState()
 						end

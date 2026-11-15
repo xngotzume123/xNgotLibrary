@@ -28,6 +28,62 @@
 				return Window.ConfigPath
 			end
 
+			local touchStarts = setmetatable({}, { __mode = "k" })
+			local presses = setmetatable({}, { __mode = "k" })
+			local touchConnections = {}
+			local function isTouchInput()
+				local ok, kind = pcall(function() return UIS:GetLastInputType() end)
+				return ok and kind == Enum.UserInputType.Touch
+			end
+			local function BindSafeActivate(button, callback)
+				button.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.Touch then
+						touchStarts[input] = { x = input.Position.X, y = input.Position.Y, moved = false }
+					end
+				end)
+				button.Activated:Connect(function(input)
+					if input and input.UserInputType == Enum.UserInputType.Touch then
+						local start = touchStarts[input]
+						if not start or start.moved or input.UserInputState == Enum.UserInputState.Cancel then return end
+						local dx, dy = input.Position.X - start.x, input.Position.Y - start.y
+						if dx * dx + dy * dy > 144 then return end
+					end
+					callback()
+				end)
+			end
+			local function BindPressFeedback(button, pressed, released)
+				button.InputBegan:Connect(function(input)
+					local kind = input.UserInputType
+					if kind == Enum.UserInputType.Touch or kind == Enum.UserInputType.MouseButton1 then
+						presses[input] = released
+						pressed()
+					end
+				end)
+				button.MouseLeave:Connect(function() released() end)
+			end
+			touchConnections[#touchConnections + 1] = UIS.InputChanged:Connect(function(input)
+				local start = touchStarts[input]
+				if start then
+					local dx, dy = input.Position.X - start.x, input.Position.Y - start.y
+					if dx * dx + dy * dy > 144 then start.moved = true end
+				end
+			end)
+			touchConnections[#touchConnections + 1] = UIS.InputEnded:Connect(function(input)
+				local release = presses[input]
+				presses[input] = nil
+				if release then pcall(release) end
+				if touchStarts[input] then task.delay(0.5, function() touchStarts[input] = nil end) end
+			end)
+			touchConnections[#touchConnections + 1] = UIS.WindowFocusReleased:Connect(function()
+				for key, release in pairs(presses) do pcall(release); presses[key] = nil end
+				table.clear(touchStarts)
+			end)
+			local function touchCleanup()
+				for _, connection in ipairs(touchConnections) do connection:Disconnect() end
+				table.clear(touchConnections)
+				for key, release in pairs(presses) do pcall(release); presses[key] = nil end
+			end
+
 			local windowFolder = Instance.new("Folder")
 			windowFolder.Parent = Gui
 			Gui.Name = Window.Title

@@ -112,11 +112,15 @@ Window:SetToggleKey(Enum.KeyCode.RightShift)
 -- Window:Destroy() -- đóng và dọn dẹp
 ```
 
+Khi tạo cửa sổ xNgot mới, cửa sổ xNgot đang hoạt động sẽ được thay thế kể cả khi khác tên. Thư viện dọn cửa sổ, Island, màn hình key và kết nối liên quan; không chủ đích xóa giao diện khác của game.
+
 Cửa sổ và bảng nổi chờ đến khi màn hình key hoàn tất. Nếu đóng màn hình key trước khi xác thực, cửa sổ sẽ được đóng thay vì tự mở khóa.
 
 ---
 
 # Thành phần UI
+
+Trên thiết bị cảm ứng, điều khiển giữ kích thước hiển thị như cũ và xử lý chạm để giảm nhấn lộn. Slider nhận chạm hoặc kéo ngang; vuốt dọc được xem là cuộn. Dropdown chọn một mục sẽ đóng sau khi chạm chọn, còn chọn nhiều mục vẫn mở. Màu của mục đã chọn là trạng thái lựa chọn, không phải hiệu ứng nhấn bị kẹt.
 
 Thêm thành phần vào tab bằng `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input`, `Tab:Dropdown`, `Tab:Colorpicker`, `Tab:Section`, `Tab:Paragraph`, `Tab:Code`, `Tab:Discord` và `Tab:InfoNguyenNhat`.
 
@@ -388,6 +392,16 @@ end
 _G.xNgotMusicConfig:Preset("lowdata")
 _G.xNgotMusicConfig:Set("topN", 8)
 print(_G.xNgotMusicConfig:Get("topN"))
+```
+
+Chọn **Music region** và **Music platform** trong cài đặt Island. Auto ưu tiên quốc gia do Roblox cung cấp, sau đó dùng locale; chọn Global để bỏ ưu tiên vùng. Có Việt Nam, Mỹ, Hàn Quốc và Nhật Bản. Đây là thêm từ khóa khu vực khi tìm, không phải bộ lọc xác minh ngôn ngữ hay quốc tịch. Giao diện hỗ trợ YouTube, SoundCloud, Audius; kết quả và tải nhạc phụ thuộc dịch vụ bên ngoài.
+
+Khi bật **Preload next track** và Auto play, lúc phát đến 50% trình phát chuẩn bị bài kế tiếp trong danh sách hiện tại và cố tải trước âm thanh. Shuffle chọn trước một bài; Repeat One được ưu tiên. Nếu chỉ có một bài thì bỏ qua tải trước. Nếu chưa tải xong hoặc tải lỗi, trình phát tiếp tục xử lý bình thường; không đảm bảo chuyển bài hoàn toàn không trễ. Tải trước dùng mạng và bộ nhớ. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
+
+```lua
+_G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
+_G.xNgotMusicConfig:Set("sources", {"youtube"}) -- hoặc soundcloud, audius
+_G.xNgotMusicConfig:Set("prefetchNext", true)
 ```
 
 Các preset: `fast`, `quality`, `lowdata`, `vietnamese`. Các hàm khác gồm `MusicCatalog`, `MusicRows`, `MusicSelect`, `MusicSelectValue`, `NextMusic`, `MusicSpeed`, `MusicFiles`, `MusicPlayFile`, `MusicDeleteFile` và `MusicClearDownloaded`.

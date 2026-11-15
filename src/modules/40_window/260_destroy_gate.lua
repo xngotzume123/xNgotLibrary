@@ -5,9 +5,13 @@
      role   : Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey
      source : main 2.txt L14598-15113 · 516 dòng · delta +0
 --]]
+			local guiDestroyConnection
 			function Window:Destroy()
 				if windowDestroyed then return end
 				windowDestroyed = true
+				if _G.__xNgotActiveWindow == self then _G.__xNgotActiveWindow = nil end
+				if guiDestroyConnection then guiDestroyConnection:Disconnect(); guiDestroyConnection = nil end
+				if touchCleanup then touchCleanup() end
 				if self.__OphynWindow and self.__OphynWindow.Gui then
 					pcall(function() self.__OphynWindow.Gui:Destroy() end)
 					self.__OphynWindow = nil
@@ -31,6 +35,10 @@
 				if WindowByTitle[Window.Title] == Window then WindowByTitle[Window.Title] = nil end
 				if windowFolder and windowFolder.Parent then windowFolder:Destroy() end
 			end
+
+			_G.__xNgotActiveWindow = Window
+			WindowByTitle[Window.Title] = Window
+			guiDestroyConnection = Gui.Destroying:Connect(function() if not windowDestroyed then Window:Destroy() end end)
 
 			newWindow.TopFrame.Hide.MouseButton1Click:Connect(function()
 				if not timeout then
@@ -221,6 +229,10 @@
 							end
 						end
 						local gate = ophyn.new(options)
+						if windowDestroyed then
+							if gate and gate.Gui then pcall(function() gate.Gui:Destroy() end) end
+							return
+						end
 						Window.__OphynWindow = gate
 						gate.Gui.Destroying:Connect(function()
 							Window.__OphynWindow = nil

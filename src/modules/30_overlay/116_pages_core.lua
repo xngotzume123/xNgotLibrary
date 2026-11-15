@@ -110,6 +110,16 @@
 		            local spring = Spring.new(1, 600, 30, function(value)
 		                scale.Scale = value
 		            end, 0.001)
+		            local pressInput
+		            button.InputBegan:Connect(function(input)
+		                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then pressInput = input end
+		            end)
+		            track(UserInputService.InputEnded:Connect(function(input)
+		                if input == pressInput or (pressInput and pressInput.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseButton1) then
+		                    pressInput = nil
+		                    spring:Set(1)
+		                end
+		            end))
 		            button.MouseButton1Down:Connect(function()
 		                spring:Set(0.92)
 		            end)

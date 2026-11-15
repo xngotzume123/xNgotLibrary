@@ -55,44 +55,29 @@
 
 					GetRandomGradient()
 
+					local function resetButtonPress()
+						if ButtonData.Locked or not newButton.Parent then return end
+						Tween(newButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newButton.Frame.Title, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
+						Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = UISettings.TextColor}, TweenConfigs.Global)
+						Tween(newButton.Frame.Description, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
+						Tween(newButton.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
+					end
 					newButton.MouseEnter:Connect(function()
-						if not ButtonData.Locked then
-							Tween(newButton.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global)
-						end
+						if not ButtonData.Locked and not isTouchInput() then Tween(newButton.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global) end
 					end)
-
-					newButton.MouseLeave:Connect(function()
-						if not ButtonData.Locked then
-							Tween(newButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
-							newButton.BackgroundColor3 = Color3.fromRGB(42, 45, 52)
-							Tween(newButton.Frame.Title, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
-							Tween(newButton.Frame.Description, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
-						end
-					end)
-
-					newButton.MouseButton1Down:Connect(function()
-						if not ButtonData.Locked then
-							GetRandomGradient()
-							Tween(newButton.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-							Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-							Tween(newButton.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-							Tween(newButton.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
-						end
-					end)
-
-					newButton.MouseButton1Up:Connect(function()
-						if not ButtonData.Locked then
-							Tween(newButton.Frame.Title, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
-							Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = UISettings.TextColor}, TweenConfigs.Global)
-							Tween(newButton.Frame.Description, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
-							local tw = Tween(newButton.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
-						end
-					end)
-
-					newButton.MouseButton1Click:Connect(function()
-						if not ButtonData.Locked then
-							ButtonData.Callback()
-						end
+					BindPressFeedback(newButton, function()
+						if ButtonData.Locked then return end
+						GetRandomGradient()
+						Tween(newButton.UIStroke, {Color = UISettings.AccentColor}, TweenConfigs.Global)
+						Tween(newButton.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
+						Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
+						Tween(newButton.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
+						Tween(newButton.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
+					end, resetButtonPress)
+					BindSafeActivate(newButton, function()
+						resetButtonPress()
+						if not ButtonData.Locked then ButtonData.Callback() end
 					end)
 
 					newTab.ChildAdded:Connect(function()
@@ -124,6 +109,7 @@
 					end
 
 					function Button:Lock()
+						resetButtonPress()
 						ButtonData.Locked = true
 						Tween(newButton, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
 						Tween(newButton.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)

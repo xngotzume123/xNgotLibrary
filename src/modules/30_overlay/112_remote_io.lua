@@ -66,6 +66,10 @@
 			return #files
 		end
 
+		local nextPrefetch = nil
+		local prefetchBusy = false
+		local attemptedToken = nil
+
 		local function fetchRemote(token, track)
 			if not Remote.Supported() then
 				Music.Playing = false
@@ -220,10 +224,26 @@
 		end)
 
 		        local function startLoad(token, track)
-		            if track.Remote then
-		                fetchRemote(token, track)
-		            else
+		            if not track then return end
+		            if not track.Remote then
 		                waitAndPlay(token, currentSound.SoundId)
+		                return
+		            end
+		            local job = nextPrefetch
+		            if job and job.track == track and job.pending then
+		                Music.Loading = true
+		                task.spawn(function()
+		                    local deadline = os.clock() + (tonumber(Remote.Engine.Config.DownloadTimeout) or 200)
+		                    while job.pending and token == loadToken and gui.Parent and os.clock() < deadline do task.wait(0.1) end
+		                    if token ~= loadToken or not gui.Parent then return end
+		                    if track.Asset then currentSound.SoundId = track.Asset; waitAndPlay(token, track.Asset)
+		                    else fetchRemote(token, track) end
+		                end)
+		            elseif track.Asset then
+		                currentSound.SoundId = track.Asset
+		                waitAndPlay(token, track.Asset)
+		            else
+		                fetchRemote(token, track)
 		            end
 		        end
 
@@ -320,7 +340,13 @@
 		            if Music.RepeatOne then
 		                Music.Select(Music.Index, true)
 		            elseif Music.Auto then
-		                Music.Next(1)
+		                local job = nextPrefetch
+		                if Remote.Engine.Config.PrefetchNext ~= false and job and job.token == loadToken and job.current == TRACKS[Music.Index]
+		                    and job.shuffle == Music.Shuffle and TRACKS[job.index] == job.track then
+		                    Music.Select(job.index, true)
+		                else
+		                    Music.Next(1)
+		                end
 		            else
 		                Music.Playing = false
 		                Music.Position = 0
@@ -330,6 +356,67 @@
 		        end)
 
 		        Music.Sync()
+
+		        task.spawn(function()
+		            while gui.Parent do
+		                task.wait(0.5)
+		            if Music.Playing and Music.Auto and not Music.RepeatOne and not Music.Loading and #TRACKS > 1
+		                and Remote.Engine.Config.PrefetchNext ~= false and currentSound.TimeLength > 0
+		                and currentSound.TimePosition >= currentSound.TimeLength * 0.5
+		                and attemptedToken ~= loadToken and not prefetchBusy then
+		                local nextIndex = Music.Index % #TRACKS + 1
+		                if Music.Shuffle then
+		                    nextIndex = math.random(1, #TRACKS - 1)
+		                    if nextIndex >= Music.Index then nextIndex = nextIndex + 1 end
+		                end
+		                local candidate = TRACKS[nextIndex]
+		                local job = { token = loadToken, current = TRACKS[Music.Index], index = nextIndex,
+		                    track = candidate, shuffle = Music.Shuffle, pending = true }
+		                nextPrefetch, attemptedToken, prefetchBusy = job, loadToken, true
+		                notify(Settings.Language == "en" and "Up next" or "Bài tiếp theo",
+		                    tostring(candidate.Name or "Track") .. (Settings.Language == "en" and " · preparing" or " · đang chuẩn bị"), "info", 3, true)
+		                task.spawn(function()
+		                    local ok, asset, path = pcall(function()
+		                        if candidate.Asset then return candidate.Asset, candidate.CachedPath end
+		                        if not candidate.Remote then return "rbxassetid://" .. tostring(candidate.Id) end
+		                        if candidate.CachedPath then
+		                            local getter = getcustomasset or getsynasset
+		                            if type(getter) == "function" and (type(isfile) ~= "function" or isfile(candidate.CachedPath)) then
+		                                local got, cached = pcall(getter, candidate.CachedPath)
+		                                if got and type(cached) == "string" and cached ~= "" then return cached, candidate.CachedPath end
+		                            end
+		                        end
+		                        if not Remote.Supported() then return nil end
+		                        local lookup = { id = candidate.Id, url = candidate.Url, source = candidate.Source or "youtube", name = candidate.Name }
+		                        if lookup.source == "audius" and lookup.id then
+		                            lookup.directUrl = "https://api.audius.co/v1/tracks/" .. tostring(lookup.id):gsub("^audius:", "") .. "/stream"
+		                        end
+		                        return Remote.Engine.assetFor(lookup, function() end)
+		                    end)
+		                    if ok and type(asset) == "string" and asset ~= "" then
+		                        if candidate.Remote then candidate.Asset = asset end
+		                        if type(path) == "string" and path ~= "" then
+		                            candidate.CachedPath, candidate.Downloaded = path, true
+		                            candidate.FileName = path:match("([^/]+)$") or candidate.FileName
+		                            if Remote.Engine.writeDownloadedMeta then
+		                                pcall(Remote.Engine.writeDownloadedMeta, path, { Title = candidate.Name, Artist = candidate.Artist,
+		                                    Duration = candidate.Duration, Thumbnail = candidate.Thumbnail, Source = candidate.Source, Url = candidate.Url, Id = candidate.Id })
+		                            end
+		                        end
+		                        local sound
+		                        pcall(function()
+		                            sound = Instance.new("Sound")
+		                            sound.SoundId = asset
+		                            sound.Parent = SoundService
+		                            game:GetService("ContentProvider"):PreloadAsync({sound})
+		                        end)
+		                        if sound then pcall(function() sound:Destroy() end) end
+		                    end
+		                    job.pending, prefetchBusy = false, false
+		                end)
+		            end
+		            end
+		        end)
 
 		        Hooks.Register(function(dt)
 		            if not Music.Playing then return end

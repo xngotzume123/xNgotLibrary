@@ -48,7 +48,7 @@ local Presets = {
 		sources = { "youtube", "soundcloud", "audius" } },
 	["lowdata"] = { raceTracks = 1, topN = 6, searchTimeout = 8, coverArt = false,
 		sources = { "youtube" } },
-	["vietnamese"] = { sources = { "soundcloud", "youtube" }, topN = 15,
+	["vietnamese"] = { sources = { "soundcloud", "youtube" }, region = "VN", topN = 15,
 		preferShort = 420 },
 }
 function Api:Preset(name)
