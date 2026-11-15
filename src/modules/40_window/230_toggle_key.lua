@@ -14,14 +14,14 @@
 				return Window.ToggleKey
 			end
 
-			-- EXAMPLE-UI-PORT: tuong duong Window:SetToggleButtonPlatform cua Example UI.
-			-- "Mobile" = nut noi mo UI chi hien tren thiet bi cam ung, "Both" = luc nao cung hien.
+			 
+			 
 			function Window:SetToggleButtonPlatform(platform)
 				local normalized = tostring(platform or "Both")
 				if normalized ~= "Mobile" and normalized ~= "Both" then normalized = "Both" end
 				Window.ToggleButtonPlatform = normalized
-				-- Nhanh elseif chi chay khi dang duoc phep hien (Both, hoac Mobile tren may cam ung)
-				-- nen gan thang true; toggleButtonAllowed (khai bao cung ToggleWindow) dung cho luc dong cua so.
+				 
+				 
 				if normalized == "Mobile" and not UIS.TouchEnabled then
 					newFloatingIcon.Visible = false
 				elseif newWindow.Visible == false then

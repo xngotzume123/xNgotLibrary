@@ -240,7 +240,7 @@
 
 			end
 
-			-- METADATA: ghi sidecar .mp3.json ngay khi luu file de lan load sau hien ten/ca si that (ke ca file ten hash).
+			 
 			pcall(function()
 				local id3 = readID3(data)
 				CrossAIMusic.writeDownloadedMeta(path, {
@@ -260,4 +260,4 @@
 			return nil
 		end
 
-		-- ===== FILE MANAGER (engine): quet / thong ke / xoa mp3 da tai trong CFG.Folder =====
+		 

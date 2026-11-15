@@ -7,14 +7,14 @@
 --]]
 		local Windows = {}
 		local WindowByTitle = {}
-		-- Dấu nhận chủ: mỗi lần nạp thư viện sinh một table riêng, gắn vào Window
-		-- để phân biệt cửa sổ của bản này với cửa sổ của bản nạp trước.
+		 
+		 
 		local OwnerToken = {}
 
-		-- XN-SINGLETON: trước khi dựng cửa sổ, dọn mọi bản UI khác của thư viện
-		-- (bản cũ còn trong executor, hoặc thư viện bị nạp 2 lần) để không bao
-		-- giờ tồn tại 2 bộ UI cùng lúc. Cửa sổ cũ được Destroy() trước để các
-		-- connection của nó được gỡ, rồi mới quét GUI còn sót.
+		 
+		 
+		 
+		 
 		local function WindowIsOurs(win)
 			return type(win) == "table" and win.__NgotOwner == OwnerToken
 		end
@@ -71,8 +71,8 @@
 		function LIB:CreateWindow(data)
 			data = data or {}
 			CleanupOtherInstances()
-			-- Một Title = một cửa sổ: tạo lại cùng Title thì dọn bản cũ trước khi dựng,
-			-- nếu không sẽ có 2 bộ UI chồng nhau (nút nổi + cửa sổ + bảng nổi).
+			 
+			 
 			local titleKey = tostring(data.Title or "NgotStudio")
 			local previousWindow = WindowByTitle[titleKey]
 			if previousWindow and type(previousWindow.Destroy) == "function" then

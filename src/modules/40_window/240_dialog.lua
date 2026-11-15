@@ -132,10 +132,20 @@
 			newWindow.Size = UDim2.fromOffset(0,0)
 
 			local windowstate = newWindow.Visible
-			local startupGatePassed = true -- Startup gate (loader + key) se dat false trong luc dang khoa
-			local startupGateIslandHeld = false
+			local startupGatePassed = true  
+			local startupGateFinished = true
+			local startupMenuBuilt = false
 			local timeout = false
 			local windowDestroyed = false
+			Window.__IslandReady = false
+			local function releaseStartupIsland()
+				if windowDestroyed or not startupMenuBuilt or not startupGateFinished then return end
+				Window.__IslandReady = true
+				local islandApi = Window.DynamicIsland
+				if islandApi and type(islandApi.Enable) == "function" then
+					pcall(islandApi.Enable, islandApi, islandApi.Enabled)
+				end
+			end
 
 			windowSizeRuntimeSetter = function(size)
 				if typeof(size) ~= "UDim2" then return end

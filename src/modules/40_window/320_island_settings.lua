@@ -21,7 +21,6 @@
 				end)
 				if created and type(islandAPI) == "table" then
 					Window.DynamicIsland = islandAPI
-					if not startupGatePassed then startupGateIslandHeld = true; pcall(function() islandAPI:Enable(false) end) end
 			do
 				local function getApi()
 					return Window and Window.DynamicIsland or nil
@@ -257,7 +256,7 @@
 						report.checks[#report.checks + 1] = { name = name, status = status, detail = detail }
 					end
 
-					-- Báo cáo đi vào log của thư viện (xem panel debug), không in ra console.
+					 
 					local function out(message)
 						local logApi = _G.xNgotLog
 						if logApi and type(logApi.info) == "function" then pcall(logApi.info, "doctor", message) end
@@ -382,7 +381,7 @@
 				for key, defaultValue in pairs(defaults) do
 					if islandSettings[key] == nil then islandSettings[key] = defaultValue end
 				end
-				-- Tat auto bat FPS/Ping: config cu da luu true thi tat 1 lan (migration), tu lan sau nguoi dung bat thu cong se duoc nho.
+				 
 				if islandSettings.__fpsPingAutoOffV1 ~= true then
 					islandSettings.Fps = false
 					islandSettings.Ping = false

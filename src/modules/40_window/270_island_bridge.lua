@@ -34,10 +34,10 @@
 				local SettingsTab = Window:Tab({ Title = Window.SettingsTitle, Icon = Window.SettingsIcon, __System = true })
 				Window.SettingsTab = SettingsTab
 
-				-- ============================================================
-				-- EXAMPLE-HOME: port trang Home cua Example UI len dau tab Settings Ui.
-				-- Gom: the Profile/Welcome (avatar nguoi choi), FPS + Ping (co do thi cot),
-				-- Players, Session, the game dang choi va 4 nut Rejoin / Hop / Lowest / Job ID.
-				-- Ve bang Instance goc trong container cua Settings Ui, lay du lieu that
-				-- tu LocalPlayer / game / MarketplaceService / TeleportService.
-				-- ============================================================
+				 
+				 
+				 
+				 
+				 
+				 
+				 

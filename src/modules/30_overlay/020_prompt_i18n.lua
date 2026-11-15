@@ -5,7 +5,7 @@
      role   : Nhận diện prompt tiếng Việt + từ điển VI_EN/EN_VI
      source : main 2.txt L2953-3314 · 362 dòng · delta +0
 --]]
-		    local function crossPromptIsVi(prompt) -- Cross AI: nhan dien tieng Viet qua dau tieng Viet trong cau hoi
+		    local function crossPromptIsVi(prompt)  
 		    	if type(prompt) ~= "string" then return false end
 		    	return prompt:find("[\195-\197\204]") ~= nil
 		    end

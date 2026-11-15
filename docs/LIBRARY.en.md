@@ -1,615 +1,498 @@
 # xNgot Library — User Manual
 
-> For people **using this library to build a hub / menu for a Roblox script**.
-> Vietnamese version: [`LIBRARY.vi.md`](LIBRARY.vi.md) · Overview & support: [`../README.md`](../README.md)
-
-You don't need advanced Lua. All you do is pass **tables** — the library takes care of drawing,
-dragging, resizing, effects, saving settings, notifications and music.
 
 ---
 
-## 1. Start in 30 seconds
+# Your interface, made simpler.
 
-```lua
-local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
+xNgot Library is a Roblox UI library for building script hubs: windows, controls, saved settings, notifications and a built-in Dynamic Island. This guide covers the **local build from this workspace**, including the integrated Ophyn key screen.
 
-local Window = LIB:CreateWindow({ Title = "My Hub", Icon = "sparkles" })
-local Tab = Window:Tab({ Title = "Main", Icon = "house" })
+> **Version note:** These pages describe the updated test build. The GitHub `main` branch and raw download URL may still serve an older build until you upload the updated files.
 
-Tab:Button({ Title = "Say hi", Callback = function()
-    LIB:Notify({ Title = "Hello", Content = "The library is running", Kind = "success" })
-end })
-```
+## What you can build
 
-Run it and you have a window. Read on when you need more.
+- **A complete hub** with tabs, toggles, sliders, inputs and dialogs.
+- **A key gate** with local keys, PandaAuth, Jnkie, Platoboost or a custom validator.
+- **A floating companion** for notifications, timers and music.
+- **A personal look** with UI presets, colors, fonts and saved profiles.
+
+## Your first steps
+
+1. Load the local `main.lua` and create a window.
+2. Add a tab and some controls.
+3. Configure a key system only if your hub needs one.
+4. Use the floating panel and theme APIs as needed.
+
+> **Client-side security:** local keys and any secrets embedded in a client script can be extracted. Use a trusted server-side design for real authorization.
 
 ---
 
-## 2. Loading the library
+# Installation
 
-### 2.1. Usual way
+Place the updated `main.lua` in your executor's workspace. Test that `readfile` and `loadstring` are supported. Downloading into the device's Downloads folder does not automatically put the file in the executor workspace.
 
-```lua
-local LIB = loadstring(game:HttpGet("https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
-```
-
-It opens a **demo window** so you can see the look. As soon as you call `LIB:CreateWindow`
-yourself, the demo window closes itself.
-
-### 2.2. Library only — nothing opens on its own
-
-Set the flag **before** loading:
+## Load from a local file
 
 ```lua
 getgenv().xNgotLibraryOnly = true
 
-local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
-local Window = LIB:CreateWindow({ Title = "My Hub" })
+local source = readfile("main.lua")
+local chunk, err = loadstring(source)
+assert(chunk, err)
+local LIB = chunk()
 ```
 
-No demo window, no `_G.Window` — just `LIB` for you to use.
+Set `xNgotLibraryOnly` **before** loading to get the library without opening the demo. Without it, the file normally starts the demo. Keep the final `()` when using `loadstring(readfile(...))()`.
 
-### 2.3. Lighter build
+## Load from GitHub
 
-Swap `dist/main.lua` for `dist/main.min.lua`. About 25% smaller, identical API.
-
-### 2.4. Load from a local file (offline)
-
-```lua
-local LIB = loadstring(readfile("xNgotLibrary.lua"))()
-```
-
-> Keep the trailing `()`. Without it you're holding a *function*, not the library.
-
----
-
-## 3. Creating a window
-
-```lua
-local Window = LIB:CreateWindow({
-    Title = "My Hub",              -- window title (also the name on the floating panel)
-    Icon = "sparkles",             -- icon next to the title
-    Version = "v1.0.0",            -- small text next to the title
-    Size = UDim2.fromOffset(620, 440),
-    ToggleKey = Enum.KeyCode.RightShift,
-})
-```
-
-Every field is optional — defaults are used when omitted.
-
-| Field | Type | Default | Meaning |
-|---|---|---|---|
-| `Title` | string | `"NgotStudio"` | window title |
-| `Icon` | string | `"layout-dashboard"` | icon name (section 14) |
-| `Version` | string | `"v1.0"` | text beside the title |
-| `Author` | string | `"v1.0"` | subtitle line |
-| `Folder` | string | `"xNgotLibrary/Config"` | where settings are stored |
-| `Size` | UDim2 | `580×420` | initial size |
-| `ToggleKey` | Enum.KeyCode | `RightShift` | show / hide hotkey |
-| `ToggleButtonPlatform` | `"PC"` / `"Mobile"` / `"Both"` | `"Both"` | which devices show the floating button |
-| `LiveSearchDropdown` | boolean | `false` | filter dropdowns while typing |
-| `AutoSave` | boolean | `true` | save on every change |
-| `FileSaveName` | string | `"NgotStudio_Config.json"` | settings file name |
-| `SettingsUI` | boolean | `true` | `false` = **no Settings tab and no floating panel** |
-| `SettingsTitle` / `SettingsIcon` | string | `"Settings Ui"` / `"settings"` | rename the settings tab |
-| `Loading` | table | — | loading screen: `Text`, `Steps` (list), `Duration` (seconds) |
-| `KeySystem` | table / `false` | `false` | key gate — see section 4 |
-| `AdminInfo` | table / `false` | `false` | author card: `{ Name, Bio, Avatar }` |
-
----
-
-## 4. Locking the window with a key
-
-```lua
-KeySystem = {
-    Enabled = true,
-    Title = "Enter key",
-    Subtitle = "Get your key on Discord",
-    Note = "Contact the author for a key",
-    Keys = { "XNGOT-2026", "VIP-2026" },   -- multiple keys allowed
-    CaseSensitive = false,
-    GetKeyUrl = "https://discord.gg/...",  -- "Get key" button
-}
-```
-
-- A correct key is remembered in `xNgotLibrary/Keys/key.txt` — next launch goes straight in.
-- `Window.KeyUnlocked` tells you whether the gate has been passed.
-- Ask again next time: `Window:ForgetSavedKey()`.
-
----
-
-## 5. Tabs and elements
-
-### 5.1. Create a tab
-
-```lua
-local Tab = Window:Tab({ Title = "Main", Icon = "house" })
-```
-
-- A tab's `Title` is the **settings group name** — renaming a tab loses that tab's saved values.
-- Inside **one tab**, element `Title`s must be **unique** (duplicates overwrite each other).
-
-### 5.2. Common rules
-
-1. Every element takes a `data` table: `Title`, `Desc`, `Locked` plus its own fields.
-2. `Callback` fires **once at creation** (with the initial value), then on every change.
-   Don't assume it only runs when the user clicks.
-3. Elements return an object with `:Destroy()`, usually also `:Set`, `:SetTitle`, `:SetDesc`,
-   `:Lock`, `:Unlock`.
-4. `Locked = true` ⇒ visible but not clickable (soft lock).
-
-### 5.3. Group box — `Section`
-
-```lua
-local Sec = Tab:Section({ Title = "Basics", Default = true })
-Sec:SetTitle("New")   Sec:SetOpen(true)   Sec:Toggle()   Sec:Destroy()
-```
-
-| Field | Type | Default |
-|---|---|---|
-| `Title` | string | `"Section"` |
-| `Default` | boolean | `false` (open by default?) |
-| `TextXAlignment` | Enum | `Left` |
-
-### 5.4. Switch — `Toggle`
-
-```lua
-local esp = Tab:Toggle({
-    Title = "ESP",
-    Desc = "Draw player boxes",
-    Default = false,
-    Callback = function(on) print("ESP:", on) end,
-})
-
-esp:Set(true)     -- change from code (fires Callback)
-print(esp.State)  -- read state
-```
-
-### 5.5. Slider — `Slider`
-
-```lua
-local s = Tab:Slider({
-    Title = "Speed",
-    Value = { Min = 16, Max = 200, Default = 50 },
-    Step = 2,
-    Callback = function(v) getgenv().Speed = v end,
-})
-s:Set(100)
-```
-
-### 5.6. Text box — `Input`
-
-```lua
-local nick = Tab:Input({ Title = "Name", Placeholder = "Type a name…", Default = "xNgot" })
-print(nick.Text)
-nick:Set("New")   nick:SetPlaceholder("…")
-```
-
-| Field | Type | Note |
-|---|---|---|
-| `Placeholder` | string | grey hint text |
-| `Default` / `Text` | string | initial value |
-| `MultiLine` | boolean | multi-line box |
-| `ClearTextOnFocus` | boolean | clear on click |
-
-### 5.7. Select list — `Dropdown`
-
-```lua
-local src = Tab:Dropdown({
-    Title = "Music source",
-    Values = { "youtube", "soundcloud", "audius" },
-    Default = "youtube",
-    Callback = function(v) print("picked:", v) end,
-})
-src:Refresh({ "a", "b", "c" })
-src:Select("b")
-
--- multi-select: Callback receives a table
-local tags = Tab:Dropdown({
-    Title = "Genres", Multi = true, AllowNone = true,
-    Values = { "lofi", "jazz", "chill" }, Default = { "lofi" },
-    Callback = function(list) print(#list .. " selected") end,
-})
-```
-
-### 5.8. Colour picker — `Colorpicker`
-
-```lua
-local c = Tab:Colorpicker({
-    Title = "Accent",
-    Default = Color3.fromRGB(10, 132, 255),
-    Callback = function(color) print(color) end,
-})
-c:Set(Color3.new(1, 0, 0))
-print(c:Get())
-```
-
-### 5.9. Paragraph, code block, button
-
-```lua
-Tab:Paragraph({ Title = "About", Desc = "RichText is supported." })
-
-local code = Tab:Code({ Title = "Example", Code = "print('hello')" })
-code:SetCode("print(2)")
-
-local btn = Tab:Button({ Title = "Run", Desc = "click to run", Callback = function() end })
-btn:SetTitle("Run again")   btn:Lock()   btn:Unlock()
-```
-
-### 5.10. Dialog — `Window:Dialog`
-
-```lua
-Window:Dialog({
-    Title = "Confirm",
-    Content = "Delete all settings?",
-    Icon = "triangle-alert",
-    Buttons = {
-        { Title = "Cancel" },                                     -- no Callback = just closes
-        { Title = "Delete", Callback = function() Window:DeleteConfig() end },
-    },
-})
-```
-
-### 5.11. Author card and Discord
-
-```lua
-Tab:InfoNguyenNhat({ Title = "Author", Name = "xNgot", Bio = "…", Avatar = 1234567890 })
-Tab:Discord({ Title = "Discord", InviteCode = "abcd1234" })
-```
-
-`Info`: `SetName`, `SetBio`, `SetAvatar(id)` · `Discord`: `SetInvite(link, code)`.
-
----
-
-## 6. Notifications — `LIB:Notify`
-
-```lua
-local n = LIB:Notify({
-    Title = "Saved",
-    Content = "Your settings were written to disk",
-    Kind = "success",     -- info / success / warn / error
-    Duration = 4,
-})
-n.Close()                 -- close early
-```
-
-| Field | Default | Note |
-|---|---|---|
-| `Title` | `"Notification"` | |
-| `Content` | `""` | |
-| `Kind` | `"info"` | info · success · warn · error |
-| `Icon` | `"info"` | `circle-check` ⇒ success, `triangle-alert` ⇒ warn |
-| `Duration` | `5` | seconds, minimum `0.1` |
-| `Native` | `false` | `true` = always use the corner card |
-
-When the floating panel is on, notifications appear **on the panel** to keep the screen clean.
-
----
-
-## 7. Settings are saved for you
-
-- Each tab is a group; each element is an entry inside it.
-- On the next run, **saved** values win over `Default`.
-- `AutoSave = true` ⇒ everything is written as the user changes it.
-- Renaming an element's `Title` loses that element's saved value (the key follows the name).
-
-Manual control:
-
-```lua
-Window:SaveConfig()
-print(Window:GetConfigPath())
-Window:DeleteConfig()
-```
-
----
-
-## 8. Floating panel
-
-The floating panel is the small bar on screen (notifications, music, timer, AI assistant).
-It exists **only when `SettingsUI = true`** (the default).
-
-```lua
-local Island = Window:GetDynamicIsland()      -- nil when there is no panel
-if Island then
-    Island:Notify("Title", "Message", "info", 4)
-end
-```
-
-> Function names stay `GetDynamicIsland` / `DynamicIsland` exactly as in the original release so
-> existing scripts keep working. These docs simply call it the **floating panel**.
-
-### 8.1. Notifications and activity
-
-| Function | Does |
-|---|---|
-| `Island:Notify(title, message, kind?, duration?)` | notification on the panel |
-| `Island:GameplayActivity(title, message, duration?, kind?)` | activity bar with a countdown |
-| `Island:Enable(true/false)` | turn the panel on / off |
-| `Island:Set(key, value)` | change a setting (see 8.6) |
-| `Island:State()` | current state table |
-
-### 8.2. Expand / collapse
-
-| Function | Does |
-|---|---|
-| `Island:Expand(page?)` | `"Home"`, `"Music"`, `"Cross"`, `"Timer"`, `"Stopwatch"`, `"Download"` |
-| `Island:Collapse()` | back to the compact bar |
-| `Island:Theme(1–7)` / `Island:Accent(1–6)` | palette / accent colour |
-| `Island:SetLanguage("vi" / "en")` | panel language |
-
-### 8.3. Timer and stopwatch
-
-```lua
-Island:Timer(300)        -- 5 minutes
-Island:ExtendTimer(60)
-Island:StopTimer()
-
-Island:WatchToggle()  Island:WatchLap()  Island:WatchReset()
-```
-
-### 8.4. Music
-
-```lua
-Island:MusicSearch("lofi chill for the evening")
-Island:Expand("Music")
-Island:MusicSelect(1, true)      -- pick the first result and play
-Island:PlayMusic()
-Island:NextMusic(1)
-Island:MusicVolume(65)
-Island:MusicSpeed(1.0)
-```
-
-| Group | Functions |
-|---|---|
-| Search | `MusicSearch(prompt)`, `MusicSearchState()`, `MusicRows()` |
-| Picking | `MusicSelectValue(value, play?)`, `MusicSelect(index, play?)`, `MusicCatalog()` |
-| Playback | `PlayMusic()`, `NextMusic(n?)`, `MusicPlayTrack(id, url, source)` |
-| Audio | `MusicVolume(0–100)`, `MusicSpeed(0.5–2)`, `MusicMode("Auto"/"Shuffle"/"RepeatOne"/"ShowIsland", bool)` |
-| Downloaded files | `MusicFiles(sizes?)`, `MusicStorage()`, `MusicPlayFile(path)`, `MusicDeleteFile(path)`, `MusicClearDownloaded()`, `MusicLoadDownloaded()` |
-| Direct download | `MusicDownloadOne(id, url, source)`, `DemoDownload()` |
-| Taste learning | `MusicAiLearn(title, good)` |
-| Events | `OnMusicChanged(fn)`, `OnMusicCatalogChanged(fn)` |
-
-### 8.5. AI assistant
-
-```lua
-Island:AiEnable(true)
-Island:AiAsk("open the music page")   -- understands Vietnamese and English
-Island:AiOpen()
-Island:AiClear()
-Island:AiPermission("Ui", true)       -- Ui / Body / Free / Key
-```
-
-### 8.6. Panel settings — `Island:Set`
-
-```lua
-Island:Set("Duration", 6)    -- notifications stay 6s
-Island:Set("Ring", false)    -- disable progress ring (lighter)
-Island:Set("Fps", true)
-Island:Set("Clock", true)
-```
-
-Common keys: `Language`, `Theme`, `Accent`, `Duration`, `Ring`, `RimLight`, `Fps`, `Ping`,
-`Clock`, `Expand`, `ShowIsland`, `Toast`, `Bubble`.
-
-### 8.7. Removing the panel
-
-```lua
-Island:Destroy()
-```
-
----
-
-## 9. Music settings — `_G.xNgotMusicConfig`
-
-```lua
-_G.xNgotMusicConfig:Set("topN", 15)
-print(_G.xNgotMusicConfig:Get("topN"))
-```
-
-| Function | Does |
-|---|---|
-| `Get(key)` / `Set(key, value)` | read / write one key |
-| `Preset(name)` | apply a preset (9.2) |
-| `Presets()` | list presets |
-| `Apply()` | push everything to the engine |
-| `OnChange(fn)` | listen for changes |
-| `Schema()` | every key with its allowed range |
-
-### 9.1. Main keys
-
-| Key | Default | Meaning |
-|---|---|---|
-| `topN` | `12` | results per search (1–40) |
-| `sources` | youtube, soundcloud, audius | sources to search |
-| `searchTimeout` | `12` | max seconds per search |
-| `preferShort` | `600` | prefer tracks shorter than N seconds (0 = off) |
-| `folder` | `xNgotLibrary/Music` | download folder |
-| `raceTracks` | `2` | parallel downloads |
-| `downloadTimeout` | `200` | seconds to wait for a download |
-| `retries` | `2` | retry count |
-| `renameFiles` | `true` | name files after the track |
-| `aiLearn` | `true` | learn from skipped tracks |
-| `coverArt` | `true` | show cover art |
-| `compactRows` | `false` | single-line track rows |
-| `notifyOnSearch` | `true` | notify when a search finishes |
-| `debug` | `false` | verbose logging |
-
-### 9.2. Presets
-
-| Preset | Best for |
-|---|---|
-| `fast` | slow networks, want results quickly |
-| `quality` | strong device, more choices, best quality |
-| `lowdata` | mobile data / weak device, fewer results, no cover art |
-| `vietnamese` | Vietnamese music (SoundCloud first) |
-
-```lua
-_G.xNgotMusicConfig:Preset("lowdata")
-```
-
----
-
-## 10. Appearance
-
-Users can change everything in the **Settings Ui** tab. From code:
-
-```lua
-Window:SetUISettings({ AccentColor = Color3.fromRGB(255, 55, 132), Enabled = true }, true)
-
-Window:ApplyUIPreset("Default")
-Window:ResetUISize(true)
-Window:UseOriginalUI(true)
-```
-
-| Group | Functions |
-|---|---|
-| Read / write | `GetUISettings()`, `SetUISettings(tbl, save?)`, `SaveUISettings()` |
-| Size | `SetUISize(w, h, save?)`, `GetUISize()`, `ResetUISize(save?)` |
-| Presets | `ApplyUIPreset(name)`, `GetUIPresets()` |
-| Profiles | `SaveUIProfile(name)`, `LoadUIProfile(name)`, `DeleteUIProfile(name)`, `GetUIProfileNames()` |
-| Export / import | `ExportUISettings()`, `ImportUISettings(json, save?)` |
-| Other | `GetUIOverrides()`, `ClearUIOverride(key, save?)`, `OpenUISettings()`, `SetUILanguage()` |
-
----
-
-## 11. Window control
-
-| Call | Does |
-|---|---|
-| `Window:Show()` / `Hide()` / `Toggle(state?)` | show / hide / flip |
-| `Window:Destroy()` | close and clean up |
-| `Window:SetToggleKey(Enum.KeyCode.X)` | change the hotkey |
-| `Window:SetToggleButtonPlatform("PC" / "Mobile" / "Both")` | floating button platform |
-| `Window:EditOpenButton({ Icon = "x", Size = UDim2.fromOffset(44, 44) })` | restyle the floating button |
-| `Window:SelectTab("Main")` or `SelectTab(2)` | switch tab |
-| `Window:Divider()` | divider line |
-| `Window:GetConfigPath()` / `SaveConfig()` / `DeleteConfig()` | settings file |
-| `Window:ForgetSavedKey()` | forget the saved key |
-
----
-
-## 12. Flags and globals
-
-| Name | Purpose |
-|---|---|
-| `getgenv().xNgotLibraryOnly = true` | don't open the demo window (set before loading) |
-| `getgenv().xNgotMusic = { topN = 10 }` | music settings before the engine starts |
-| `_G.xNgotMusicConfig` | music settings (section 9) |
-| `_G.CrossAIMusic` | music engine: `parse`, `search`, `download`, `assetFor`… |
-| `_G.xNgotMusicDoctor()` | environment self-check (section 13) |
-| `_G.xNgotLog` | library log |
-| `_G.Window` | demo window (only without `xNgotLibraryOnly`) |
-
----
-
-## 13. Troubleshooting
-
-**No sound?** Run:
-
-```lua
-local report = _G.xNgotMusicDoctor()
-print(report.fails, report.warns)
-```
-
-It checks `writefile`, `readfile`, `makefolder`, `getcustomasset`, `request`, the engine, the
-parser… whatever says `fail` is the cause.
-
-**Read the log:**
-
-```lua
-_G.xNgotLog.info("tag", "message")
-print(_G.xNgotLog:export())
-_G.xNgotLog.clear()
-```
-
-**Debug panel:** press **RightShift** or call `_G.xNgotDebug.openPanel()`.
-
----
-
-## 14. Icons
-
-`Icon = "<icon-name>"`. Over 1,500 icons, referred to by name:
-
-```
-house · music-2 · sparkles · settings · bell · search · download · trash-2 · play · pause
-skip-forward · skip-back · volume-2 · clock · timer · activity · cpu · wifi · user · key
-shield · layout-dashboard · wrench · info · circle-check · triangle-alert · sliders-horizontal
-```
-
-A wrong name **never errors** — the icon simply doesn't show. Try the obvious English name,
-most of them exist.
-
----
-
-## 15. Complete examples
-
-### 15.1. Minimal hub
+After updating `dist/main.lua` in your repository, your raw URL can be used:
 
 ```lua
 getgenv().xNgotLibraryOnly = true
 local LIB = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"))()
-
-local Window = LIB:CreateWindow({ Title = "Demo", Icon = "music-2" })
-local Tab = Window:Tab({ Title = "Main", Icon = "house" })
-
-Tab:Section({ Title = "Basics", Default = true })
-Tab:Toggle({ Title = "Enabled", Default = true, Callback = print })
-Tab:Slider({ Title = "Speed", Value = { Min = 16, Max = 200, Default = 50 }, Callback = print })
-Tab:Button({ Title = "Notify", Callback = function()
-    LIB:Notify({ Title = "Hello", Content = "from the library", Kind = "success" })
-end })
+    "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua"
+))()
 ```
 
-### 15.2. Hub with music
+> The raw URL points to what is actually published on GitHub, not the local test file. It will not contain these changes until that file is committed and pushed.
+
+## Build from source
+
+```bash
+python3 src/build.py --release --minify light
+```
+
+This produces `dist/main.lua` and `dist/main.min.lua`. The light build keeps line breaks and was checked with an older Luau compiler with a 200-register limit. A working Roblox executor is still needed for runtime testing.
+
+---
+
+# Windows & tabs
+
+Create a window from the library, then add a tab. The example assumes `LIB` has already been loaded in library-only mode.
 
 ```lua
-getgenv().xNgotLibraryOnly = true
-local LIB = loadstring(game:HttpGet(".../dist/main.lua"))()
+local Window = LIB:CreateWindow({
+    Title = "My Hub",
+    Icon = "sparkles",
+    Version = "v1.0.0",
+    Size = UDim2.fromOffset(620, 440),
+    ToggleKey = Enum.KeyCode.RightShift,
+    Folder = "MyHub",
+    FileSaveName = "settings.json",
+    AutoSave = true,
+})
 
-local Window = LIB:CreateWindow({ Title = "Music Hub", Icon = "sparkles" })
-local Island = Window:GetDynamicIsland()
-local Tab = Window:Tab({ Title = "Music", Icon = "music-2" })
-
-Tab:Section({ Title = "Search", Default = true })
-local q = Tab:Input({ Title = "Describe it", Default = "lofi chill for the evening" })
-
-Tab:Button({ Title = "Search", Callback = function()
-    Island:MusicSearch(q.Text)
-    Island:Expand("Music")
-end })
-
-Tab:Button({ Title = "Play / pause", Callback = function() Island:PlayMusic() end })
-
-Tab:Slider({ Title = "Volume", Value = { Min = 0, Max = 100, Default = 60 },
-    Callback = function(v) Island:MusicVolume(v) end })
-
-Tab:Button({ Title = "Storage used", Callback = function()
-    local s = Island:MusicStorage()
-    LIB:Notify({ Title = "Storage", Content = string.format("%d tracks", s.Count or 0) })
+local Main = Window:Tab({ Title = "Main", Icon = "house" })
+Main:Button({ Title = "Hello", Callback = function()
+    print("Hello from xNgot")
 end })
 ```
 
+## Window options
+
+| Option | Description |
+| --- | --- |
+| `Title`, `Icon`, `Version` | Window title, icon name and version text. `Author` takes precedence over `Version`. |
+| `Size`, `ToggleKey` | Initial size and keyboard shortcut. |
+| `Folder`, `FileSaveName`, `AutoSave` | Configuration location and autosave behavior. |
+| `SettingsUI` | Defaults to `true`; `false` removes Settings and the integrated island. |
+| `Loading` | Loader configuration; `false` disables it when no key gate is enabled. |
+| `KeySystem` | Key gate settings; see the key system section. |
+| `AdminInfo` | Custom author information, or `false` to disable it. |
+
+## Control the window
+
+```lua
+Window:SelectTab("Main")
+Window:Hide()
+Window:Show()
+Window:Toggle()
+Window:SetToggleKey(Enum.KeyCode.RightShift)
+-- Window:Destroy() -- closes and cleans up
+```
+
+The window and island are held until the key screen completes. If the user closes the key screen before authentication, the window is destroyed rather than unlocked.
+
 ---
 
-## 16. FAQ
+# UI components
 
-| Question | Answer |
-|---|---|
-| No floating panel? | `SettingsUI = false` removes it. Turn it back on and create the window again. |
-| `Window.DynamicIsland` is `nil`? | Check `Window.DynamicIslandError` — usually the executor blocks GUI creation. |
-| Two elements overwrite each other? | Same tab + same `Title`. Give them different titles. |
-| Does `Callback` fire on creation? | Yes, once with the initial value. |
-| Change colours / fonts globally? | `Window:SetUISettings{...}` or `Window:ApplyUIPreset("...")`. |
-| Weak device? | `_G.xNgotMusicConfig:Preset("lowdata")` + `Island:Set("Ring", false)`. |
-| Settings lost on exit? | No — they live in `xNgotLibrary/Config/`. |
-| Multiple windows at once? | Yes, each `CreateWindow` returns its own object. |
-| Release only to key holders? | Pass `KeySystem` when creating the window (section 4). |
+Add elements to a tab using `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input`, `Tab:Dropdown`, `Tab:Colorpicker`, `Tab:Section`, `Tab:Paragraph`, `Tab:Code`, `Tab:Discord` and `Tab:InfoNguyenNhat`.
+
+## Buttons and text
+
+```lua
+Main:Section({ Title = "General", Default = true })
+Main:Paragraph({ Title = "Welcome", Desc = "Choose an option below." })
+Main:Button({ Title = "Refresh", Icon = "refresh-cw", Callback = function()
+    print("Refresh")
+end })
+local sample = Main:Code({ Title = "Example", Code = "print('hello')" })
+sample:SetCode("print('updated')")
+```
+
+## State controls
+
+```lua
+local toggle = Main:Toggle({
+    Title = "Enabled", Default = false,
+    Callback = function(on) print("Enabled:", on) end,
+})
+local slider = Main:Slider({
+    Title = "Speed", Value = { Min = 1, Max = 100, Default = 25 }, Step = 1,
+    Callback = function(value) print(value) end,
+})
+local input = Main:Input({ Title = "Name", Placeholder = "Type a name" })
+toggle:Set(true)
+slider:Set(50)
+input:Set("xNgot")
+```
+
+> Toggle, slider, input, dropdown and color-picker callbacks can run during creation with an initial or saved value. Do not assume callbacks only run after a click.
+
+## Dropdown and color
+
+```lua
+local menu = Main:Dropdown({
+    Title = "Mode", Values = { "Default", "Fast", "Quiet" }, Value = "Default",
+    Callback = function(value) print(value) end,
+})
+menu:Refresh({ "Default", "Fast", "Quiet" })
+menu:Select("Fast")
+
+Main:Colorpicker({
+    Title = "Accent", Default = Color3.fromRGB(10, 135, 213),
+    Callback = function(color) print(color) end,
+})
+```
+
+Use distinct element titles within each tab: titles are used as configuration keys. `Multi = true` enables a multi-select dropdown; `AllowNone = true` permits no selection. Many controls also expose `:SetTitle`, `:SetDesc`, `:Lock`, `:Unlock` and `:Destroy`; check the specific component before relying on a method.
 
 ---
 
-<p align="center">
-This library is free — if it helps you,
-<a href="../README.md#-support-the-author">buy the author a coffee</a> ☕
-</p>
+# Notifications & dialogs
+
+Use `LIB:Notify` for feedback or `Window:Dialog` when a choice is required.
+
+```lua
+LIB:Notify({
+    Title = "Saved", Content = "Your settings are ready.",
+    Kind = "success", Icon = "circle-check", Duration = 4,
+})
+
+Window:Dialog({
+    Title = "Reset settings?", Content = "This will delete the saved configuration.",
+    Icon = "triangle-alert",
+    Buttons = {
+        { Title = "Cancel" },
+        { Title = "Reset", Callback = function() Window:DeleteConfig() end },
+    },
+})
+```
+
+`Kind` supports `info`, `success`, `warn` and `error` for island notifications. `Native = true` requests the regular notification instead of routing to an enabled island. A native notification can be closed with the returned object's `:Close()`.
+
+---
+
+# Key system
+
+The updated build embeds the Ophyn interface and adapters. Enable the gate via `KeySystem` in `LIB:CreateWindow`, or use `getgenv().xNgotLoaderConfig.keySystem` for the bundled demo. Its colors, font, rounded corners and window icon follow saved xNgot UI settings by default.
+
+## Supported modes
+
+| Mode | Configuration |
+| --- | --- |
+| Local | `Key = "..."` or `Keys = { "...", "..." }` |
+| PandaAuth | `API = { { Type = "panda", ServiceId = "..." } }` |
+| Jnkie | `API = { { Type = "jnkie", Service = "...", Identifier = "..." } }` |
+| Platoboost | `API = { { Type = "platoboost", ServiceId = 123, Secret = "..." } }` |
+| Custom | `Key = function(key) ... end` or an `API` entry with `Type = "custom"` |
+| Keyless | `Keyless = { enabled = true }` |
+
+When multiple validators are configured, **any one** can accept the key. Avoid leaving a demo local key alongside a production provider unless a fallback is intentional. If no key/provider is configured, the gate does not silently accept an example key.
+
+## Key options
+
+`Enabled`, `Key` / `Keys`, `CaseSensitive`, `SaveKey`, `KeyFile`, `URL` / `GetKeyUrl`, `API`, `GetMethods`, `Keyless`, and `Ophyn` are supported. Saved keys are checked again before access. `Style = "Legacy"` selects the older xNgot gate; it only supports local keys.
+
+> Provider adapters and the key UI are integrated, but live provider authentication has not been tested without account credentials. PandaAuth and Jnkie download and execute their respective SDKs at runtime.
+
+---
+
+# Local keys & keyless
+
+## Basic local key
+
+```lua
+local Window = LIB:CreateWindow({
+    Title = "My Hub", Icon = "sparkles",
+    KeySystem = {
+        Enabled = true,
+        Keys = { "DEMO-KEY", "VIP-KEY" },
+        CaseSensitive = false,
+        SaveKey = true,
+        KeyFile = "xNgotLibrary/Keys/key.txt",
+        GetKeyUrl = "https://example.com/get-key",
+    },
+})
+```
+
+Local keys default to case-insensitive matching. Provider keys are passed to the provider unchanged. `SaveKey = false` is useful for testing the screen each time.
+
+```lua
+print(Window.KeyUnlocked)
+Window:ForgetSavedKey()
+```
+
+For the bundled demo, the default key is `XNGOT-2026`. A previously saved key may automatically be checked; configure `SaveKey = false` to test manual entry.
+
+## Keyless mode
+
+```lua
+KeySystem = {
+    Enabled = true,
+    Keyless = { enabled = true, showcard = true, autoconfirm = false },
+}
+```
+
+`autoconfirm = true` continues automatically. Keyless intentionally skips validation; it does not provide access control.
+
+---
+
+# Provider setup
+
+These are `KeySystem` tables. Replace sample values with the exact values from your provider dashboard. Do not add demo local keys unless you want them accepted too.
+
+## PandaAuth
+
+```lua
+KeySystem = {
+    Enabled = true, SaveKey = true,
+    API = { { Type = "panda", ServiceId = "YOUR_SERVICE_ID" } },
+}
+```
+
+## Jnkie
+
+```lua
+KeySystem = {
+    Enabled = true, SaveKey = true,
+    API = { { Type = "jnkie", Service = "SERVICE_NAME",
+              Identifier = "USER_IDENTIFIER", Provider = "Mixed" } },
+}
+```
+
+## Platoboost
+
+```lua
+KeySystem = {
+    Enabled = true, SaveKey = true,
+    API = { { Type = "platoboost", ServiceId = 12345, Secret = "YOUR_SECRET" } },
+}
+```
+
+> A client script is not a safe place to store a secret. Provider reachability, SDK compatibility and request support depend on the executor and provider. Check both successful and rejected keys with a real test service before release.
+
+---
+
+# Custom & appearance
+
+A custom adapter receives the entered key and a context containing the entry's fields plus `ctx.Request` when available.
+
+```lua
+KeySystem = {
+    Enabled = true,
+    API = {{
+        Type = "custom", ServiceId = "my-service",
+        CheckKey = function(key, ctx)
+            if key == "demo" then return true end
+            return false, "Invalid key"
+        end,
+        GetKeyLink = function(ctx)
+            return "https://example.com/get-key"
+        end,
+    }},
+}
+```
+
+The example is intentionally local, not a secure server validator. A simpler `Key = function(key) return true_or_false, reason end` is also supported.
+
+## Customize the gate
+
+```lua
+KeySystem = {
+    Enabled = true, Keys = { "DEMO" },
+    Ophyn = {
+        Title = "My Hub", Description = "Key System", Intro = true,
+        discord_link = "discord.gg/example", Discord = true,
+        Informations = true,
+    },
+}
+```
+
+`Ophyn` options are forwarded to the embedded interface. Set `SyncTheme = false` and choose `Theme` for a separate Ophyn palette; `SyncFont = false` uses its original font. Explicit `ChangeTheme = true` allows the user to switch away from the synchronized palette. A custom `Logo` overrides the window icon.
+
+---
+
+# Dynamic Island
+
+The integrated island is available when `SettingsUI` is enabled. Guard against `nil` when it is disabled or could not initialize.
+
+```lua
+local Island = Window:GetDynamicIsland()
+if Island then
+    Island:Notify("Welcome", "Your hub is ready", "success", 4)
+    Island:GameplayActivity("Working", "Processing", 5, "info")
+    Island:Expand("Music")
+end
+```
+
+## Timer and display
+
+```lua
+if Island then
+    Island:Timer(300)
+    Island:ExtendTimer(60)
+    Island:StopTimer()
+    Island:WatchToggle()
+    Island:Set("Fps", true)
+    Island:Set("Ping", true)
+    Island:Enable(true)
+end
+```
+
+Other methods include `Collapse`, `WatchLap`, `WatchReset`, `Theme`, `Accent` and `State`. The Settings UI dashboard shows distinct FPS and ping histories, server actions and Job ID. The island remains hidden until the key screen and menu initialization finish.
+
+The current UI language implementation is English-only; `SetLanguage` does not currently switch the interface to Vietnamese.
+
+---
+
+# Music & configuration
+
+The built-in music engine supports searching and managing downloaded tracks through the island. Availability depends on network access, supported executor APIs and the external services.
+
+```lua
+local Island = Window:GetDynamicIsland()
+if Island then
+    Island:MusicSearch("lofi chill")
+    Island:Expand("Music")
+    Island:MusicVolume(65)
+    Island:PlayMusic()
+end
+```
+
+## Presets
+
+```lua
+_G.xNgotMusicConfig:Preset("lowdata")
+_G.xNgotMusicConfig:Set("topN", 8)
+print(_G.xNgotMusicConfig:Get("topN"))
+```
+
+Available presets: `fast`, `quality`, `lowdata`, `vietnamese`. Other island methods include `MusicCatalog`, `MusicRows`, `MusicSelect`, `MusicSelectValue`, `NextMusic`, `MusicSpeed`, `MusicFiles`, `MusicPlayFile`, `MusicDeleteFile` and `MusicClearDownloaded`.
+
+## Diagnose support
+
+```lua
+local report = _G.xNgotMusicDoctor()
+for _, check in ipairs(report.checks) do
+    print(check.status, check.name, check.detail)
+end
+```
+
+The doctor is a diagnostic hint, not proof that a feature works: executor globals and network behavior vary. Check each reported item and test playback directly.
+
+---
+
+# Appearance & storage
+
+Users can adjust appearance in Settings UI, or your script can control the theme and profiles.
+
+```lua
+Window:SetUISettings({
+    AccentColor = Color3.fromRGB(10, 135, 213),
+    CornerRadius = 12,
+}, true)
+Window:ApplyUIPreset("Midnight", true)
+Window:SaveUIProfile("My theme")
+```
+
+Use `GetUISettings`, `GetUIPresets`, `UseOriginalUI`, `ExportUISettings`, `ImportUISettings`, `LoadUIProfile` and `DeleteUIProfile` to manage appearance. The gate reads saved xNgot theme settings when it starts; selecting an independent Ophyn theme can override that synchronization.
+
+## Configuration files
+
+```lua
+print(Window:GetConfigPath())
+Window:SaveConfig()
+-- Window:DeleteConfig() -- deletes saved UI/component settings
+```
+
+The configuration is grouped by tab and component titles. Changing a title changes the associated key. Saving depends on executor file APIs; the key file is separate from the window configuration.
+
+---
+
+# Troubleshooting
+
+## `failed to read file`
+
+Check the file is in the executor's **workspace**, not only the device Downloads folder. The name in `readfile("main.lua")` must match exactly, including the extension.
+
+## `Out of local registers ... limit 200`
+
+This is a compile-time error, so in-script debug UI cannot run. Use the updated build, which was checked with an older 200-register Luau compiler. If it persists, capture the exact error and file name.
+
+## The menu or key screen does not appear
+
+- Check `xNgotLibraryOnly`: when `true`, load the library and call `LIB:CreateWindow(...)` yourself.
+- A saved key may auto-validate. Set `SaveKey = false` to test manual entry.
+- The key screen may wait for assets; the integrated build includes a preload timeout.
+- If the user closes the gate before validation, the window is closed.
+- Verify that the executor can create UI and load Roblox assets; share any debug log.
+
+## A provider rejects a key
+
+Check service identifiers, provider status, internet access and executor HTTP support. Test a known valid and invalid key. Provider authentication has not been verified with your account by this documentation build.
+
+## Music does not play
+
+Run `_G.xNgotMusicDoctor()` and inspect `checks`; also test file access, custom assets and the actual playback flow. A warning alone does not identify the cause.
+
+---
+
+# API reference
+
+A compact index of the most useful entry points in this build.
+
+## Library and window
+
+| API | Purpose |
+| --- | --- |
+| `LIB:CreateWindow(options)` | Create a window. |
+| `LIB:Notify(options)` | Show a notification. |
+| `Window:Tab(options)` | Add a tab. |
+| `Window:Show()`, `Hide()`, `Toggle()` | Control visibility. |
+| `Window:SelectTab(name)` | Select a tab. |
+| `Window:Dialog(options)` | Show a dialog. |
+| `Window:GetDynamicIsland()` | Return the island API or `nil`. |
+| `Window:SaveConfig()`, `DeleteConfig()`, `GetConfigPath()` | Manage configuration. |
+| `Window:ForgetSavedKey()` | Remove a saved gate key when supported. |
+| `Window:Destroy()` | Destroy the window. |
+
+## Components
+
+`Section`, `Button`, `Toggle`, `Slider`, `Input`, `Dropdown`, `Colorpicker`, `Paragraph`, `Code`, `Discord` and `InfoNguyenNhat` are created on a tab. Use icon names such as `house`, `sparkles`, `music-2`, `key-round`, `settings` or `triangle-alert`.
+
+## Important globals
+
+| Global | Use |
+| --- | --- |
+| `getgenv().xNgotLibraryOnly` | Skip automatic demo startup. |
+| `getgenv().xNgotLoaderConfig` | Override bundled demo loader settings before loading. |
+| `_G.xNgotMusicConfig` | Music config API. |
+| `_G.xNgotMusicDoctor()` | Return music diagnostics. |
+| `_G.xNgotStudio` | Demo boot state, when started. |
+
+## Credits
+
+xNgot Library: Nguyễn Minh Nhật (xNgot Zume). Key-system interface and engine: [Ophyn UI](https://github.com/snowdevlol/OphynUI). Window UI originates from [Wind UI](https://github.com/Footagesus/WindUI).

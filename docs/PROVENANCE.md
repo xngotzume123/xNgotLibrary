@@ -1,3 +1,5 @@
+> **Cập nhật:** Các module là source đang được duy trì, bao gồm Ophyn và các chỉnh sửa xNgot; comment không cần thiết đã được dọn. Thông tin nguồn gốc dưới đây mang tính lịch sử, không đảm bảo bản hiện tại khớp từng byte với file gốc. Dùng `python3 src/build.py --check` để kiểm tra bản hiện tại.
+
 # Nguồn gốc & các thay đổi có chủ đích
 
 ## 1. Tệp gốc

@@ -4,7 +4,7 @@
 Cách dùng:
     python3 src/build.py                     # build dev   -> dist/xngot_studio.lua
     python3 src/build.py --release           # build phát hành -> dist/main.lua
-    python3 src/build.py --release --minify  # + bản minify (compact) -> dist/main.min.lua
+    python3 src/build.py --release --minify  # + bản minify (light) -> dist/main.min.lua
     python3 src/build.py --minify light      # nhẹ tay: chỉ bỏ comment
     python3 src/build.py --minify full       # đổi tên định danh + dồn 1 dòng
     python3 src/build.py --check             # kiểm tra module, không ghi gì
@@ -14,9 +14,9 @@ Cách dùng:
     python3 src/build.py --verify-source "main 2.txt"   # đối chiếu bản gốc từng byte
     python3 src/build.py --quiet             # không in gì, chỉ exit code
 
-Nguyên tắc: mỗi module trong src/modules/** là một lát cắt nguyên văn của bản gốc.
-Ghép theo thứ tự manifest rồi bỏ banner đầu tệp => ra đúng bản gốc (đã áp
-source_transforms trong manifest).
+Các module trong src/modules/** là source duy trì hiện tại. Manifest lưu thứ tự,
+hash và thông tin lịch sử; sau khi sửa module, --verify-source có thể không còn
+khớp bản gốc. --check kiểm tra hash và cân bằng khối của bản hiện tại.
 """
 from __future__ import annotations
 
@@ -195,7 +195,8 @@ def collect(manifest: dict, profile: dict) -> list[dict]:
             items.append({"mod": mod, "path": stub, "body": body, "stub": True})
             continue
         try:
-            body = strip_banner(text)
+            # The copyright header is already the first payload; it has no module banner.
+            body = text if mod["id"] == "header.banner" else strip_banner(text)
         except ValueError as exc:
             sys.exit(Colors.err("%s: %s" % (rel, exc)))
         items.append({"mod": mod, "path": rel, "body": body, "stub": False})
@@ -315,10 +316,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default=None, help="đường dẫn xuất")
     parser.add_argument("--check", action="store_true", help="chỉ kiểm tra")
     parser.add_argument("--stats", action="store_true", help="in thống kê module")
-    parser.add_argument("--minify", nargs="?", const="compact", default=None,
+    parser.add_argument("--minify", nargs="?", const="light", default=None,
                         choices=["light", "compact", "full"],
-                        help="xuất thêm bản minify: compact (mặc định: bỏ comment + dấu cách, "
-                             "GIỮ tên), light (giữ xuống dòng) hoặc full (đổi tên)")
+                        help="xuất thêm bản minify: light (mặc định, giữ xuống dòng), "
+                             "compact (dồn dòng, giữ tên) hoặc full (đổi tên)")
     parser.add_argument("--no-rename", action="store_true",
                         help="giữ nguyên tên định danh kể cả khi chọn mức full")
     parser.add_argument("--tag-modules", action="store_true", help="chèn `-- [module]` giữa các module")
@@ -363,7 +364,12 @@ def main(argv: list[str] | None = None) -> int:
     # Bản dev không có header: tệp xuất ra chính là bản gốc (chỉ khác 4 dòng đã ghi ở
     # đã ghi trong manifest), nên có thể `diff` với tệp gốc bất cứ lúc nào.
     header = "" if profile["name"] == "dev" else build_header(manifest, profile, items, payload_hash)
-    bundle = header + payload
+    # Keep the project's banner at the very beginning of every release.
+    banner = items[0]["body"] if items and items[0]["mod"]["id"] == "header.banner" else ""
+    if banner and payload.startswith(banner):
+        bundle = banner + header + payload[len(banner):]
+    else:
+        bundle = header + payload
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(bundle)
@@ -379,9 +385,8 @@ def main(argv: list[str] | None = None) -> int:
         min_path = base + ".min" + ext
         seed = sha256(payload)[:16]
         result = _minify.minify(bundle, args.minify, seed=seed, rename=not args.no_rename)
-        notice = ("--[[xNgot Library v%s · %s · MIT · xNgot Zume · "
-                  "github.com/xngotzume123/xNgotLibrary]]\n"
-                  % (manifest["version"], profile["name"]))
+        # Minification removes comments, so reinsert the requested banner.
+        notice = banner if banner else ("--[[xNgot Library v%s · %s]]\n" % (manifest["version"], profile["name"]))
         with open(min_path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(notice + result["code"])
         if not args.quiet:

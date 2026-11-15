@@ -25,8 +25,8 @@ function __xNgotBoot.start()
 		end
 	end
 
-	-- xNgotLibrary: thu muc goc duy nhat cho moi du lieu (Config / Music / Avatars / Keys).
-	-- Tao san cay thu muc con va chuyen du lieu cu (xNgotStudio, xNgotStudioMusic, file roi o goc) sang.
+	 
+	 
 	do
 		local rootFolders = { "xNgotLibrary", "xNgotLibrary/Config", "xNgotLibrary/Music", "xNgotLibrary/Music/Covers", "xNgotLibrary/Avatars", "xNgotLibrary/Keys" }
 		if type(makefolder) == "function" then

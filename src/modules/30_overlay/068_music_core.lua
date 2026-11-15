@@ -97,7 +97,7 @@
 		            width = math.max(tonumber(width) or 120, 24)
 		            local natural = measure(raw, size, font)
 		            if natural and natural <= width then return raw end
-		            -- FIX(dynamic-island-utf8): cat theo KY TU utf8, khong cat theo byte (tranh lam hong dau tieng Viet khi rut gon ten bai)
+		             
 		            local charCount = utf8.len(raw) or #raw
 		            local function prefixChars(count)
 		                if count >= charCount then return raw end

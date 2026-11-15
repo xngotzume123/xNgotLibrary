@@ -24,7 +24,7 @@
 		end
 
 		Remote.LoadDownloaded = function()
-			-- METADATA: quet kem noi dung file (true) de doc ID3 + anh bia + sidecar, thay vi chi lay ten file/hash.
+			 
 			local files = Remote.ScanDownloaded(true)
 			if #files == 0 then
 				if Remote.CatalogSource == "downloaded" then
@@ -78,7 +78,7 @@
 				return
 			end
 
-			-- FILE-MANAGER: bai da tai (CachedPath) thi phat thang tu file local, khong tai lai va khong tao Download activity.
+			 
 			if track.CachedPath and type(track.CachedPath) == "string" and track.CachedPath ~= "" then
 				if type(isfile) == "function" and not isfile(track.CachedPath) then
 					Music.Playing = false
@@ -119,8 +119,8 @@
 					return string.format("%d%%", math.floor((Remote.Progress or 0) * 100 + 0.5))
 				end,
 				Short = function()
-					-- FIX(dynamic-island-bubble): Short chi dung cho bubble 30px nen CHI duoc tra ve gia tri ngan ("0%".."100%").
-					-- Ten bai day du da co Media.Title (trong pill) va Label/FileName/Sub (trang Download) phuc vu, khong tra ve o day.
+					 
+					 
 					return string.format("%d%%", math.floor((Remote.Progress or 0) * 100 + 0.5))
 				end,
 				Sub = downloadLabel,
@@ -170,7 +170,7 @@
 				Music.Loading = false
 
 				if ok and type(asset) == "string" and asset ~= "" then
-					-- METADATA: luu ten/ca si/anh bia (URL) cua bai vua tai kem duong dan file de lan load sau dung metadata that.
+					 
 					if type(savedPath) == "string" and savedPath ~= "" and Remote.Engine and type(Remote.Engine.writeDownloadedMeta) == "function" then
 						pcall(Remote.Engine.writeDownloadedMeta, savedPath, {
 							Title = track.Name, Artist = track.Artist, Duration = track.Duration,

@@ -6,6 +6,7 @@
      source : main 2.txt L15150-16103 · 954 dòng · delta +0
 --]]
 				do
+					local function buildHomeDashboard()
 					local homePlayers = game:GetService("Players")
 					local homePlayer = homePlayers and homePlayers.LocalPlayer
 					if homePlayer then
@@ -13,10 +14,10 @@
 						local homeTeleport = game:GetService("TeleportService")
 						local homeMarketplace = game:GetService("MarketplaceService")
 						local homeHttp = game:GetService("HttpService")
-						local homeHttpGet -- dinh nghia o duoi; avatar/icon dung chung
+						local homeHttpGet  
 
-						-- Bang mau lay thang tu theme cua cua so (UISettings) de dashboard khop UI/UX
-						-- va tu doi theo preset (Default / Rose / Midnight...) thay vi mau den co dinh.
+						 
+						 
 						local HOME_SURFACE = UISettings.SurfaceColor or Color3.fromRGB(32, 35, 41)
 						local HOME_CARD = HOME_SURFACE:Lerp(Color3.fromRGB(255, 255, 255), 0.05)
 						local HOME_CARD2 = HOME_SURFACE:Lerp(Color3.fromRGB(255, 255, 255), 0.11)
@@ -24,8 +25,9 @@
 						local HOME_MUTED = UISettings.MutedTextColor or Color3.fromRGB(150, 155, 165)
 						local HOME_ACCENT = UISettings.AccentColor or Color3.fromRGB(10, 135, 213)
 						local HOME_STROKE = HOME_SURFACE:Lerp(HOME_TEXT, 0.22)
-						local HOME_BAR = HOME_ACCENT
-						local HOME_BAR2 = HOME_ACCENT:Lerp(Color3.fromRGB(255, 255, 255), 0.35)
+						local HOME_BAR = Color3.fromRGB(55, 190, 255)  
+						local HOME_BAR2 = Color3.fromRGB(255, 165, 75)  
+						local HOME_HISTORY = 60  
 						local HOME_RADIUS = math.clamp(tonumber(UISettings.CornerRadius) or 10, 6, 28)
 
 						local function homeCorner(parent, radius)
@@ -103,7 +105,7 @@
 						homeRootLayout.Parent = homeRoot
 						Window.HomeDashboard = homeRoot
 
-						-- Header: Welcome + Refresh
+						 
 						local homeHeader = homeFrame(homeRoot, HOME_CARD)
 						homeHeader.BackgroundTransparency = 1
 						homeHeader.Size = UDim2.new(1, 0, 0, 32)
@@ -116,7 +118,7 @@
 						homeRefreshBtn.Position = UDim2.new(1, 0, 0.5, 0)
 						homeRefreshBtn.Size = UDim2.new(0, 100, 0, 28)
 
-						-- The Profile / Welcome back
+						 
 						local profileCard = homeCard(homeRoot, 114, 2)
 						local profileText = homeFrame(profileCard, HOME_CARD)
 						profileText.BackgroundTransparency = 1
@@ -183,7 +185,7 @@
 						end
 						local function homeSetAvatar(mode)
 							avatarMode = mode
-							-- Duong 1 (chuan Roblox): GetUserThumbnailAsync tra ContentId dung ngay duoc.
+							 
 							local okThumb, content = pcall(function()
 								return homePlayers:GetUserThumbnailAsync(homePlayer.UserId, mode == "AvatarHeadShot" and Enum.ThumbnailType.HeadShot or Enum.ThumbnailType.Avatar, Enum.ThumbnailSize.Size420x420)
 							end)
@@ -192,7 +194,7 @@
 							else
 								homeAvatar.Image = homeAvatarUrl(mode)
 							end
-							-- Duong 2: sau 3s anh van chua tai duoc thi tai bytes tu thumbnails.roblox.com roi dung getcustomasset.
+							 
 							local wantedMode = mode
 							task.spawn(function()
 								local deadline = os.clock() + 3
@@ -229,12 +231,12 @@
 							homeSetAvatar(avatarMode == "Avatar" and "AvatarHeadShot" or "Avatar")
 						end)
 
-						-- The thong ke: FPS / Ping / Players / Session
-						local statsCard = homeCard(homeRoot, 150, 3)
+						 
+						local statsCard = homeCard(homeRoot, 172, 3)
 						local statsRow = homeFrame(statsCard, HOME_CARD)
 						statsRow.BackgroundTransparency = 1
 						statsRow.Position = UDim2.new(0, 12, 0, 10)
-						statsRow.Size = UDim2.new(1, -24, 0, 80)
+						statsRow.Size = UDim2.new(1, -24, 0, 102)
 						local statsLayout = Instance.new("UIListLayout")
 						statsLayout.FillDirection = Enum.FillDirection.Horizontal
 						statsLayout.Padding = UDim.new(0, 14)
@@ -256,25 +258,30 @@
 							value.Position = UDim2.new(0, 0, 0, 15)
 							value.Size = UDim2.new(1, 0, 0, 28)
 							local graph = homeFrame(cell, HOME_CARD)
+							graph.Name = "HomeGraph"
 							graph.BackgroundTransparency = 1
-							graph.Position = UDim2.new(0, 0, 1, -32)
-							graph.Size = UDim2.new(1, 0, 0, 32)
+							graph.Position = UDim2.new(0, 0, 1, -54)
+							graph.Size = UDim2.new(1, 0, 0, 50)
 							graph.ClipsDescendants = true
-							local bars = {}
-							for i = 1, 24 do
-								local bar = homeFrame(graph, HOME_BAR)
-								bar.AnchorPoint = Vector2.new(0, 1)
-								bar.Position = UDim2.new((i - 1) / 24, 1, 1, 0)
-								bar.Size = UDim2.new(1 / 24, -2, 0, 5)
-								bar.Name = "HomeBar"
-								bar.BackgroundTransparency = 0.85
-								bars[i] = bar
+							local lines = {}
+							for i = 1, HOME_HISTORY - 1 do
+								local line = homeFrame(graph, HOME_BAR)
+								line.AnchorPoint = Vector2.new(0.5, 0.5)
+								line.Name = "HomeBar"
+								line.Visible = false
+								homeCorner(line, 2)
+								lines[i] = line
 							end
-							return value, meta, bars
+							return value, meta, lines, head
 						end
-						local fpsValue, fpsMeta, fpsBars = homeStatCell(1, "FPS")
-						local pingValue, pingMeta, pingBars = homeStatCell(2, "Ping")
-						for _, bar in ipairs(pingBars) do bar.BackgroundColor3 = HOME_BAR2; bar.Name = "HomeBarPing" end
+						local fpsValue, fpsMeta, fpsBars, fpsHead = homeStatCell(1, "FPS")
+						local pingValue, pingMeta, pingBars, pingHead = homeStatCell(2, "Ping")
+						fpsValue.Name, fpsHead.Name = "HomeFpsText", "HomeFpsText"
+						pingValue.Name, pingHead.Name = "HomePingText", "HomePingText"
+						fpsValue.TextColor3, fpsHead.TextColor3 = HOME_BAR, HOME_BAR
+						pingValue.TextColor3, pingHead.TextColor3 = HOME_BAR2, HOME_BAR2
+						fpsHead.TextTransparency, pingHead.TextTransparency = 0, 0
+						for _, line in ipairs(pingBars) do line.BackgroundColor3 = HOME_BAR2; line.Name = "HomeBarPing" end
 						local statsRow2 = homeFrame(statsCard, HOME_CARD)
 						statsRow2.BackgroundTransparency = 1
 						statsRow2.Position = UDim2.new(0, 12, 1, -46)
@@ -301,8 +308,8 @@
 						local sessionValue, sessionCaption = homeInfoCell(2)
 						sessionCaption.Text = "Session"
 
-						-- The game dang choi + server buttons
-						local gameCard = homeCard(homeRoot, 128, 4)
+						 
+						local gameCard = homeCard(homeRoot, 148, 4)
 						local gameIcon = Instance.new("ImageLabel")
 						gameIcon.Name = "GameIcon"
 						gameIcon.Position = UDim2.new(0, 14, 0, 14)
@@ -323,20 +330,39 @@
 						local serverRow = homeFrame(gameCard, HOME_CARD)
 						serverRow.BackgroundTransparency = 1
 						serverRow.Position = UDim2.new(0, 12, 0, 62)
-						serverRow.Size = UDim2.new(1, -24, 0, 36)
+						serverRow.Size = UDim2.new(1, -24, 0, 56)
 						local serverLayout = Instance.new("UIListLayout")
 						serverLayout.FillDirection = Enum.FillDirection.Horizontal
 						serverLayout.Padding = UDim.new(0, 8)
 						serverLayout.SortOrder = Enum.SortOrder.LayoutOrder
 						serverLayout.Parent = serverRow
-						local rejoinBtn = homeButton(serverRow, "Rejoin", 1)
-						local hopBtn = homeButton(serverRow, "Hop", 2)
-						local lowestBtn = homeButton(serverRow, "Lowest", 3)
-						local jobBtn = homeButton(serverRow, "Job ID", 4)
+						local function homeIconButton(name, iconName, order)
+							local button = homeButton(serverRow, "", order)
+							button:SetAttribute("Action", name)
+							local icon = Instance.new("ImageLabel")
+							icon.Name = "HomeActionIcon"
+							icon.BackgroundTransparency = 1
+							icon.AnchorPoint = Vector2.new(0.5, 0.5)
+							icon.Position = UDim2.new(0.5, 0, 0, 15)
+							icon.Size = UDim2.new(0, 20, 0, 20)
+							icon.ImageColor3 = HOME_TEXT
+							ApplyIcon(icon, iconName)
+							icon.Parent = button
+							local caption = homeLabel(button, name, 11, HOME_TEXT, false)
+							caption.Position = UDim2.new(0, 2, 0, 30)
+							caption.Size = UDim2.new(1, -4, 0, 20)
+							caption.TextXAlignment = Enum.TextXAlignment.Center
+							caption.TextTruncate = Enum.TextTruncate.AtEnd
+							return button
+						end
+						local rejoinBtn = homeIconButton("Rejoin", "refresh-cw", 1)
+						local hopBtn = homeIconButton("Hop", "shuffle", 2)
+						local lowestBtn = homeIconButton("Lowest", "signal", 3)
+						local jobBtn = homeIconButton("Job ID", "copy", 4)
 						for _, b in ipairs({ rejoinBtn, hopBtn, lowestBtn, jobBtn }) do b.Size = UDim2.new(0.25, -6, 1, 0) end
 						local jobText = game.JobId ~= "" and (game.JobId:sub(1, 8) .. "..." .. game.JobId:sub(-4)) or "--"
 						local jobLabel = homeLabel(gameCard, "Job " .. jobText .. "  ·  Place " .. tostring(game.PlaceId), 10, HOME_MUTED, false)
-						jobLabel.Position = UDim2.new(0, 12, 0, 106)
+						jobLabel.Position = UDim2.new(0, 12, 0, 126)
 						jobLabel.Size = UDim2.new(1, -28, 0, 14)
 						jobLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -374,7 +400,7 @@
 
 						local function homeLoadGameIcon()
 							task.spawn(function()
-								-- Cach 1: rbxthumb GameIcon can UniverseId (khong phai PlaceId nhu ban truoc).
+								 
 								local universeId = nil
 								local universeBody = homeHttpGet("https://apis.roblox.com/universes/v1/places/" .. tostring(game.PlaceId) .. "/universe")
 								if type(universeBody) == "string" then
@@ -387,7 +413,7 @@
 									while os.clock() < deadline and not gameIcon.IsLoaded and gameIcon.Parent do task.wait(0.1) end
 									if gameIcon.IsLoaded then return end
 								end
-								-- Cach 2: tai anh thumbnail that ve file roi dung getcustomasset (giong anh bia nhac).
+								 
 								if type(writefile) ~= "function" then return end
 								local customAsset = getcustomasset or getsynasset
 								if type(customAsset) ~= "function" then return end
@@ -459,7 +485,7 @@
 							end
 						end)
 
-						-- Ap lai bang mau tu UISettings (goi khi Refresh hoac khi theme/preset thay doi)
+						 
 						local function homeRecolor()
 							HOME_SURFACE = UISettings.SurfaceColor or HOME_SURFACE
 							HOME_CARD = HOME_SURFACE:Lerp(Color3.fromRGB(255, 255, 255), 0.05)
@@ -468,8 +494,6 @@
 							HOME_MUTED = UISettings.MutedTextColor or HOME_MUTED
 							HOME_ACCENT = UISettings.AccentColor or HOME_ACCENT
 							HOME_STROKE = HOME_SURFACE:Lerp(HOME_TEXT, 0.22)
-							HOME_BAR = HOME_ACCENT
-							HOME_BAR2 = HOME_ACCENT:Lerp(Color3.fromRGB(255, 255, 255), 0.35)
 							for _, obj in ipairs(homeRoot:GetDescendants()) do
 								if obj:IsA("UIStroke") then
 									obj.Color = HOME_STROKE
@@ -482,6 +506,12 @@
 									obj.BackgroundColor3 = HOME_BAR
 								elseif obj.Name == "HomeBarPing" then
 									obj.BackgroundColor3 = HOME_BAR2
+								elseif obj.Name == "HomeFpsText" then
+									obj.TextColor3 = HOME_BAR
+								elseif obj.Name == "HomePingText" then
+									obj.TextColor3 = HOME_BAR2
+								elseif obj.Name == "HomeActionIcon" then
+									obj.ImageColor3 = HOME_TEXT
 								elseif obj.Name == "PlayerAvatar" or obj.Name == "GameIcon" then
 									obj.BackgroundColor3 = HOME_CARD2
 								elseif obj:IsA("TextLabel") then
@@ -489,7 +519,7 @@
 								end
 							end
 						end
-						-- Cap nhat FPS / Ping / Players / Session theo thoi gian that
+						 
 						local homeSessionStart = os.time()
 						local fpsSamples, pingSamples = {}, {}
 						local homeFrames = 0
@@ -504,15 +534,26 @@
 							if #samples == 0 then minV = 0 end
 							return samples[#samples] or 0, minV, (#samples > 0 and math.floor(sum / #samples + 0.5) or 0), maxV
 						end
-						local function homeBars(bars, samples)
+						 
+						local function homeBars(lines, samples)
+							local graph = lines[1].Parent
+							local width, height = graph.AbsoluteSize.X, graph.AbsoluteSize.Y
 							local maxV = 1
 							for _, v in ipairs(samples) do if v > maxV then maxV = v end end
 							local scale = maxV * 1.2
-							for i, bar in ipairs(bars) do
-								local idx = #samples - (#bars - i)
-								local v = idx >= 1 and samples[idx] or 0
-								bar.Size = UDim2.new(1 / #bars, -2, 0, math.clamp(4 + (v / scale) * 24, 4, 28))
-								bar.BackgroundTransparency = v > 0 and 0.05 or 0.85
+							local step = math.max(width - 4, 0) / (HOME_HISTORY - 1)
+							for i, line in ipairs(lines) do
+								local idx = i - (HOME_HISTORY - #samples)
+								line.Visible = width > 4 and height > 4 and idx >= 1 and idx + 1 <= #samples
+								if line.Visible then
+									local x1, x2 = 2 + (i - 1) * step, 2 + i * step
+									local y1 = height - 2 - math.clamp(samples[idx] / scale, 0, 1) * (height - 4)
+									local y2 = height - 2 - math.clamp(samples[idx + 1] / scale, 0, 1) * (height - 4)
+									local dx, dy = x2 - x1, y2 - y1
+									line.Position = UDim2.new(0, (x1 + x2) / 2, 0, (y1 + y2) / 2)
+									line.Size = UDim2.new(0, math.sqrt(dx * dx + dy * dy) + 1, 0, 2)
+									line.Rotation = math.deg(math.atan2(dy, dx))
+								end
 							end
 						end
 						local function homePing()
@@ -552,9 +593,9 @@
 								homeFrames = 0
 								lastSample = now
 								fpsSamples[#fpsSamples + 1] = fps
-								if #fpsSamples > 24 then table.remove(fpsSamples, 1) end
+								if #fpsSamples > HOME_HISTORY then table.remove(fpsSamples, 1) end
 								pingSamples[#pingSamples + 1] = homePing()
-								if #pingSamples > 24 then table.remove(pingSamples, 1) end
+								if #pingSamples > HOME_HISTORY then table.remove(pingSamples, 1) end
 								local fpsNow, fpsMin, fpsAvg, fpsMax = homeStats(fpsSamples)
 								fpsValue.Text = tostring(fpsNow) .. " fps"
 								fpsMeta.Text = string.format("min %d  avg %d  max %d", fpsMin, fpsAvg, fpsMax)
@@ -571,6 +612,8 @@
 							if homeRsConn then homeRsConn:Disconnect() end
 						end)
 					end
+					end
+					buildHomeDashboard()
 				end
 
 				if type(Window.AdminInfo) == "table" then
@@ -594,9 +637,9 @@
 					local avatarRefreshSerial = 0
 					local avatarHttpService = game:GetService("HttpService")
 
-					-- EMBEDDED-AVATAR: snapshot avatar GitHub cua admin (JPEG 256px, base64) nhung san trong file.
-					-- Dung lam du phong tuyet doi: ke ca khi executor chan moi duong tai mang thi avatar van hien,
-					-- khong bao gio roi vao placeholder "xN". Tai duoc ban moi tu GitHub thi tu thay the sau.
+					 
+					 
+					 
 					local ADMIN_AVATAR_EMBEDDED_B64 = [[
 /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/
 2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAEAAQADASIAAhEBAxEB/8QA
@@ -778,9 +821,9 @@ Zcn8654+9HUdOKd7CTsf/9k=
 						if exists then pcall(delfile, path) end
 					end
 
-					-- AVATAR-FIX: bo tai avatar (nhieu duong tai + tu thu lai + dung cache cu truoc).
+					 
 					local function avatarFetchRaw(url)
-						-- Duong 1: request cua executor (theo duoc redirect 302 cua GitHub, tra Headers/Body day du).
+						 
 						local reqFn = nil
 						if type(request) == "function" then reqFn = request
 						elseif type(http_request) == "function" then reqFn = http_request
@@ -809,7 +852,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 								else break end
 							end
 						end
-						-- Duong 2 + 3: game:HttpGet / HttpService:GetAsync.
+						 
 						local ok, data = pcall(function() return game:HttpGet(url) end)
 						if ok and type(data) == "string" and #data > 0 then return data end
 						local okN, dataN = pcall(function() return game:HttpGet(url, true) end)
@@ -822,7 +865,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 					local function avatarDownloadBytes(url)
 						local nonce = avatarHttpService:GenerateGUID(false):gsub("%-", "")
 						local separator = url:find("?", 1, true) and "&" or "?"
-						-- Chi chap nhan body dung la anh (PNG/JPG/WEBP); trang HTML loi/redirect khong duoc tinh.
+						 
 						local function isImage(body)
 							if type(body) ~= "string" or #body < 64 then return false end
 							return body:sub(1, 8) == "\137PNG\r\n\26\n"
@@ -832,8 +875,8 @@ Zcn8654+9HUdOKd7CTsf/9k=
 						local candidates = {}
 						candidates[#candidates + 1] = url .. separator .. "xngot_refresh=" .. nonce
 						candidates[#candidates + 1] = url
-						-- github.com/<user>.png redirect 302 sang avatars.githubusercontent.com;
-						-- hoi GitHub API lay avatar_url truc tiep neu cac duong tren khong qua duoc redirect.
+						 
+						 
 						local user = url:match("^https://github%.com/([%w%-]+)%.png")
 						local directUrl = nil
 						if user then
@@ -846,8 +889,8 @@ Zcn8654+9HUdOKd7CTsf/9k=
 								end
 							end
 						end
-						-- Du phong cuoi: proxy anh weserv tra ve anh truc tiep (HTTP 200, khong redirect)
-						-- cho cac executor khong theo duoc redirect cua GitHub.
+						 
+						 
 						if user then candidates[#candidates + 1] = "https://images.weserv.nl/?url=github.com/" .. user .. ".png" end
 						if directUrl then candidates[#candidates + 1] = "https://images.weserv.nl/?url=" .. directUrl:gsub("^https://", "") end
 						for _, candidate in ipairs(candidates) do
@@ -865,14 +908,14 @@ Zcn8654+9HUdOKd7CTsf/9k=
 						avatarRefreshSerial = avatarRefreshSerial + 1
 						local currentSerial = avatarRefreshSerial
 						task.spawn(function()
-							-- Buoc 1: co avatar cache tu lan chay truoc thi AP DUNG NGAY (khong cho mang).
+							 
 							local cachedPath = nil
 							if type(readfile) == "function" then
 								local ok, previous = pcall(readfile, avatarManifest)
 								if ok and type(previous) == "string" then cachedPath = previous:gsub("%s+$", ""):gsub("^%s+", "") end
 							end
 							local cachedApplied = false
-							local function keepAvatarApplied(asset) -- ap lai vai lan: cua so con an (man hinh key) anh van len
+							local function keepAvatarApplied(asset)  
 								task.spawn(function()
 									for _, delayTime in ipairs({ 4, 5, 6 }) do
 										task.wait(delayTime)
@@ -893,8 +936,8 @@ Zcn8654+9HUdOKd7CTsf/9k=
 									end
 								end
 							end
-							-- Buoc 1.5: chua co cache thi dung ngay avatar nhung san trong file -> khong bao gio thay "xN"
-							-- trong luc cho tai ban moi tu GitHub (ke ca khi executor chan mang hoan toan).
+							 
+							 
 							if not cachedApplied then
 								local embeddedAsset, embeddedPath = avatarEmbeddedAsset(customAsset)
 								if embeddedAsset then
@@ -907,7 +950,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 								if not embeddedAsset then warn("[xNgotStudio] Admin avatar: embedded fallback failed - " .. tostring(embeddedPath)) end
 							end
 							if type(writefile) ~= "function" then return end
-							-- Buoc 2: tai avatar moi, tu thu lai toi da 4 lan (cho 1.5s / 3s / 4.5s).
+							 
 							local lastError = "khong tai duoc avatar"
 							for attempt = 1, 4 do
 								if currentSerial ~= avatarRefreshSerial or self.AdminInfoCard ~= adminCard then return end
@@ -926,8 +969,8 @@ Zcn8654+9HUdOKd7CTsf/9k=
 									if not pcall(writefile, path, response) then error("writefile avatar failed") end
 									local asset = customAsset(path)
 									if type(asset) ~= "string" or asset == "" then error("Local avatar asset is unavailable") end
-									-- AVATAR-FIX: dung NGUYEN asset getcustomasset tra ve.
-									-- Ban cu cong them "?xngotv=<hash>" lam ContentId hong -> o avatar den tron du da co asset.
+									 
+									 
 									return { Asset = asset, Path = path }
 								end)
 								if ok and currentSerial == avatarRefreshSerial and self.AdminInfoCard == adminCard then
@@ -947,7 +990,7 @@ Zcn8654+9HUdOKd7CTsf/9k=
 						return true
 					end
 
-					-- AVATAR: chi tu dong tai ve va ap dung khi load (khong con Paragraph + nut "Ap dung avatar ngay" thu cong trong Settings).
+					 
 					Window:RefreshAdminAvatar()
 				end
 
@@ -956,4 +999,4 @@ Zcn8654+9HUdOKd7CTsf/9k=
 					Desc = "Customize only what you choose. The original NgotStudio layout, cards, spacing and controls stay unchanged.",
 				})
 
-				-- UI language: English only (da go tinh nang doi ngon ngu). Cross AI van hieu Anh + Viet theo cau hoi.
+				 

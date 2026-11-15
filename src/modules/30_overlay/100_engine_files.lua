@@ -117,7 +117,7 @@
 								entry.Size = #data
 								entry.SizeText = dlFormatBytes(#data)
 								mp3Bytes = mp3Bytes + #data
-								-- METADATA: uu tien doc ID3 (title/artist/album/anh bia nhung) thay vi chi dung ten file.
+								 
 								local info = readID3(data)
 								if type(info) == "table" then
 									if info.title and info.title ~= "" then entry.Title = info.title; entry.HasMeta = true end
@@ -131,7 +131,7 @@
 								sizesKnown = false
 							end
 						end
-						-- METADATA (sidecar .mp3.json do saveBytes/fetchRemote ghi khi tai): chinh xac nhat, ghi de ca ID3.
+						 
 						local sidecar = CrossAIMusic.readDownloadedMeta(path)
 						if type(sidecar) == "table" then
 							entry.HasMeta = true
@@ -198,7 +198,7 @@
 			if type(isfile) == "function" and not isfile(raw) then return false, "File khong con ton tai" end
 			local ok, err = pcall(delfile, raw)
 			if not ok then return false, tostring(err) end
-			-- Don kem metadata sidecar + anh bia ID3 cua chinh file nay (neu co).
+			 
 			pcall(delfile, raw .. ".json")
 			for _, ext in ipairs({ ".jpg", ".png" }) do
 				local coverPath = string.format("%s/%s_id3%s", CFG.CoversFolder, hashOf(raw), ext)

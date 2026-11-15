@@ -245,7 +245,7 @@
 		        TextSize = 11,
 		        TextColor3 = Static.LightGray,
 		        TextXAlignment = Enum.TextXAlignment.Left,
-		        TextTruncate = Enum.TextTruncate.AtEnd, -- FIX(dynamic-island-bubble): phong thu khi fitText chua san sang
+		        TextTruncate = Enum.TextTruncate.AtEnd,  
 		        Parent = Isl.liveGroup,
 		    })
 		    Isl.liveValue = text({
@@ -257,7 +257,7 @@
 		        TextSize = 12,
 		        TextColor3 = Static.White,
 		        TextXAlignment = Enum.TextXAlignment.Right,
-		        TextTruncate = Enum.TextTruncate.AtEnd, -- FIX(dynamic-island-bubble): phong thu khi fitText chua san sang
+		        TextTruncate = Enum.TextTruncate.AtEnd,  
 		        Parent = Isl.liveGroup,
 		    })
 
@@ -510,7 +510,7 @@
 		        Text = "",
 		        FontFace = Fonts.Semibold,
 		        TextSize = 10,
-		        TextTruncate = Enum.TextTruncate.AtEnd, -- FIX(dynamic-island-bubble): khong de text tran khoi bubble 30px
+		        TextTruncate = Enum.TextTruncate.AtEnd,  
 		        TextColor3 = Static.White,
 		        ZIndex = 51,
 		        Parent = Isl.bubble,

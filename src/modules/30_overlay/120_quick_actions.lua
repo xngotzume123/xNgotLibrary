@@ -113,7 +113,7 @@
 		        })
 		        corner(14, View.art)
 		        View.artGradient = new("UIGradient", { Color = Media.ArtGradient.Color, Rotation = 45, Parent = View.art })
-		        -- METADATA/COVER: anh bia that (ID3/sidecar/thumbnail) cho trang Music mo rong, dong bo voi pill.
+		         
 		        View.artCover = new("ImageLabel", {
 		            Name = "Cover", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
 		            Image = "", ScaleType = Enum.ScaleType.Crop, Visible = false, ZIndex = 3, Parent = View.art,

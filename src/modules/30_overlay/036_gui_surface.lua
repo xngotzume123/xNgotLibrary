@@ -12,7 +12,7 @@
 		        Position = UDim2.fromScale(0, 0),
 		        Size = UDim2.fromScale(1, 1),
 		        ZIndex = 100,
-		        Visible = true,
+		        Visible = false,  
 		        Parent = __hostGui,
 		    })
 

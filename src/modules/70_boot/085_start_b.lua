@@ -6,7 +6,7 @@
      source : main 2.txt L26366-26503 · 138 dòng · delta -1
 --]]
 	local function createWindow(library, label)
-	-- Dong bo: tieu de loader lay tu opts.title (cung nguon voi tieu de cua so)
+	 
 	local loadingCfg = opts.loading
 	if type(loadingCfg) == "table" and loadingCfg.Title == nil then loadingCfg.Title = opts.title end
 		local okWindow, built = xpcall(function()

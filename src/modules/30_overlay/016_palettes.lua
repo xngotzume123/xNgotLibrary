@@ -112,7 +112,7 @@
 		        Split = true,
 		        RimLight = true,
 		        Theme = 1,
-		        Language = "en", -- UI English-only; Cross AI tu nhan dien Anh/Viet
+		        Language = "en",  
 		        Accent = 1,
 		        Blur = true,
 		        BlurSize = 16,

@@ -18,21 +18,21 @@ __xNgotBoot.Opts = {
 	remoteUrl = "https://raw.githubusercontent.com/xngotzume123/xNgotLibrary/refs/heads/main/dist/main.lua",
 	title = "xNgọt Studio",
 	author = "Dynamic Island · AI Music · Assistant",
-	icon = "music-2", -- icon cua so goc; loader/key copy thang tu TopFrame.Icon nen luon trung
+	icon = "music-2",  
 	autoRun = true,
 	debug = true,
 	openPanel = false,
 	theme = "dark",
-	-- STARTUP-GATE (Airflow loader + key): sua key/link tai day.
+	 
 	loading = {
-		-- Title de trong: tu lay opts.title cho dong bo voi tieu de cua so
+		 
 		Text = "Starting",
 		Steps = { "Preparing interface", "Loading icons", "Almost there" },
 		Duration = 1.6,
 	},
 	keySystem = {
 		Enabled = true,
-		-- Title/Subtitle/Note de trong: gate tu dong bo theo tieu de + phong cach cua so
+		 
 		Keys = { "XNGOT-2026" },
 		KeyFile = "xNgotLibrary/Keys/key.txt",
 		GetKeyUrl = "",

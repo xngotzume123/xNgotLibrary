@@ -34,7 +34,7 @@
 		end
 		function API:Enable(on)
 		    self.Enabled = on and true or false
-		    gui.Visible = self.Enabled
+		    gui.Visible = self.Enabled and (not __hostWindow or __hostWindow.__IslandReady == true)
 		    Ring.Holder.Visible = self.Enabled
 		    if not self.Enabled then
 		        if Isl.collapse then Isl.collapse(true,true) end
@@ -47,7 +47,7 @@
 		    elseif name == "Ping" then setPingActivity(value and true or false)
 		    elseif name == "Clock" then setClockActivity(value and true or false)
 		    elseif name == "Language" then
-		        Settings.Language = "en" -- UI English-only (Cross AI nhan dien Anh/Viet theo cau hoi)
+		        Settings.Language = "en"  
 		        Cross.Lang = "en"
 		        Fwd.applyLanguage()
 		        Fwd.applyLanguage()
@@ -173,7 +173,7 @@
 			return remote.Rows or {}, remote.State
 		end
 
-		-- ===== FILE MANAGER API =====
+		 
 		function API:MusicFiles(includeSizes)
 			local remote = Music.Remote
 			if not remote or type(remote.ScanDownloaded) ~= "function" then

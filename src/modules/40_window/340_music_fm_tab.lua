@@ -32,7 +32,7 @@
 					end})
 				IslandTab:Button({Title = "Open Player in Island", Callback = function() islandCall("Expand", "Music") end})
 
-				-- ===== QUAN LY DUNG LUONG & FILE MANAGER (nhac da tai) =====
+				 
 				IslandTab:Section({Title = "Storage & File Manager", Default = true})
 				IslandTab:Paragraph({Title = "Downloaded music is loaded first", Desc = "Every time the script starts, Select Track is filled from the mp3 files already downloaded in the cache folder. The script no longer auto-searches new 'lofi chill' music; it only searches when you type a description in the Music section and press Search with AI."})
 				local fmFiles, fmByLabel, fmSelectedPath, fmChanging = {}, {}, nil, false
@@ -156,6 +156,8 @@
 			end
 
 			WindowByTitle[Window.Title] = Window
+			startupMenuBuilt = true
+			releaseStartupIsland()
 			return Window
 		end
 

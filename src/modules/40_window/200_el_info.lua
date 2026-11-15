@@ -150,9 +150,9 @@
 						avatarFrame.Image = id
 						avatarPlaceholder.Visible = id == "" or id == "rbxassetid://0"
 						if id ~= "" and id ~= "rbxassetid://0" then
-							-- AVATAR-FIX v3: nhieu executor bao IsLoaded=false mai voi asset getcustomasset
-							-- du anh van hien. Ban cu cho 3s roi XOA anh -> quay ve "xN". Ban nay khong xoa:
-							-- chi gan lai (kick) vai lan de ep tai, anh da set thi giu nguyen.
+							 
+							 
+							 
 							local wanted = id
 							task.spawn(function()
 								for _, waitTime in ipairs({ 1, 2, 3, 5 }) do

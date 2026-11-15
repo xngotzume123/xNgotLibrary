@@ -5,11 +5,11 @@
      role   : Template: ScreenGui gốc, Window, TopBar, TabButtons, khung dropdown
      source : main 2.txt L207-651 · 445 dòng · delta +0
 --]]
--- XN-GUI-CLEANUP: dọn MỌI bản UI còn sót của lần chạy trước (kể cả bản cũ
--- chưa có cờ _G.__xNgotStudioGui). Sau CreateWindow, ScreenGui được đổi tên
--- theo Window.Title nên quét theo tên "NgotStudio" là không đủ; ở đây nhận
--- diện theo cấu trúc do template này dựng ra: NotificationList, ModuleScript
--- "3e", hoặc Folder chứa cửa sổ có TopFrame + TabButtons.
+ 
+ 
+ 
+ 
+ 
 local __xNgotIsInstance = function(value)
 	if value == nil then return false end
 	if type(typeof) ~= "function" then return type(value) == "table" or type(value) == "userdata" end

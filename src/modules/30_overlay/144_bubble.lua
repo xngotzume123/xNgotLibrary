@@ -71,8 +71,8 @@
 		                local activity = Activities[Island.BubbleKey]
 		                if activity then
 		                    local value = tostring((activity.Short or activity.Value)() or "")
-		                    -- FIX(dynamic-island-bubble): bubble chi rong 30px (ISLAND.Bubble). Cat cung toi da 5 ky tu + "…"
-		                    -- de bat ky Short/Value nao tra ve chuoi dai cung khong the tran ra ngoai bubble nua.
+		                     
+		                     
 		                    do
 		                        local charCount = utf8.len(value) or #value
 		                        if charCount > 5 then

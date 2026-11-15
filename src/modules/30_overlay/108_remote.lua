@@ -152,7 +152,7 @@
 
 		Remote.Load = function()
 		if Remote.Busy then
-			-- Dang tim roi thi bao cho nguoi dung biet, khong im lang bo qua
+			 
 			notify("Music search", "A search is already running - please wait...", "warn", 2.5, true)
 			return
 			end
@@ -166,7 +166,7 @@
 			Remote.Busy = true
 			Remote.State = "searching"
 			Remote.Notify()
-			-- Toast bao dang tim nhac (truoc day im lang, nguoi dung khong biet)
+			 
 			if Remote.Query and Remote.Query ~= "" then
 				notify("Music search", string.format("Searching for \"%s\"...", tostring(Remote.Query)), "info", 3, true)
 			end
@@ -174,8 +174,8 @@
 			task.spawn(function()
 				local prompt = Remote.Query
 				if not prompt or prompt == "" then
-					-- FILE-MANAGER: khi load / khong co truy van thi nap NHAC DA TAI, khong tu tim "lofi chill" moi.
-					-- Chi tim nhac moi khi nguoi dung nhap mo ta va bam Search (prompt khac rong).
+					 
+					 
 					local loaded = 0
 					local okLoaded, result = pcall(function() return Remote.LoadDownloaded() end)
 					if okLoaded then loaded = tonumber(result) or 0 end
@@ -243,7 +243,7 @@
 			Remote.Load()
 		end
 
-		-- ===== FILE MANAGER (Remote): quet file da tai + nap vao catalog =====
+		 
 		Remote.DownloadedFiles = {}
 		Remote.DownloadedStats = nil
 		Remote.CatalogSource = nil

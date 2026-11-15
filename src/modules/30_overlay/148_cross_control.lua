@@ -327,8 +327,8 @@ function Cross.shutdown()
 end
 
 task.spawn(function()
-    -- FILE-MANAGER: khi load script thi nap danh sach NHAC DA TAI truoc.
-    -- Khong con tu tim nhac moi "lofi chill" o lan khoi dong nay.
+     
+     
     if Music.Remote and type(Music.Remote.LoadDownloaded) == "function" then
         local ok, err = pcall(Music.Remote.LoadDownloaded)
         if not ok then warn("[xNgotStudio] Music downloaded: " .. tostring(err)) end

@@ -28,9 +28,9 @@
       "role": "Banner + bản quyền + hướng dẫn build của bản phát hành",
       "from": 1,
       "to": 18,
-      "lines": 18,
+      "lines": 17,
       "delta": 0,
-      "sha256": "3a624bd89d011f587eaddcdcacef58996609c1e9d6ca8737ba55e518de2b0e49"
+      "sha256": "f97a3f2ab026bc04982f66210bac0a0577f169c0ce48571a99dbd471e332d1f4"
     },
     {
       "id": "config.schema",
@@ -38,9 +38,9 @@
       "role": "Bảng schema cho _G.xNgotMusicConfig (kiểu, min/max, mặc định)",
       "from": 20,
       "to": 59,
-      "lines": 40,
+      "lines": 39,
       "delta": 0,
-      "sha256": "11983f3bc84dd7cc739a4082a371a7aa8dc1bb9cba25c033f8a4d7b16843015a"
+      "sha256": "dd3aeb85b411538ba515b4318c6d26651d48b059e652027e4e6e41eeb9deee3e"
     },
     {
       "id": "config.coerce",
@@ -93,6 +93,16 @@
       "sha256": "b45f6ef9fce3cb953d1596bfa5149f895440f9b2ba7d058e201a053374672a36"
     },
     {
+      "id": "lib.ophyn_vendor",
+      "path": "20_lib/005_ophyn.lua",
+      "role": "Ophyn UI (MIT): key system + providers, adapted for xNgot",
+      "from": 201,
+      "to": 201,
+      "lines": 6185,
+      "delta": 0,
+      "sha256": "9a418c81fff34610ce7d49f004fed235c8785149ce00074f8b927fda60930f84"
+    },
+    {
       "id": "lib.open",
       "path": "20_lib/010_open.lua",
       "role": "`local LIB` + CrossAIMusic + bảng NgotStudio (thay closure ngoài cùng)",
@@ -108,9 +118,9 @@
       "role": "Template: ScreenGui gốc, Window, TopBar, TabButtons, khung dropdown",
       "from": 207,
       "to": 651,
-      "lines": 445,
+      "lines": 514,
       "delta": 0,
-      "sha256": "46f1d4931eb2c7bc99a91d1339b8625ae0f4ed3831fed80730f45290c81d7539"
+      "sha256": "442b3828462a8bebb8f8a8ba6591de6b3953bacc6c5ccec9231fd009742eb7fc"
     },
     {
       "id": "lib.template.02",
@@ -280,7 +290,7 @@
       "to": 2952,
       "lines": 122,
       "delta": 0,
-      "sha256": "a341ef1cb12c4f89cf69566f2cdc92ba58a52f4d12a77f38d9b5774052d8fecc"
+      "sha256": "1e4c602271d47592d0b1a94d8315052583206007b4e00618b330b91c7a924fd6"
     },
     {
       "id": "overlay.i18n",
@@ -290,7 +300,7 @@
       "to": 3314,
       "lines": 362,
       "delta": 0,
-      "sha256": "337279f7501c1becff786861c15ecd861d6812e62ba4652406ae5a8a10668a0e"
+      "sha256": "82d68117d5e8cf7d9f8b4379fe37a27266a1b0f3c03ba1030a13fd056d62217e"
     },
     {
       "id": "overlay.i18n_index",
@@ -340,7 +350,7 @@
       "to": 3894,
       "lines": 49,
       "delta": 0,
-      "sha256": "e1c33449f68dace803394a302681cee1418c7d179f631410bf7f3328d9e95ac2"
+      "sha256": "5d009d2e13ea6a28ad87b122cbbef005dc320e62981849aef9b9f5d3943cf5e3"
     },
     {
       "id": "overlay.hooks",
@@ -370,7 +380,7 @@
       "to": 4710,
       "lines": 658,
       "delta": 0,
-      "sha256": "e88d11cecb2d4285e85e1973ecc75ba013a782e47b2aa9de57bcf190162131b1"
+      "sha256": "61e83098ae6f0cc4512476ea6651564c6c2c0ea5fae3323e9d0acb55774fd168"
     },
     {
       "id": "overlay.hooks_register",
@@ -430,7 +440,7 @@
       "to": 6277,
       "lines": 256,
       "delta": 1,
-      "sha256": "f397d856d9201ff2e1197cb3da3835ef6525490fdb83a45fd7f1ec45da3b8da2"
+      "sha256": "5a475b24baeb1c08286b0da0f5b095a84c33fc3764c5b55e388a28a9bad9addd"
     },
     {
       "id": "engine.open",
@@ -510,7 +520,7 @@
       "to": 7585,
       "lines": 256,
       "delta": 0,
-      "sha256": "00501b2793c6c11b38f70bf48b9a9d49dbd1dc4794ac407466148ee64dc121b8"
+      "sha256": "eb8d0b049f8c5465498cb0936829987b59b419cbd1e8cba3480e7d17a36fe9da"
     },
     {
       "id": "engine.files",
@@ -520,7 +530,7 @@
       "to": 7914,
       "lines": 329,
       "delta": 0,
-      "sha256": "b6d574e19e5a5518dc5bed9c5d6f9bba17c3da104153268284c6b91ad9e5cab7"
+      "sha256": "42d424f4f27d553274aff7cee75d3ecf726f7c936653582429bc893866854026"
     },
     {
       "id": "engine.resolve",
@@ -540,7 +550,7 @@
       "to": 8420,
       "lines": 243,
       "delta": -1,
-      "sha256": "33031024cdf81976891430c85ddc4f4a1e89e0d91900e6923c8a5115ca438a33"
+      "sha256": "d48e3f58e4b45587724086664d57f23d8b4ff405fdf78bd11674d9c7a246f3cc"
     },
     {
       "id": "overlay.remote_io",
@@ -550,7 +560,7 @@
       "to": 8773,
       "lines": 353,
       "delta": -1,
-      "sha256": "5cd942b7e72d04524bd95cb5d4ed3beb1935134438e55ae0e4d604527b21b992"
+      "sha256": "82f40e24d528ce5794500cf69d978346dc0ddc8549ed50a5d74c2ab4672202f8"
     },
     {
       "id": "overlay.pages",
@@ -570,7 +580,7 @@
       "to": 9263,
       "lines": 196,
       "delta": 0,
-      "sha256": "136868152694329d019fcd52b1ad8a77644247df2932a0882d365895134c594e"
+      "sha256": "f34e78394530cdd4222a0ddb7ba3d8a78cca99bcd9eb02e3aad4129695f53f64"
     },
     {
       "id": "overlay.transport",
@@ -630,7 +640,7 @@
       "to": 10443,
       "lines": 96,
       "delta": -1,
-      "sha256": "d38e8c3a92362bd49be7afd98aecf4e732d00390f4dc74e4434a90874599c5a3"
+      "sha256": "ef55354fc2e25be54b49d638d32dbc2bfcac07898ca7a612fddb2b41fe8afb95"
     },
     {
       "id": "overlay.cross_control",
@@ -640,7 +650,7 @@
       "to": 10784,
       "lines": 341,
       "delta": 0,
-      "sha256": "a9a240ffd8bc65f7182bcc0cbf367424ad26f579649d52565cab4d47538d49fa"
+      "sha256": "0b5203ed909531c11d16b95ca58ff2675abbc7b3ea2070ed636ae4acf6b2f19f"
     },
     {
       "id": "overlay.api",
@@ -650,7 +660,7 @@
       "to": 11080,
       "lines": 296,
       "delta": -1,
-      "sha256": "5acf54aba67c3bc8333c1f85916c75329e4d5c1fd3e5bdf143a367f3f0fb3373"
+      "sha256": "fa7cd2286c911536c921be2689c3594e06b490402de749745e0f193d49364f47"
     },
     {
       "id": "window.open",
@@ -658,9 +668,9 @@
       "role": "local Windows + function LIB:CreateWindow + opts mặc định",
       "from": 11081,
       "to": 11152,
-      "lines": 72,
+      "lines": 144,
       "delta": 1,
-      "sha256": "96a84241fc2c092a5fe8ce586ddc5dc38cbcfbc04721981f709e612b908ac0d4"
+      "sha256": "e128323bb6f2424299dff2122a95131f31066e53a60412324069337339263265"
     },
     {
       "id": "window.config_io",
@@ -668,9 +678,9 @@
       "role": "WRITECONFIG/SAVECONFIG + Window:SaveConfig/GetConfigPath",
       "from": 11153,
       "to": 11210,
-      "lines": 58,
+      "lines": 89,
       "delta": 0,
-      "sha256": "a22058c5f0865f13da0f112b3cd0ea0e3616f62b11f6d8a4a12f77d06d714148"
+      "sha256": "4367a0cd93ca630f9c1e1653c548cbe2e3592001273af7c9ac4436c3045172cd"
     },
     {
       "id": "window.values",
@@ -860,7 +870,7 @@
       "to": 14130,
       "lines": 170,
       "delta": 0,
-      "sha256": "521e0a2eea82dac88577bfe68fdcb81cd2568bff63a0a11fc01ecbed28d7f7f1"
+      "sha256": "25c94133efebfd9a686787d4ab63224a91a4b3f37029a5b8c4f62e7244a51c35"
     },
     {
       "id": "window.el_discord",
@@ -890,7 +900,7 @@
       "to": 14366,
       "lines": 57,
       "delta": 0,
-      "sha256": "f4f77528da571a8e764e857653d4e7c0c308cc58c0ffb65cbcd3572be802c63f"
+      "sha256": "8f8324b559b2a0fc3a3ea34b9ef06aa3a56b1ad5f9d72cb4cdc7cad934e46309"
     },
     {
       "id": "window.dialog",
@@ -898,9 +908,9 @@
       "role": "Window:Dialog + nút xác nhận",
       "from": 14367,
       "to": 14508,
-      "lines": 142,
+      "lines": 152,
       "delta": 0,
-      "sha256": "3ee002cd0294a3b249a9425a0f1937f03065c32f927884a26bd6da525817b376"
+      "sha256": "f424bf7700672948abace6293cd6ec5888c4be0f06b50053a535f5bf5045f246"
     },
     {
       "id": "window.toggle_window",
@@ -918,9 +928,9 @@
       "role": "Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey",
       "from": 14598,
       "to": 15113,
-      "lines": 516,
+      "lines": 642,
       "delta": 0,
-      "sha256": "5e50a0942b71954a45cbc168f73f52bbd2200139a84dd05e742c567e8e7c52da"
+      "sha256": "5c644ef08c8ed6764a1f6dc71a346762621218755b612a6e928fae6d5deb520e"
     },
     {
       "id": "window.island_bridge",
@@ -930,7 +940,7 @@
       "to": 15149,
       "lines": 36,
       "delta": 1,
-      "sha256": "79bce0a4324683967a6286966129257363ea711901f8f4c160bb9f300fbe8250"
+      "sha256": "aa57d1975f878b4719351cdf8f1b0f8e6091aedc530013b2a7561e0b5a30fd53"
     },
     {
       "id": "window.settings_tab",
@@ -938,9 +948,9 @@
       "role": "Settings tab: giao diện, theme, preset, slider, profile",
       "from": 15150,
       "to": 16103,
-      "lines": 954,
+      "lines": 995,
       "delta": 0,
-      "sha256": "55591a1091ae5108ab9f7e56a4e01f336a242a3f5d17a9e8b35ebe02b1930c19"
+      "sha256": "5f551ad6ff9b0c18c8a43b8b1350c826bcb65d0fbf000ea0a013ec4f00baa9d9"
     },
     {
       "id": "window.ui_language",
@@ -978,9 +988,9 @@
       "role": "Bảng mặc định __NgotIslandSettings + helper đổi setting",
       "from": 16427,
       "to": 16814,
-      "lines": 388,
+      "lines": 391,
       "delta": 0,
-      "sha256": "cf9f24c54a2898be51de3e2f1188bc8ecd9f5d45a2618d29ffbc9898230734fe"
+      "sha256": "96f4f2569d3afeed3beb342feb06a4cd05e88a009bf37c36398b4470d6ac83aa"
     },
     {
       "id": "window.island_tab",
@@ -998,9 +1008,9 @@
       "role": "Tab nhạc + AI prompt + file manager trong tab island",
       "from": 17060,
       "to": 17212,
-      "lines": 153,
+      "lines": 156,
       "delta": -2,
-      "sha256": "c47c42d139736de14c8f294e6365ad935fd1da6ae3f9b130a2cead6a018740c0"
+      "sha256": "88e8ab8be36488e4fc3a7398a0f124f8c8327f7fe0e1937b72bf7c8dc82a71c1"
     },
     {
       "id": "notify",
@@ -1420,7 +1430,7 @@
       "to": 26061,
       "lines": 40,
       "delta": 0,
-      "sha256": "3f41970f0fd880650da24ce91327e54f9a0bdb98cc09272dd281d97c02137f1b"
+      "sha256": "e80bfb0e9e5acbef363593ffabe564049ea400f39f0bd2765630b364deb418c4"
     },
     {
       "id": "boot.helpers",
@@ -1490,7 +1500,7 @@
       "to": 26365,
       "lines": 68,
       "delta": 1,
-      "sha256": "c5123f60b926a4b45ef279ebe9380010f4a841a33e18b0ed5a4168c4d0b84867"
+      "sha256": "0e54a4f6133c0c1c37f6c60e5c6c12a30ce2e9cbc2db098ae070b188ac12da09"
     },
     {
       "id": "boot.start_b",
@@ -1500,7 +1510,7 @@
       "to": 26503,
       "lines": 138,
       "delta": -1,
-      "sha256": "02c1b94df1db7e00e265e595b67e61fbee5a874bf9f565317f5333359843c2fd"
+      "sha256": "8734fc2c335c8737209886bc251d0bf3f8f97d813088f62b0d7d58072a089e4e"
     },
     {
       "id": "boot.library_mode",
@@ -1510,7 +1520,7 @@
       "to": 26514,
       "lines": 11,
       "delta": 0,
-      "sha256": "52af45819231a3ec9020f91a63214d552379ddcbd3020424ba719dc529e79b21"
+      "sha256": "5d6260b37124de9a2ec616dd7d4c675b8780aeab6b2c08bcd5b7049d901f61ab"
     },
     {
       "id": "boot.return",

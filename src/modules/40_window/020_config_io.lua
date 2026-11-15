@@ -44,10 +44,10 @@
 			local TabButtons = mainFrame.TabButtons
 			local Tabs = mainFrame.Tabs
 
-			-- Nhãn "This tab is empty :(" có thể thiếu trong bản template đang chạy,
-			-- khi đó mọi lần thêm/bớt element đều lỗi "NoObjectFoundText is not a
-			-- valid member of Frame 'Tabs'". Tạo bù (clone từ template cũ nếu có)
-			-- và luôn gán qua hàm này để không bao giờ index vào nil.
+			 
+			 
+			 
+			 
 			local function SetEmptyTabNotice(visible)
 				if not Tabs then return nil end
 				local notice = Tabs:FindFirstChild("NoObjectFoundText")

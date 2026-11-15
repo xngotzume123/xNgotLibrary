@@ -8,6 +8,10 @@
 			function Window:Destroy()
 				if windowDestroyed then return end
 				windowDestroyed = true
+				if self.__OphynWindow and self.__OphynWindow.Gui then
+					pcall(function() self.__OphynWindow.Gui:Destroy() end)
+					self.__OphynWindow = nil
+				end
 				if self.DynamicIsland then
 					pcall(self.DynamicIsland.Destroy, self.DynamicIsland)
 					if LIB.ActiveDynamicIsland == self.DynamicIsland then LIB.ActiveDynamicIsland = nil end
@@ -101,18 +105,148 @@
 				end
 			end)
 
-			-- ============================================================
-			-- XNGOT STARTUP GATE: loader + key system chay bang ENGINE CUA XNGOT STUDIO
-			-- (theme UISettings, font/icon/Tween cua cua so) - day du tinh nang nhu engine
-			-- loader cua Airflow (_showLoader/_playIntro): the CanvasGroup, icon nay Back,
-			-- progress + shimmer, status theo step, morph the -> cua so. Khac ban goc:
-			-- progress chay theo ASSET TAI THAT (PreloadAsync), hien menu xNgot Studio,
-			-- kem Key System (nho key vinh vien, sai rung the, Get Key) dung chung the.
-			-- ============================================================
+			 
+			 
+			 
+			 
+			 
+			 
+			 
+			 
 			local startupGateLoading = Window.Loading
 			local startupGateKey = type(Window.KeySystem) == "table" and Window.KeySystem or nil
 			local startupGateEnabled = startupGateLoading ~= false or (startupGateKey ~= nil and startupGateKey.Enabled == true)
-			if startupGateEnabled then
+			if startupGateEnabled and startupGateKey and startupGateKey.Enabled == true and startupGateKey.Style ~= "Legacy" then
+				startupGateFinished = false
+				startupGatePassed = false
+				newWindow.Visible = false
+				newFloatingIcon.Visible = false
+				windowstate = false
+				function Window:ForgetSavedKey()
+					local gate = self.__OphynWindow
+					if gate and type(gate.ForgetSavedKey) == "function" then return gate:ForgetSavedKey() end
+					local path = startupGateKey.KeyFile or "xNgotLibrary/Keys/key.txt"
+					if type(delfile) ~= "function" then return false end
+					if type(isfile) == "function" then
+						local ok, exists = pcall(isfile, path)
+						if ok and not exists then return true end
+					end
+					return pcall(delfile, path)
+				end
+				task.spawn(function()
+					local ok, err = xpcall(function()
+						if windowDestroyed then return end
+						local ophyn = __xNgotCreateOphyn()
+						local keyConfig, options = {}, {}
+						for k, v in pairs(startupGateKey) do keyConfig[k] = v end
+						for k, v in pairs(type(startupGateKey.Ophyn) == "table" and startupGateKey.Ophyn or {}) do options[k] = v end
+						local configuredKey = keyConfig.Key
+						if configuredKey == nil then configuredKey = keyConfig.Keys end
+						 
+						if keyConfig.CaseSensitive ~= true and (type(configuredKey) == "string" or type(configuredKey) == "table" and getmetatable(configuredKey) == nil and not configuredKey.__isJnkieInstance and not configuredKey.__isJnkie) then
+							local list = type(configuredKey) == "string" and { configuredKey } or configuredKey
+							keyConfig.Key = function(value)
+								local normalized = tostring(value or ""):match("^%s*(.-)%s*$"):lower()
+								if normalized == "" then return false end
+								for _, item in ipairs(list) do
+									if type(item) == "table" then item = item.Key or item.key or item.Value end
+									if type(item) == "string" and item:match("^%s*(.-)%s*$"):lower() == normalized then return true end
+								end
+								return false
+							end
+						else
+							keyConfig.Key = configuredKey
+						end
+						keyConfig.URL = keyConfig.URL or keyConfig.GetKeyUrl or keyConfig.GetKey or ""
+						if keyConfig.SaveKey == nil then keyConfig.SaveKey = true end
+						keyConfig.KeyFile = keyConfig.KeyFile or "xNgotLibrary/Keys/key.txt"
+						Window.KeyFilePath = keyConfig.KeyFile
+						options.Title = options.Title or keyConfig.Title or Window.Title
+						options.Description = options.Description or keyConfig.Subtitle or "Key System"
+						options.Folder = options.Folder or "xNgotLibrary/Keys"
+						 
+						if options.SyncTheme ~= false then
+							local background = UISettings.BackgroundColor or Color3.fromRGB(37, 40, 47)
+							local surface = UISettings.SurfaceColor or Color3.fromRGB(32, 35, 41)
+							local textColor = UISettings.TextColor or Color3.fromRGB(197, 204, 219)
+							local muted = UISettings.MutedTextColor or Color3.fromRGB(150, 155, 165)
+							local accent = UISettings.AccentColor or Color3.fromRGB(10, 135, 213)
+							local surfaceLight = (surface.R * 0.299 + surface.G * 0.587 + surface.B * 0.114) > 0.55
+							local overlay = surfaceLight and Color3.new(0, 0, 0) or Color3.new(1, 1, 1)
+							local accentLight = (accent.R * 0.299 + accent.G * 0.587 + accent.B * 0.114) > 0.55
+							options.XngotPalette = {
+								bg = background, card = surface, input = surface:Lerp(overlay, 0.05),
+								stroke = surface:Lerp(textColor, 0.22), btn2 = surface:Lerp(overlay, 0.10),
+								btn2Hover = surface:Lerp(overlay, 0.18), text = textColor, muted = muted, accent = accent,
+								submitBg = accent, submitText = accentLight and Color3.fromRGB(20, 24, 30) or Color3.new(1, 1, 1),
+								glowBase = accent, glowFrom = accent:Lerp(Color3.new(1, 1, 1), 0.35), glowTo = accent,
+								confetti = { accent, accent:Lerp(Color3.new(1, 1, 1), 0.35), textColor, Color3.fromRGB(120, 210, 140) },
+							}
+							options.XngotRadius = UISettings.CornerRadius
+							if options.ChangeTheme == nil then options.ChangeTheme = false end
+						end
+						 
+						if options.Logo == nil and TopFrame and TopFrame:FindFirstChild("Icon") then
+							local menuIcon = TopFrame.Icon
+							if menuIcon.Image ~= "" then
+								options.Logo = menuIcon.Image
+								options.LogoRectOffset = menuIcon.ImageRectOffset
+								options.LogoRectSize = menuIcon.ImageRectSize
+							end
+						end
+						options.XngotApplyIcon = ApplyIcon
+						if options.SyncFont ~= false then
+							local chosenFont = options.UIFont
+							if not chosenFont and UISettings.Font ~= "Original" then chosenFont = UISettings.Font end
+							if not chosenFont then
+								pcall(function() chosenFont = TopFrame.TextLabel.FontFace end)
+							end
+							if chosenFont then pcall(function() ophyn:SetUIFont(chosenFont) end) end
+							if options.TitleFont then pcall(function() ophyn:SetTitleFont(options.TitleFont) end) end
+						end
+						options.KeySystem = keyConfig
+						if keyConfig.Keyless ~= nil then options.Keyless = keyConfig.Keyless end
+						if type(keyConfig.GetMethods) == "table" then
+							for _, method in ipairs(keyConfig.GetMethods) do ophyn:GetMethod(method) end
+						end
+						local userCallback = options.Callback
+						local accepted = false
+						options.Callback = function(key)
+							if windowDestroyed then return end
+							accepted = true
+							Window.KeyUnlocked = true
+							if type(userCallback) == "function" then
+								local cbOk, cbErr = pcall(userCallback, key)
+								if not cbOk then warn("[xNgot/Ophyn] Callback: " .. tostring(cbErr)) end
+							end
+						end
+						local gate = ophyn.new(options)
+						Window.__OphynWindow = gate
+						gate.Gui.Destroying:Connect(function()
+							Window.__OphynWindow = nil
+							if windowDestroyed then return end
+							if not accepted then Window:Destroy(); return end
+							startupGatePassed = true
+							newWindow.Size = oldWindowSize
+							newWindow.Visible = true
+							if newWindow:FindFirstChild("Tabs") then newWindow.Tabs.Visible = true end
+							if newWindow:FindFirstChild("TabButtons") then newWindow.TabButtons.Visible = true end
+							newFloatingIcon.Visible = false
+							windowstate = true
+							startupGateFinished = true
+							releaseStartupIsland()
+						end)
+					end, function(e)
+						return debug and type(debug.traceback) == "function" and debug.traceback(tostring(e), 2) or tostring(e)
+					end)
+					if not ok then
+						warn("[xNgot/Ophyn] Startup failed: " .. tostring(err))
+						if LIB.ShowStartupError then pcall(LIB.ShowStartupError, "Ophyn key system failed: " .. tostring(err)) end
+						if not windowDestroyed then Window:Destroy() end  
+					end
+				end)
+			elseif startupGateEnabled then
+				startupGateFinished = false
 				startupGatePassed = false
 				newWindow.Visible = false
 				windowstate = false
@@ -133,7 +267,7 @@
 							if props and props.Parent then obj.Parent = props.Parent end
 							return obj
 						end
-						-- Bang mau lay tu theme cua cua so (UISettings): doi preset la gate doi theo
+						 
 						local G_BG = UISettings.BackgroundColor or Color3.fromRGB(24, 27, 33)
 						local G_SURFACE = UISettings.SurfaceColor or Color3.fromRGB(32, 35, 41)
 						local G_S2 = G_SURFACE:Lerp(Color3.fromRGB(255, 255, 255), 0.07)
@@ -145,8 +279,8 @@
 						local G_ERROR = Color3.fromRGB(240, 120, 120)
 						local G_SUCCESS = Color3.fromRGB(150, 220, 170)
 						local G_RADIUS = math.clamp(tonumber(UISettings.CornerRadius) or 12, 8, 28)
-						local G_FONT = "rbxassetid://11702779517" -- font cua UI xNgot Studio
-						-- Dong bo font theo nhan tieu de cua cua so goc (TopFrame.TextLabel)
+						local G_FONT = "rbxassetid://11702779517"  
+						 
 						pcall(function()
 							local menuLabel = TopFrame and TopFrame:FindFirstChild("TextLabel")
 							if menuLabel and menuLabel.FontFace and menuLabel.FontFace.Family and menuLabel.FontFace.Family ~= "" then G_FONT = menuLabel.FontFace.Family end
@@ -161,15 +295,15 @@
 							return mk("TextLabel", merged)
 						end
 
-						-- ===== Cau hinh loader / key (Window.Loading + Window.KeySystem) =====
+						 
 						local loadCfg = type(startupGateLoading) == "table" and startupGateLoading or {}
 						local loadTitle = tostring(loadCfg.Title or Window.Title or "xNgot Studio")
 						local loadText = tostring(loadCfg.Text or "Loading")
 						local loadSteps = type(loadCfg.Steps) == "table" and loadCfg.Steps or { "Preparing interface", "Loading icons", "Almost there" }
 						local loadDuration = math.clamp(tonumber(loadCfg.Duration) or 1.6, 0.6, 8)
 						local keyCfg = startupGateKey or {}
-						-- Dong bo tieu de: the key dung chung tieu de cua so (nhu loader + menu),
-						-- "Key System" xuong dong phu. Van ghi de duoc bang KeySystem.Title.
+						 
+						 
 						local keyHeader = tostring(keyCfg.Title or loadTitle)
 						local keySubtitle = tostring(keyCfg.Subtitle or "Enter your key to continue")
 						if keyCfg.Title == nil then keySubtitle = "Key System \u{00B7} " .. keySubtitle end
@@ -211,7 +345,7 @@
 							return false
 						end
 
-						-- ===== The loader (engine morph nhu Airflow, chay bang theme cua xNgot) =====
+						 
 						local card = mk("CanvasGroup", { Name = "xNgotStartupGate", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 16), Size = UDim2.fromOffset(300, 132), BackgroundColor3 = G_BG, BorderSizePixel = 0, GroupTransparency = 1, ZIndex = 100, Parent = windowFolder })
 						Window.__startupGateCard = card
 						local cardCorner = gCorner(card, G_RADIUS)
@@ -226,7 +360,7 @@
 						addGlow(UDim2.fromOffset(240, 100), UDim2.new(0, 10, 1, 10), 0.9, 270)
 						local cardScale = mk("UIScale", { Scale = 0.92, Parent = card })
 						local shadow = mk("ImageLabel", { Position = UDim2.fromOffset(-25, -25), Size = UDim2.new(1, 50, 1, 50), BackgroundTransparency = 1, Image = "rbxassetid://6014261993", ImageColor3 = Color3.new(0, 0, 0), ImageTransparency = 1, ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(49, 49, 450, 450), ZIndex = 0, Parent = card })
-						-- Bong do dong bo cua so goc: copy DropShadow cua chinh cua so
+						 
 						pcall(function()
 							local winShadow = newWindow and newWindow:FindFirstChild("DropShadow")
 							if winShadow and winShadow:IsA("ImageLabel") and winShadow.Image and winShadow.Image ~= "" then
@@ -238,7 +372,7 @@
 						end)
 						local iconHolder = mk("Frame", { Position = UDim2.fromOffset(24, 26), Size = UDim2.fromOffset(40, 40), BackgroundTransparency = 1, ZIndex = 3, Parent = card })
 						local iconImg = mk("ImageLabel", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromScale(0.5, 0.5), Rotation = -14, BackgroundTransparency = 1, ImageColor3 = G_ACCENT, ImageTransparency = 1, ScaleType = Enum.ScaleType.Fit, ZIndex = 3, Parent = iconHolder })
-						-- Icon gate phai trung khit icon menu: copy thang tu TopFrame.Icon cua cua so
+						 
 						local menuIconSource = TopFrame and TopFrame:FindFirstChild("Icon")
 						if menuIconSource then
 							iconImg.Image = menuIconSource.Image
@@ -258,7 +392,7 @@
 						local shimmer = mk("Frame", { Position = UDim2.fromScale(-0.4, 0), Size = UDim2.fromScale(0.4, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.6, BorderSizePixel = 0, ZIndex = 5, Parent = track })
 						mk("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0), NumberSequenceKeypoint.new(1, 1) }), Parent = shimmer })
 
-						-- ===== The key (cung the, morph tu loader) =====
+						 
 						local keyGroup = mk("CanvasGroup", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, GroupTransparency = 1, Visible = false, ZIndex = 4, Parent = card })
 						gText({ Position = UDim2.fromOffset(78, 24), Size = UDim2.new(1, -102, 0, 22), Text = keyHeader, TextSize = 18, FontFace = Font.new(G_FONT, Enum.FontWeight.SemiBold), Parent = keyGroup })
 						local keyStatus = gText({ Position = UDim2.fromOffset(78, 47), Size = UDim2.new(1, -102, 0, 16), Text = keySubtitle, TextSize = 12, FontFace = Font.new(G_FONT, Enum.FontWeight.Regular), TextColor3 = G_MUTED, Parent = keyGroup })
@@ -324,7 +458,7 @@
 							end)
 						end
 
-						-- ===== Chay loader: vao the + tai asset that =====
+						 
 						gTween(card, { GroupTransparency = 0, Position = UDim2.fromScale(0.5, 0.5) }, 0.4, Enum.EasingStyle.Quint)
 						gTween(cardScale, { Scale = 1 }, 0.5, Enum.EasingStyle.Back)
 						gTween(shadow, { ImageTransparency = 0.6 }, 0.4)
@@ -335,11 +469,11 @@
 						end)
 						local shimmerTween = GateTS:Create(shimmer, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1), { Position = UDim2.fromScale(1, 0) })
 						shimmerTween:Play()
-						-- ===== Tai TAT CA tai nguyen, ap dung that (khong con progress ao) =====
-						-- (1) Tinh: 16 spritesheet Lucide + anh template GUI + bong/glow + font + SFX.
-						-- (2) Dong: avatar nguoi choi + icon game. (3) Trong luc cho, quet GUI truc
-						-- tiep de bat moi asset vua duoc gan (icon tab, avatar admin, bia nhac...)
-						-- roi PreloadAsync tiep. Progress = asset da tai xong / tong asset that.
+						 
+						 
+						 
+						 
+						 
 						local assetList, seenAssets = {}, {}
 						local totalAssets, loadedAssets, pendingBatches = 0, 0, 0
 						local function queueAssets(list)
@@ -359,7 +493,7 @@
 							end)
 						end
 						local function addAsset(id) assetList[#assetList + 1] = id end
-						-- 16 spritesheets Lucide (dong bo voi module Lucide trong chinh file nay)
+						 
 						for _, sheet in ipairs({
 							"rbxassetid://131526378523863", "rbxassetid://98656588890340", "rbxassetid://122516128999742",
 							"rbxassetid://136045238860745", "rbxassetid://138056954680929", "rbxassetid://139241675471365",
@@ -368,7 +502,7 @@
 							"rbxassetid://95318701976229", "rbxassetid://87465848394141", "rbxassetid://77771201330939",
 							"rbxassetid://126006375824005",
 						}) do addAsset(sheet) end
-						-- Anh template cua GUI + anh gate + font UI + am thanh SFX
+						 
 						for _, asset in ipairs({
 							"rbxassetid://113216930555884", "rbxassetid://132453323679056", "rbxassetid://108285848026510",
 							"rbxassetid://120292618616139", "rbxassetid://122219713887461", "rbxassetid://128209591224511",
@@ -391,7 +525,7 @@
 							if game.GameId and game.GameId ~= 0 then addAsset("rbxthumb://type=GameIcon&id=" .. tostring(game.GameId) .. "&w=150&h=150") end
 						end)
 						queueAssets(assetList)
-						-- Quet GUI truc tiep: bat asset moi duoc gan trong luc loader dang cho
+						 
 						local function scanGuiAssets()
 							local found = {}
 							pcall(function()
@@ -457,7 +591,7 @@
 							gTween(keyGroup, { GroupTransparency = 1 }, 0.2)
 						end
 
-						-- ===== Morph the -> cua so, hien menu (tuong duong _playIntro(true)) =====
+						 
 						task.wait(0.15)
 						if windowDestroyed or not card.Parent then return end
 						gTween(card, { Size = UDim2.fromOffset(oldWindowSize.X.Offset, oldWindowSize.Y.Offset), Position = UDim2.fromScale(0.5, 0.5) }, 0.5, Enum.EasingStyle.Quint)
@@ -473,17 +607,14 @@
 						if newWindow:FindFirstChild("TabButtons") then newWindow.TabButtons.Visible = true end
 						newFloatingIcon.Visible = false
 						windowstate = true
-						if startupGateIslandHeld then
-							startupGateIslandHeld = false
-							local islandApi = Window.DynamicIsland
-							if islandApi and type(islandApi.Enable) == "function" then pcall(islandApi.Enable, islandApi, true) end
-						end
 						if type(Window.RefreshAdminAvatar) == "function" then pcall(function() Window:RefreshAdminAvatar() end) end
 						gTween(card, { GroupTransparency = 1 }, 0.25)
 						gTween(cardStroke, { Transparency = 1 }, 0.2)
 						gTween(shadow, { ImageTransparency = 1 }, 0.2)
 						task.wait(0.6)
 						if card.Parent then card:Destroy() end
+						startupGateFinished = true
+						releaseStartupIsland()
 					end
 					local gateOk, gateErr = xpcall(gateMain, function(err)
 						if debug and type(debug.traceback) == "function" then return debug.traceback(tostring(err), 2) end
@@ -494,14 +625,11 @@
 						startupGatePassed = true
 						Window.KeyUnlocked = true
 						if Window.__startupGateCard and Window.__startupGateCard.Parent then Window.__startupGateCard:Destroy() end
-						if startupGateIslandHeld then
-							startupGateIslandHeld = false
-							local islandApi = Window.DynamicIsland
-							if islandApi and type(islandApi.Enable) == "function" then pcall(islandApi.Enable, islandApi, true) end
-						end
 						newWindow.Size = oldWindowSize
 						newWindow.Visible = true
 						windowstate = true
+						startupGateFinished = true
+						releaseStartupIsland()
 					end
 				end)
 			else
