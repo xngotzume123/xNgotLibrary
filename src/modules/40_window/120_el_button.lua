@@ -127,10 +127,18 @@
 						Tween(newButton.Frame.Description, {TextColor3 = UISettings.TextColor}, TweenConfigs.Global)
 					end
 
+					function Button:_AIIsLocked() return ButtonData.Locked == true end
+					function Button:_AIActivate()
+						if ButtonData.Locked then return false end
+						ButtonData.Callback()
+						return true
+					end
+
 					function Button:Destroy()
 						newButton:Destroy()
 					end
 
+					Button._AIInstance = newButton
 					return Button
 				end
 

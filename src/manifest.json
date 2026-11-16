@@ -450,7 +450,7 @@
       "to": 6559,
       "lines": 284,
       "delta": 1,
-      "sha256": "e084681ea60619c16b4647a1709e1350b4004a7ea42afc0d4f5e433ed08118de"
+      "sha256": "c876bd41f465e602b9d710cd5151af32c7e174df759d73bbdc55dd8d65c25ef1"
     },
     {
       "id": "engine.crypto",
@@ -488,9 +488,9 @@
       "role": "score() xếp hạng track + learn() học từ lựa chọn",
       "from": 6917,
       "to": 7029,
-      "lines": 113,
+      "lines": 141,
       "delta": 0,
-      "sha256": "554a82a56f46bc9271964a916902c6496910864b8d8a5c5f34633efad4e1a98c"
+      "sha256": "8c8d05c874b7324c37d3f5912a9eabeaf2eefc4c4bfdfcf4cf24aca905754c53"
     },
     {
       "id": "engine.search",
@@ -498,9 +498,9 @@
       "role": "queryVariants/searchOne/search (đa nguồn)",
       "from": 7030,
       "to": 7194,
-      "lines": 192,
+      "lines": 204,
       "delta": 0,
-      "sha256": "d6aa1627ee15897960fa82289af50637fbe7b3e7341faa8aba5dd98f22095286"
+      "sha256": "1b305cea82b0c0acf48d80340c1fe34464005691ac5233888572eefe0f503707"
     },
     {
       "id": "engine.download",
@@ -518,9 +518,9 @@
       "role": "Nhận dạng audio, đọc ID3, hash, cache, cover, saveBytes",
       "from": 7330,
       "to": 7585,
-      "lines": 256,
+      "lines": 258,
       "delta": 0,
-      "sha256": "eb8d0b049f8c5465498cb0936829987b59b419cbd1e8cba3480e7d17a36fe9da"
+      "sha256": "821294dd10f8a564bc2e4205cf292ada054835ea44e7365cb5b8d036566c5b88"
     },
     {
       "id": "engine.files",
@@ -528,9 +528,9 @@
       "role": "File manager engine: liệt kê/xoá/thống kê mp3 đã tải",
       "from": 7586,
       "to": 7914,
-      "lines": 329,
+      "lines": 335,
       "delta": 0,
-      "sha256": "42d424f4f27d553274aff7cee75d3ecf726f7c936653582429bc893866854026"
+      "sha256": "344dc52c25bf0b5301c03ce4b16cfc4ec72d944368ac147ce8440fa255d4acb4"
     },
     {
       "id": "engine.resolve",
@@ -540,7 +540,7 @@
       "to": 8177,
       "lines": 263,
       "delta": 0,
-      "sha256": "2ac301bebdaa406969ed03544b61b217ab6486e79bc2f4e9e17e15baf712a521"
+      "sha256": "5249e3cce46319a65bebd825e6c996c71be691c7743112d34447e23c5ba035e0"
     },
     {
       "id": "overlay.remote",
@@ -558,9 +558,9 @@
       "role": "Nạp nhạc đã tải, phát/dừng, next/shuffle/repeat",
       "from": 8421,
       "to": 8773,
-      "lines": 440,
+      "lines": 528,
       "delta": -1,
-      "sha256": "29b564b50960a8841df0eff3cb357dccb241a3cdef4c7a5f4ecb666a133f6cbc"
+      "sha256": "26ffbf51b98cb58ace47e705e9be2eceae3a2d3fd230c03dd93b8eb86ad908ab"
     },
     {
       "id": "overlay.pages",
@@ -643,14 +643,24 @@
       "sha256": "ef55354fc2e25be54b49d638d32dbc2bfcac07898ca7a612fddb2b41fe8afb95"
     },
     {
+      "id": "overlay.cross_learning",
+      "path": "30_overlay/146_cross_learning.lua",
+      "role": "Per-user local JSON learning storage",
+      "from": 0,
+      "to": 0,
+      "lines": 136,
+      "delta": 0,
+      "sha256": "1f03119828c6dd5aeec18f8ffad8ddf81a3c066859221b2cb1a1cb020a680ed2"
+    },
+    {
       "id": "overlay.cross_control",
       "path": "30_overlay/148_cross_control.lua",
       "role": "refreshIslandScale, Cross.setEnabled/ask/clearChat/shutdown",
       "from": 10444,
       "to": 10784,
-      "lines": 341,
+      "lines": 754,
       "delta": 0,
-      "sha256": "0b5203ed909531c11d16b95ca58ff2675abbc7b3ea2070ed636ae4acf6b2f19f"
+      "sha256": "111f30b5f08704d6cb78f746bf17f8b81def962d9ded39d77b8df1213b63b4db"
     },
     {
       "id": "overlay.api",
@@ -658,9 +668,9 @@
       "role": "API công khai của island: Notify/Music*/Ai*/Expand/State/Destroy",
       "from": 10785,
       "to": 11080,
-      "lines": 296,
+      "lines": 315,
       "delta": -1,
-      "sha256": "fa7cd2286c911536c921be2689c3594e06b490402de749745e0f193d49364f47"
+      "sha256": "b9d7cbe080f1c2c064914d4309632ec978d03afd82c16f5ef1aab5575cecf6a5"
     },
     {
       "id": "window.open",
@@ -668,9 +678,9 @@
       "role": "local Windows + function LIB:CreateWindow + opts mặc định",
       "from": 11081,
       "to": 11152,
-      "lines": 143,
+      "lines": 153,
       "delta": 1,
-      "sha256": "bd855240b4b2ab5b5dbceacf2cc022ecbd02454b73d029c965a2393ba0320fab"
+      "sha256": "97443d0786ba9371ad68d2ca3cc7ba3a95d7082d057e86779d1e6827c4552c08"
     },
     {
       "id": "window.config_io",
@@ -748,9 +758,9 @@
       "role": "AddTabToList, DropdownPopup, SelectTab (nội bộ)",
       "from": 12167,
       "to": 12335,
-      "lines": 138,
+      "lines": 139,
       "delta": 0,
-      "sha256": "02403c824df7f76fd687b22457b56dfa0187bc703307cd291f33a92aec65db9c"
+      "sha256": "937ecbe1f93be5060e4379c34cc2a330266eced5311a09b459c0c35bd38787aa"
     },
     {
       "id": "window.tab_open",
@@ -768,9 +778,9 @@
       "role": "Tab:Section",
       "from": 12422,
       "to": 12488,
-      "lines": 67,
+      "lines": 68,
       "delta": 0,
-      "sha256": "2cc99ca1ec4e1400bd7743813f48a44a4ad836025b7c593e131ec33c2c4082b8"
+      "sha256": "c47d3e80ad3a45bf7b93d73fceb57daca633c29c5b71471db70c5dfd59e123d3"
     },
     {
       "id": "window.el_button",
@@ -778,9 +788,9 @@
       "role": "Tab:Button",
       "from": 12489,
       "to": 12631,
-      "lines": 129,
+      "lines": 137,
       "delta": 0,
-      "sha256": "fcf8e3e3bea1ce469882351062c140c34d7bd9ed2d97c89ab30e6d615c1ac54f"
+      "sha256": "52ee900d4f798ce338432a2ceeec66474b41f27a0fe0868ce8ee46d6b8914a08"
     },
     {
       "id": "window.el_code",
@@ -788,9 +798,9 @@
       "role": "Tab:Code",
       "from": 12632,
       "to": 12667,
-      "lines": 36,
+      "lines": 37,
       "delta": 0,
-      "sha256": "3bbee9822d0a4293daf1b5035b618f139368b3c7c0c2c8199fff7a293fe232d0"
+      "sha256": "baa131c11402c3b94a4e82aee4ff9ab7bbcb0201ee8667e70da9b495c21289dd"
     },
     {
       "id": "window.el_paragraph",
@@ -798,9 +808,9 @@
       "role": "Tab:Paragraph",
       "from": 12668,
       "to": 12711,
-      "lines": 44,
+      "lines": 45,
       "delta": 0,
-      "sha256": "cea70fb94f5620667c905468f29568b0626e2923589e7d6cb61e0dedc4768160"
+      "sha256": "aa9461383732618db85bc6c28ab93360829e6d1a6216e8b0aaa85edcb366b185"
     },
     {
       "id": "window.el_colorpicker",
@@ -808,9 +818,9 @@
       "role": "Tab:Colorpicker",
       "from": 12712,
       "to": 12918,
-      "lines": 207,
+      "lines": 208,
       "delta": 0,
-      "sha256": "e3a08a0e3eb5529b3eb3f324198aa971fa255a28d607ec5f9988148d339c9366"
+      "sha256": "1df63509b7742117b488e5a8ab803664228874ea88ca3b2961a4d0303d96d203"
     },
     {
       "id": "window.el_toggle",
@@ -818,9 +828,9 @@
       "role": "Tab:Toggle",
       "from": 12919,
       "to": 13072,
-      "lines": 174,
+      "lines": 175,
       "delta": 0,
-      "sha256": "338abb8e88a7b924e04ea28d35ce1682f72da176e0222c44947efd37c7219584"
+      "sha256": "8f88ec078afb7e4596b212d88cb3eeda8723b1dff799e9349659da5479bc70b9"
     },
     {
       "id": "window.el_slider",
@@ -828,9 +838,9 @@
       "role": "Tab:Slider",
       "from": 13073,
       "to": 13315,
-      "lines": 268,
+      "lines": 269,
       "delta": 0,
-      "sha256": "82851eb803be6cc87a536a13574e325d4f87b62074aa8f42331eb4aef781f826"
+      "sha256": "f32c95fb81bef9b86639d3d52acf9ec8691057e3035866234c5aa8af6184d1e4"
     },
     {
       "id": "window.el_input",
@@ -838,9 +848,9 @@
       "role": "Tab:Input",
       "from": 13316,
       "to": 13489,
-      "lines": 174,
+      "lines": 186,
       "delta": 0,
-      "sha256": "859d41d77e35675563b0f621122a648abdbf0361afbabd0cc1b2fa8737f1e2bb"
+      "sha256": "92810751ca2446de3278d9aa0ecffc743ce4ffa5995918102ca79d76f6f75643"
     },
     {
       "id": "window.dropdown_helpers",
@@ -848,9 +858,9 @@
       "role": "AddDropdownButton + TableToString",
       "from": 13490,
       "to": 13517,
-      "lines": 28,
+      "lines": 31,
       "delta": 0,
-      "sha256": "06ae276022f4f8d682033146b39b4aa042ef2c8b9b89457fd3f7ed176719368c"
+      "sha256": "958ac1e9ad43ba69452dda322f502b61d7c3ad10b677aa6e2335bd2197e63f2d"
     },
     {
       "id": "window.el_dropdown",
@@ -860,7 +870,7 @@
       "to": 13960,
       "lines": 445,
       "delta": 0,
-      "sha256": "7429e1ac9de41f707c6fbbf316aa4019ccb2bfaa8d958edb34dc8f8d667de4fa"
+      "sha256": "790873bafdc701758855cace14bbec37c1850800fc5c4541d30aa46260b780c1"
     },
     {
       "id": "window.el_info",
@@ -868,9 +878,9 @@
       "role": "Tab:InfoNguyenNhat",
       "from": 13961,
       "to": 14130,
-      "lines": 170,
+      "lines": 171,
       "delta": 0,
-      "sha256": "25c94133efebfd9a686787d4ab63224a91a4b3f37029a5b8c4f62e7244a51c35"
+      "sha256": "d4b1f8f90cddb84f53dfcc6bad4b93523a890efd503526e2ca89d908a2ecc54d"
     },
     {
       "id": "window.el_discord",
@@ -878,9 +888,9 @@
       "role": "Tab:Discord",
       "from": 14131,
       "to": 14283,
-      "lines": 153,
+      "lines": 194,
       "delta": -1,
-      "sha256": "e1be930a4e30262c6e129ecdee977cbe3b0b957973aa8a6f43917d2010ac923c"
+      "sha256": "3eb523df558d38c4eb285eae1d833e1f7bfc2ac4ad7a913940f41cf0a079c0d6"
     },
     {
       "id": "window.actions",
@@ -928,9 +938,9 @@
       "role": "Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey",
       "from": 14598,
       "to": 15113,
-      "lines": 654,
+      "lines": 666,
       "delta": 0,
-      "sha256": "0525d0e3882e31a2ee1b9141093958b7807dfa3ac3d5f7186c11136a5659581b"
+      "sha256": "aac4ed2f93d3ac8ad0cb888d4dcf0bd9bbf40e799ea7b9dee5884dc1388dba7a"
     },
     {
       "id": "window.island_bridge",
@@ -998,9 +1008,9 @@
       "role": "Tab bảng nổi: toggle/slider theme/ngôn ngữ",
       "from": 16815,
       "to": 17059,
-      "lines": 245,
+      "lines": 318,
       "delta": 0,
-      "sha256": "9b155a3ecb1e5dd0e66a0ed2fb1ed7058bce85a9a5df361dce345193c86137d5"
+      "sha256": "a496b49a4b6027601369253e5cd054ad8395504606c2392dad30dc5115de5db5"
     },
     {
       "id": "window.music_tab",

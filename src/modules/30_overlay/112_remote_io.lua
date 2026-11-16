@@ -247,9 +247,43 @@
 		            end
 		        end
 
+        -- Stable identities let the automatic queue avoid recently played variants.
+        local recent = {}
+        local function identity(track)
+            if not track then return "" end
+            local name = tostring(track.Name or ""):lower():gsub("[%p%c]", " "):gsub("%s+", " ")
+            name = name:gsub("official music video", ""):gsub("official video", ""):gsub("official audio", ""):gsub("lyric video", ""):gsub("%s+", " "):match("^%s*(.-)%s*$")
+            return name ~= "" and name or (tostring(track.Source) .. "|" .. tostring(track.Id))
+        end
+        local function rememberTrack(track)
+            local key = identity(track)
+            if key == "" then return end
+            for i=#recent,1,-1 do if recent[i] == key then table.remove(recent,i) end end
+            recent[#recent+1] = key
+            if #recent > 30 then table.remove(recent,1) end
+        end
+        local function pickAutomatic(allowRecent)
+            local currentTrack = TRACKS[Music.Index]
+            local pool, current = {}, identity(currentTrack)
+            local plan = currentTrack and currentTrack.Remote and Remote.Plan or nil
+            if plan and plan.query == "__downloaded__" then plan = nil end
+            for i, track in ipairs(TRACKS) do
+                local key = identity(track)
+                local seen = false
+                for _, prior in ipairs(recent) do if prior == key then seen = true; break end end
+                local relevant = true
+                if plan and Remote.Engine and type(Remote.Engine.isRelevant) == "function" then
+                    relevant = Remote.Engine.isRelevant({name=track.Name,author=track.Artist}, plan)
+                end
+                if i ~= Music.Index and key ~= current and relevant and (allowRecent or not seen) then pool[#pool+1] = i end
+            end
+            return #pool > 0 and pool[math.random(1,#pool)] or nil
+        end
+        rememberTrack(TRACKS[Music.Index])
 		        function Music.Select(index, play)
 		            Music.Index = (index - 1) % #TRACKS + 1
 		            local track = TRACKS[Music.Index]
+                    if play then rememberTrack(track) end
 		            loadToken = loadToken + 1
 		            currentSound:Stop()
 		            Music.Playing = play and true or false
@@ -301,11 +335,8 @@
 
 		        function Music.Next(direction)
 		            if Music.Shuffle and direction > 0 and #TRACKS > 1 then
-		                local nextIndex = Music.Index
-		                while nextIndex == Music.Index do
-		                    nextIndex = math.random(1, #TRACKS)
-		                end
-		                Music.Select(nextIndex, true)
+                    local nextIndex = pickAutomatic(false) or pickAutomatic(true)
+                    if nextIndex then Music.Select(nextIndex, true) end
 		            else
 		                Music.Select(Music.Index + direction, true)
 		            end
@@ -333,6 +364,66 @@
 		            return math.max(0, currentSound.TimeLength)
 		        end
 
+        local function nextAutomatic()
+            rememberTrack(TRACKS[Music.Index])
+            local idx = pickAutomatic(false)
+            if idx then Music.Select(idx, true); return end
+            local current, token = TRACKS[Music.Index], loadToken
+            local plan = current and current.Remote and Remote.Plan or nil
+            local engine = Remote.Engine
+            if not (plan and plan.query ~= "__downloaded__" and engine and type(engine.search) == "function" and type(engine.parse) == "function") then
+                local fallback = pickAutomatic(true)
+                if fallback then Music.Select(fallback,true) else Music.Playing=false; Music.Sync(); broadcast() end
+                return
+            end
+            if Remote.Busy then Music.Playing=false; Music.Sync(); broadcast(); return end
+            task.spawn(function()
+                local request = plan.artist or (plan.tags and (plan.tags.genre or plan.tags.mood)) or plan.query
+                local ok, results = pcall(function()
+                    local nextPlan = engine.parse(request)
+                    return engine.search(nextPlan, function() end, request)
+                end)
+                if not gui.Parent or token ~= loadToken or not Music.Playing or not Music.Auto or Music.RepeatOne
+                    or Remote.Busy or Remote.Plan ~= plan or TRACKS[Music.Index] ~= current then return end
+                local options = {}
+                if ok and type(results)=="table" then
+                    for _, item in ipairs(results) do
+                        if engine.isRelevant and engine.isRelevant(item, engine.parse(request)) then
+                            local cover = Covers[(#TRACKS % #Covers) + 1]
+                            local track = {Name=item.name,Artist=item.author or "",Remote=true,Source=item.source,Id=item.id,Url=item.url,
+                                Duration=item.duration,Thumbnail=item.thumbnail,DirectId=item.id,Downloaded=false,
+                                A=cover[1], B=cover[2]}
+                            local key=identity(track); local found=false
+                            for _, prior in ipairs(recent) do if prior==key then found=true; break end end
+                            for _, existing in ipairs(TRACKS) do if identity(existing)==key or (existing.Source==item.source and tostring(existing.Id)==tostring(item.id)) then found=true; break end end
+                            if not found then options[#options+1]=track end
+                        end
+                    end
+                end
+                if #options > 0 then
+                    local track = options[math.random(1,#options)]
+                    local index = #TRACKS + 1
+                    TRACKS[index] = track
+                    local value = "#" .. tostring(index)
+                    track.Value = value
+                    Remote.Rows = Remote.Rows or {}
+                    Remote.Labels = Remote.Labels or {}
+                    Remote.Rows[index] = {Index=index, Value=value, Title=track.Name, Artist=track.Artist,
+                        Duration=track.Duration or "", Source=track.Source or "", Thumbnail=track.Thumbnail or "",
+                        Desc=track.Artist or ""}
+                    Remote.Labels[value] = tostring(index) .. ". " .. tostring(track.Name)
+                    Remote.Count = #TRACKS
+                    if Remote.Notify then pcall(Remote.Notify) end
+                    Music.Select(index, true)
+                else
+                    local fallback=pickAutomatic(true)
+                    if fallback then Music.Select(fallback,true) else
+                        Music.Playing=false; Music.Sync(); broadcast()
+                        notify(Settings.Language == "en" and "Music" or "Nhạc", Settings.Language == "en" and "No new related track found." or "Không tìm thấy bài liên quan mới.", "warn", 3, true)
+                    end
+                end
+            end)
+        end
 		        currentSound.Ended:Connect(function()
 		            if not Music.Playing then
 		                return
@@ -345,7 +436,7 @@
 		                    and job.shuffle == Music.Shuffle and TRACKS[job.index] == job.track then
 		                    Music.Select(job.index, true)
 		                else
-		                    Music.Next(1)
+                    nextAutomatic()
 		                end
 		            else
 		                Music.Playing = false
@@ -364,11 +455,8 @@
 		                and Remote.Engine.Config.PrefetchNext ~= false and currentSound.TimeLength > 0
 		                and currentSound.TimePosition >= currentSound.TimeLength * 0.5
 		                and attemptedToken ~= loadToken and not prefetchBusy then
-		                local nextIndex = Music.Index % #TRACKS + 1
-		                if Music.Shuffle then
-		                    nextIndex = math.random(1, #TRACKS - 1)
-		                    if nextIndex >= Music.Index then nextIndex = nextIndex + 1 end
-		                end
+                    local nextIndex = pickAutomatic(false)
+                    if not nextIndex then attemptedToken = loadToken; continue end
 		                local candidate = TRACKS[nextIndex]
 		                local job = { token = loadToken, current = TRACKS[Music.Index], index = nextIndex,
 		                    track = candidate, shuffle = Music.Shuffle, pending = true }

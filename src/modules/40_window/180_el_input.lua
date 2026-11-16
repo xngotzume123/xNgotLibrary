@@ -20,10 +20,13 @@
 					}
 
                     local name = Input.Title
-                    if CONFIGLOADED and CONFIG[NAMETAB][name] ~= nil then
-                        Input.Default = CONFIG[NAMETAB][name]
-                    elseif not CONFIGLOADED or CONFIG[NAMETAB][name] == nil then
-                        CONFIG[NAMETAB][name] = Input.Default
+                    local noSave = data.NoSave == true
+                    if not noSave then
+                        if CONFIGLOADED and CONFIG[NAMETAB][name] ~= nil then
+                            Input.Default = CONFIG[NAMETAB][name]
+                        elseif not CONFIGLOADED or CONFIG[NAMETAB][name] == nil then
+                            CONFIG[NAMETAB][name] = Input.Default
+                        end
                     end
                     Input.Text = tostring(Input.Default or "")
                     Input.Default = Input.Text
@@ -95,8 +98,10 @@
 							Tween(newInput.BoxFrame.Frame.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
 							Input.Text = newInput.BoxFrame.Frame.TextBox.Text
 							Input.Callback(Input.Text)
-                            CONFIG[NAMETAB][name] = Input.Text
-						    SAVECONFIG()
+                            if not noSave then
+                                CONFIG[NAMETAB][name] = Input.Text
+                                SAVECONFIG()
+                            end
 						end
 					end)
 
@@ -105,8 +110,14 @@
 						newInput.BoxFrame.Frame.TextBox.Text = newText
 						Input.Text = newText
 						Input.Callback(newText)
-                        CONFIG[NAMETAB][name] = newText
-                        SAVECONFIG()
+                        if not noSave then
+                            CONFIG[NAMETAB][name] = newText
+                            SAVECONFIG()
+                        end
+					end
+
+					function Input:Get()
+						return newInput.BoxFrame.Frame.TextBox.Text
 					end
 
 					function Input:SetTitle(newText)
@@ -176,6 +187,7 @@
 
 					Input.Callback(Input.Default)
 
+					Input._AIInstance = newInput
 					return Input
 				end
 

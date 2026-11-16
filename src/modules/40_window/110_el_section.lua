@@ -69,6 +69,7 @@
 
 					parentElement = newSection.Frame
 
+					Section._AIInstance = newSection
 					return Section
 				end
 

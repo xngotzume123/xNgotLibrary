@@ -209,6 +209,7 @@
 					SaveColor(Colorpicker.Value)
 					if Colorpicker.Locked then Colorpicker:Lock() end
 					Colorpicker.Callback(Colorpicker.Value)
+					Colorpicker._AIInstance = root
 					return Colorpicker
 				end
 

@@ -270,6 +270,7 @@
 
 					Slider.Callback(default)
 
+					Slider._AIInstance = newSlider
 					return Slider
 				end
 

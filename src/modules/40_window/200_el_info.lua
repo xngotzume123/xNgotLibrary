@@ -172,6 +172,7 @@
 					end
 					function Info:Destroy() card:Destroy() end
 
+					Info._AIInstance = card
 					return Info
 				end
 

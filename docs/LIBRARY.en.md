@@ -397,7 +397,9 @@ print(_G.xNgotMusicConfig:Get("topN"))
 
 Use **Music region** and **Music platform** in the island settings. Auto region uses Roblox country when available, then its locale; choose Global to disable regional preference. Vietnam, United States, Korea and Japan are supported. This adds regional search terms, so results are not a verified country/language filter. Platforms in the UI are YouTube, SoundCloud and Audius; search and downloads depend on external services.
 
-When **Preload next track** and Auto play are enabled, the player prepares the next item from the current list at 50%, including a best-effort audio preload. Shuffle chooses one next item; Repeat One takes priority. If there is only one item, preloading is skipped. If preparation is incomplete or fails, normal loading is used; gapless playback is not guaranteed. Downloads use network and local storage. Region detection does not use a third-party IP lookup.
+With Auto play, the player randomly selects an eligible track it has not recently played. For a searched/assistant track, it prefers candidates matching the current query. When those are exhausted it can search online for related results, then falls back to an eligible older track; if none is suitable, it stops. Repeat One takes priority; manual Next and Previous retain their controls. Matching uses title/artist/genre text heuristics and may reject a valid song or accept a wrong one—review search results, and refine your query when needed. The search first tries the unmodified query, with regional terms as additional variants.
+
+With **Preload next track** and Auto enabled, an eligible unplayed item from the current list can be downloaded/preloaded at 50%. If preparation fails or is incomplete, normal loading is used; gapless playback is not guaranteed. Online searches and preloads use network and storage. The search filters weakly related results rather than automatically downloading them; source-qualified cache keys prevent collisions, but providers can still return the wrong audio. Previously cached files remain available in the downloaded list. Region detection does not use a third-party IP lookup.
 
 ```lua
 _G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
@@ -574,7 +576,7 @@ All constructors below are called on a `Tab`. Their `Title` values should be uni
 | `Button` | `Title`, `Desc`, `Locked`, `Callback` | Invoked on activation. This build does not read an `Icon` option for Button. |
 | `Toggle` | `Title`, `Desc`, `Default` or `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback fires at creation and on `:Set`. Avoid specifying conflicting `Default` and `Value`. |
 | `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Number; clamped, stepped; callbacks at initialization and changes. `:Set` returns the value or `nil` if outside bounds. |
-| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | String; callback on initialization, focus loss, and `:Set`. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `NoSave`, `Locked`, `Callback` | String; callback on initialization, focus loss, and `:Set`. |
 | `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | A string for single-select, table for multi-select; callback may fire at creation. |
 | `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Emits `Color3`; `:Get()` returns current value; initial callback runs. |
 | `Section` | `Title`, `Default`, `TextXAlignment` | Adds a collapsible group and makes it the parent for subsequent controls created through that tab. |
@@ -590,7 +592,7 @@ All constructors below are called on a `Tab`. Their `Title` values should be uni
 | Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
-| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `Get`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
 | Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
@@ -665,7 +667,7 @@ Window:Hide()
 | `DeleteConfig()` | Deletes the file if supported; returns success/error. It does not reset already-loaded in-memory controls. |
 | `ForgetSavedKey()` | Available when a key gate sets it up; deletes saved key if supported. |
 
-With `AutoSave = false`, automatic writes are disabled; explicit `SaveConfig()` still attempts a write. Saved data is local, not encrypted, and depends on executor filesystem functions. `DeleteConfig` does not delete downloaded music or the separately stored key.
+With `AutoSave = false`, automatic writes are disabled; explicit `SaveConfig()` still attempts a write. Saved data is local, not encrypted, and depends on executor filesystem functions. The default configuration path is `xNgotLibrary/Config/<FileSaveName>`; existing valid root config is copied on first use without deleting it. Explicit custom `Folder` paths remain supported and may be outside the root. Default keys, AI and music are under `xNgotLibrary/Keys`, `xNgotLibrary/AI` and `xNgotLibrary/Music` (covers under `Music/Covers`); externally configured or third-party paths can differ. Files are not E2E protected: other scripts or users with executor workspace access can read or modify them. `DeleteConfig` does not delete downloaded music or the separately stored key.
 
 ## Appearance APIs
 
@@ -720,6 +722,10 @@ end
 ```
 
 ## Cross assistant
+
+In **Settings → Open Dynamic Island Settings → Cross AI Assistant**, turn on **Enable Cross AI**, enter a command such as `next song` or `timer 60`, and press **Send to Cross AI**. The response appears in the section. **Open Cross AI on Island** opens the island interface (enable the island first); **Clear Cross AI chat** clears the session. The input is not written to window config, but music-search commands may be sent to third-party search services; never enter secrets. This is a local, rule-based assistant, not a general online AI chatbot.
+
+`AiState()` returns a snapshot with `Enabled`, `Thinking`, `Reply`, `Version` and `Pending` (latest assistant response, not the full chat). `AiAsk` may yield during music resolution; use a task when needed.
 
 `AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` and `AiPermission(name, boolean)` control the local assistant. `Ui` and `Key` permissions can be configured; `Body` and `Free` are forced off by the implementation. `MusicAiLearn(title, good)` records feedback when supported; `DemoDownload()` displays simulated progress rather than downloading a real file. `MusicAiOnline(true)` does not enable an online model in this build; `MusicAiOnlineState()` reports removed/local. Do not assume it calls an external AI service.
 
@@ -887,6 +893,7 @@ Window:SelectTab("Main")
 - Toggle, Slider, Input, Dropdown and Colorpicker invoke their callback while being created, with the initial or restored value. Create dependencies before these controls; do not refer to a local that is still being assigned from its own constructor.
 - Saved values are indexed by tab title and the control's original title, not by `Flag`. Use unique titles per tab. Renaming a control later does not migrate its saved key. `AutoSave` and filesystem support affect persistence; see Window & storage.
 - `Lock()` blocks interaction; programmatic setters can still update values and trigger callbacks. `Destroy()` removes the visual control.
+- `AIControl = false` on a control opts it out of the local assistant index. Confirmed UI actions run the original callback; see Cross AI: control your UI.
 - Mobile retains its original dimensions. Drag sliders horizontally; vertical gestures are treated as scrolling. Actual executor behavior still needs Roblox testing.
 
 ---
@@ -1048,17 +1055,18 @@ input:Set("Player")
 | `Placeholder` | string | `empty` | Hint in text box |
 | `Default / Value` | string | `empty` | Initial text |
 | `ClearTextOnFocus` | boolean | `false` | Clear when focused |
+| `NoSave` | boolean | `false` | Do not restore or save this input in config |
 | `MultiLine` | boolean | `false` | Allow multiple lines |
 | `Locked` | boolean | `false` | Disable interaction |
 | `Callback` | function(string) | `no-op` | Receives text |
 
 ## Returned object
 
-`Set(text)`, `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
+`Set(text)`, `Get()` (current TextBox text, even while focused), `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
 
 ## Notes
 
-Callback runs at creation, on focus loss and after Set; it is not an every-keystroke callback.
+Callback runs at creation, on focus loss and after Set; it is not an every-keystroke callback. `NoSave=true` prevents this input from reading or writing config; it does not delete old saved values.
 
 ---
 
@@ -1226,3 +1234,92 @@ Discord: `SetInvite(link, code)`, `Destroy()`. Info: `SetAvatar(id)`, `SetName(t
 ## Notes
 
 Invite and avatar/network behavior depends on the executor and live services; placeholders are not real invites.
+
+---
+
+# Cross AI: control your UI
+
+Cross is a **local rule-based assistant**, not a general-purpose language model. It indexes the controls created by this xNgot window, including controls created later by your script. It does not scan other Roblox GUIs. Labels are matched by name; it cannot infer the purpose of arbitrary code from a label.
+
+## Start and confirm
+
+1. Open **Settings → Open Dynamic Island Settings → Cross AI Assistant** and turn on **Enable Cross AI**.
+2. Enter a request and press **Send to Cross AI**. For example, `bật Show FPS`.
+3. Read the proposed action, target name and tab. Reply `có`/`yes` or use **Confirm Cross AI action**; to reject, reply `không`/`no` or use **Cancel Cross AI action**.
+4. Confirm within 60 seconds. An expired or canceled request does nothing. Locked or destroyed controls are refused; renamed targets need a new request. The control may also change while confirmation is pending.
+
+You can use the Cross chat on the island too: open it with **Open Cross AI on Island**, then type the request and confirmation there.
+
+## Example requests
+
+| Request | Behavior |
+| --- | --- |
+| `danh sách chức năng` / `list controls` | List indexed controls, 15 per page; append `2` for the next page. |
+| `bật Show FPS` | Propose enabling that toggle. |
+| `tắt Main Auto Farm` | Propose disabling `Auto Farm` in tab `Main`, if it exists. |
+| `đặt Sound Volume 40` | Propose a slider value; it is rounded to the slider step. |
+| `chọn Mode "Fast"` | Propose a dropdown option. |
+| `đổi Nickname "Hana"` | Propose an input value; quotes are required. |
+| `đổi Accent #66AAFF` | Propose a Colorpicker value. |
+| `bấm Rejoin` | Propose a button click. Buttons may have side effects; confirm only after reading the target. |
+
+Names in examples must exist in your UI. If names are duplicated, include the tab name. Some Vietnamese aliases, such as `tốc độ` for `Speed`, are supported; this is not free-form AI and unfamiliar wording may not match. A name alone may propose a toggle/section's opposite state or a button action, but confirmation is still mandatory.
+
+The assistant supports Section (open/close), Toggle, Button, Slider, Input, Dropdown (including adding/removing one multi-select option), and Colorpicker. Paragraph and Code can have their displayed text changed with a quoted value; Info changes its bio and Discord changes its invite link. Code content is displayed, not executed. Assistant-owned controls are excluded to avoid recursive actions. For single-choice dropdowns, select an existing option; multi-select `bỏ` / `remove` removes one selected option.
+
+> Only AI-proposed **UI control changes** have the confirmation gate. Existing music/timer chat commands remain immediate; music searches may contact third-party services. A confirmed button runs its original callback, which may do anything the original script allows. Errors can happen after a callback has partially acted.
+
+## Player and current session
+
+Ask `What is my username?`, `player info`, `game name`, `place id`, `game id`, `job id`, `player count`, or `game info`. Cross reads the local player's Roblox `Name`, `DisplayName` and `UserId`; `PlaceId`, `GameId` (universe ID) and `JobId` come from the current Roblox session; player count and capacity come from `Players`. The game name is the **current place's** product name from `MarketplaceService`, which can differ from the overall experience name. That lookup may yield or fail; a missing value is reported as unavailable rather than guessed. An empty JobId, such as in some Studio sessions, is also unavailable. These replies do not teach or persist the identifiers in the Cross learning JSON; chat remains in the current session. Treat JobId as potentially sensitive if you do not want others to join or identify your server.
+
+These are read-only replies and do not require UI confirmation. If an action is already awaiting confirmation, resolve it first. The assistant recognizes supported phrases, not every possible wording.
+
+## Developer opt-out and API
+
+Set `AIControl = false` on a control to keep it out of the assistant's index. `island:AiPermission("Ui", false)` disables UI listing and execution, including requests already pending. Exclude sensitive buttons or inputs whose callbacks should not be callable from chat.
+
+```lua
+Tab:Button({
+    Title = "Sensitive action",
+    AIControl = false,
+    Callback = function() print("Run only through the UI") end,
+})
+
+local island = Window:GetDynamicIsland()
+if island then
+    island:AiEnable(true)
+    island:AiAsk("bật Show FPS") -- proposes only
+    print(island:AiState().Pending)
+    island:AiAsk("no")            -- cancel, never execute
+end
+```
+
+The input and chat history are not saved as a full log, but some confirmed command phrases and control names may be stored in local JSON automatically. Do not enter secrets. See Cross automatic memory. `AiAsk` can yield for music searches or game-name lookup; use a task when appropriate. The chat confirmation path is not an authorization boundary against other scripts using the library API directly.
+
+---
+
+# Cross automatic memory
+
+Cross remembers eligible confirmed UI requests automatically; there is no Learning section or setup switch in Settings. It is a local rule-based lookup and frequency counter, **not model training** or an online chatbot. It cannot infer every unfamiliar sentence.
+
+## How it learns
+
+1. Enable Cross in **Settings → Open Dynamic Island Settings → Cross AI Assistant**.
+2. Ask for an existing control, for example `bật Show FPS`. Cross proposes an action; review the name and tab, then answer `có`/`yes` or `không`/`no`.
+3. A successful confirmed UI operation increases that control's use counter, up to 80 distinct controls. For eligible toggle, section and button phrases, Cross may save the phrase and its specific action (up to 80 learned phrases). Cancellation, expiry, blocked permissions or failed actions do not teach it.
+4. If Cross cannot match an action-like request, it may ask you to clarify the control and action. Give the existing tab and control name, for example `bật Main Auto Farm`, then confirm. If the direction agrees and the phrase is eligible, Cross remembers the first phrase for later use. It will **still ask before acting** on a learned phrase.
+
+For safety, automatic phrase learning is limited to short phrases without numbers, quotes, URLs or certain sensitive terms; these checks are imperfect. It only saves phrases for toggle, section and button actions, not arbitrary input text or code. It stores a normalized phrase and its mapped control/action; slider, dropdown, input, color and other controls can still be operated with confirmation and counted, but their value or arbitrary input is not automatically saved as a learned phrase. Manual clicks outside Cross are not counted.
+
+Duplicate names require the tab; a renamed, deleted, locked or duplicated target cannot be automatically run from an old mapping. Some existing music and timer chat commands remain immediate, rather than going through UI confirmation. Send `gợi ý` / `preferences` to see frequently confirmed controls; these are suggestions, not automatic actions.
+
+## Storage and privacy
+
+The executor stores `xNgotLibrary/AI/xNgotCrossAI_user_<UserId>.json` in its workspace. This is local to the account and executor/device, not online synchronization. The legacy root file is read if the new file does not exist; the original is not deleted. Existing compatible learned phrases remain available; older files with remembering turned off are now read with automatic remembering on. Counts store tab, control name, type and frequency, not values. They may still reveal information if a control name itself contains personal data.
+
+The JSON is **plain text**, and can be read or altered by other scripts or anyone with workspace access. The phrase filter cannot reliably detect all personal data, so do not put passwords, keys or private information in Cross requests. Full chat history is not saved by this feature. The file can be removed manually in the executor workspace if needed; there is no Learning management section in the UI.
+
+`isfile`, `readfile`, `writefile` and Roblox `HttpService` JSON support are required. If unavailable or a write fails, the assistant reports that learning is **session only**; it is not guaranteed to survive restart. An invalid, unreadable, oversized or wrong-user file is not silently overwritten. Back it up and inspect it before manually removing it. None of this prevents another script from directly calling the library API.
+
+Developers can inspect `island:AiLearningState()` for the local path and error status. The former `AiSetRemember(false)` switch cannot disable automatic learning in this build. Previously provided learning APIs remain for compatibility, but no setup or management controls are shown in Settings.

@@ -186,7 +186,7 @@
 			end
 
 			if (not track.name or track.name == "" or track.name == "Unknown") or (not track.author or track.author == "") then
-				local key = track.id or track.Id or track.url or track.Url
+				local key = tostring(track.source or track.Source or "youtube") .. ":" .. tostring(track.id or track.Id or track.url or track.Url or "track")
 				local title = track.name or track.Name
 				local data = readExisting(CrossAIMusic.cacheCandidates(key, title))
 				if data then

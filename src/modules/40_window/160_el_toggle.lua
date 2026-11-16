@@ -176,6 +176,7 @@
 
 					Toggle.Callback(Toggle.State)
 
+					Toggle._AIInstance = newToggle
 					return Toggle
 				end
 

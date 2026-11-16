@@ -242,7 +242,7 @@
 									if not Dropdown.Locked then
 										local value = SelectValue(false, buttonName)
 										if value then
-											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == Dropdown.Title then DropdownPopup(false) end end) end
+											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == dropdownFolder then DropdownPopup(false) end end) end
 											Dropdown.Callback(value)
                                             CONFIG[NAMETAB][name] = Dropdown.Value
 						                    SAVECONFIG()
@@ -254,7 +254,7 @@
 									if not Dropdown.Locked then
 										local value = SelectValue(false, buttonName)
 										if value then
-											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == Dropdown.Title then DropdownPopup(false) end end) end
+											if isTouchInput() then task.defer(function() if DropdownState and SelectedDropdown == dropdownFolder then DropdownPopup(false) end end) end
 											Dropdown.Callback(value)
                                             CONFIG[NAMETAB][name] = Dropdown.Value
 						                    SAVECONFIG()
@@ -339,7 +339,7 @@
 					end
 
 					BindSafeActivate(newDropdown.Title.BoxFrame.Trigger, function()
-						if not Dropdown.Locked then DropdownPopup(nil, Dropdown.Title) end
+						if not Dropdown.Locked then DropdownPopup(nil, Dropdown.Title, dropdownFolder) end
 					end)
 
 					function Dropdown:SetTitle(newText)
@@ -348,8 +348,7 @@
 						newDropdown.Title.Text = Dropdown.Title
 						newDropdown.Name = Dropdown.Title
 						dropdownFolder.Name = Dropdown.Title
-						if SelectedDropdown == oldTitle then
-							SelectedDropdown = Dropdown.Title
+						if SelectedDropdown == dropdownFolder then
 							newWindow.DropdownSelection.TopBar.Title.Text = Dropdown.Title
 						end
 					end
@@ -431,7 +430,7 @@
 					end
 
 					function Dropdown:Destroy()
-						if SelectedDropdown == Dropdown.Title then
+						if SelectedDropdown == dropdownFolder then
 							SelectedDropdown = nil
 							DropdownState = false
 							newWindow.DropdownSelection.Visible = false
@@ -447,6 +446,7 @@
                         Dropdown.Callback(Dropdown.Value)
                     end
 
+					Dropdown._AIInstance = newDropdown
 					return Dropdown
 				end
 

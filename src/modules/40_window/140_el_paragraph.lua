@@ -46,6 +46,7 @@
 						newParagraph:Destroy()
 					end
 
+					Paragraph._AIInstance = newParagraph
 					return Paragraph
 				end
 

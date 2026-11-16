@@ -152,7 +152,48 @@
 					end
 					function Discord:Destroy() card:Destroy() end
 
+					Discord._AIInstance = card
 					return Discord
+				end
+
+				-- Register the library's own controls; do not inspect or execute foreign UI.
+				do
+					Window._AIControls = Window._AIControls or {}
+					for _, kind in ipairs({"Section", "Button", "Toggle", "Slider", "Input", "Dropdown", "Colorpicker", "Paragraph", "Code", "InfoNguyenNhat", "Discord"}) do
+						local original = Tab[kind]
+						Tab[kind] = function(self, data)
+							local object = original(self, data)
+							if type(data) == "table" and data.AIControl == false then return object end
+							if type(object) ~= "table" or not object._AIInstance then return object end
+							local title = (type(data) == "table" and (data.Title or data.Name)) or object.Title or object.Name or kind
+							local entry = {Kind = kind, Title = tostring(title), Tab = NAMETAB, Object = object, Root = newWindow}
+							if kind == "Slider" then
+								local v = type(data) == "table" and type(data.Value) == "table" and data.Value or {}
+								local lo, hi = tonumber(v.Min) or 0, tonumber(v.Max) or 100
+								entry.Min, entry.Max = math.min(lo, hi), math.max(lo, hi)
+								entry.Step = tonumber(type(data) == "table" and data.Step) or 1
+								if entry.Step <= 0 then entry.Step = 1 end
+							end
+							if type(object.SetTitle) == "function" then
+								local setTitle = object.SetTitle
+								object.SetTitle = function(o, value, ...)
+									local result = setTitle(o, value, ...)
+									entry.Title = tostring(o.Title or value or kind)
+									return result
+								end
+							end
+							if kind == "InfoNguyenNhat" and type(object.SetName) == "function" then
+								local setName = object.SetName
+								object.SetName = function(o, value, ...)
+									local result = setName(o, value, ...)
+									entry.Title = tostring(value or "")
+									return result
+								end
+							end
+							table.insert(Window._AIControls, entry)
+							return object
+						end
+					end
 				end
 
 				return Tab

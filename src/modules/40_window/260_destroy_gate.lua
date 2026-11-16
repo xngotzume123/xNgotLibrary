@@ -9,6 +9,7 @@
 			function Window:Destroy()
 				if windowDestroyed then return end
 				windowDestroyed = true
+				if self._AIControls then table.clear(self._AIControls) end
 				if _G.__xNgotActiveWindow == self then _G.__xNgotActiveWindow = nil end
 				if guiDestroyConnection then guiDestroyConnection:Disconnect(); guiDestroyConnection = nil end
 				if touchCleanup then touchCleanup() end
@@ -121,6 +122,18 @@
 			 
 			 
 			 
+            local function revealStartupWindow()
+                if windowDestroyed or not newWindow.Parent then return end
+                local scale = Instance.new("UIScale")
+                scale.Name = "xNgotStartupReveal"
+                scale.Scale = 0.94
+                scale.Parent = newWindow
+                newWindow.Size = oldWindowSize
+                newWindow.Visible = true
+                local tween = game:GetService("TweenService"):Create(scale, TweenInfo.new(0.48, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Scale = 1})
+                tween:Play()
+                task.delay(0.55, function() if scale.Parent then scale:Destroy() end end)
+            end
 			local startupGateLoading = Window.Loading
 			local startupGateKey = type(Window.KeySystem) == "table" and Window.KeySystem or nil
 			local startupGateEnabled = startupGateLoading ~= false or (startupGateKey ~= nil and startupGateKey.Enabled == true)
@@ -239,8 +252,7 @@
 							if windowDestroyed then return end
 							if not accepted then Window:Destroy(); return end
 							startupGatePassed = true
-							newWindow.Size = oldWindowSize
-							newWindow.Visible = true
+							revealStartupWindow()
 							if newWindow:FindFirstChild("Tabs") then newWindow.Tabs.Visible = true end
 							if newWindow:FindFirstChild("TabButtons") then newWindow.TabButtons.Visible = true end
 							newFloatingIcon.Visible = false
@@ -323,6 +335,7 @@
 						local keyGetUrl = tostring(keyCfg.GetKeyUrl or keyCfg.GetKey or "")
 						local keyCaseSensitive = keyCfg.CaseSensitive == true
 						local keyFilePath = tostring(keyCfg.KeyFile or "xNgotLibrary/Keys/key.txt")
+                            if not keyCfg.KeyFile and type(makefolder) == "function" then pcall(makefolder, "xNgotLibrary"); pcall(makefolder, "xNgotLibrary/Keys") end
 						Window.KeyFilePath = keyFilePath
 						local function keyNorm(val)
 							val = tostring(val or ""):gsub("^%s+", ""):gsub("%s+$", "")
@@ -612,8 +625,7 @@
 						task.wait(0.28)
 						if windowDestroyed or not card.Parent then return end
 						startupGatePassed = true
-						newWindow.Size = oldWindowSize
-						newWindow.Visible = true
+						revealStartupWindow()
 						do local dropShadow = newWindow:FindFirstChild("DropShadow") if dropShadow then pcall(function() dropShadow.Visible = true end) end end
 						if newWindow:FindFirstChild("Tabs") then newWindow.Tabs.Visible = true end
 						if newWindow:FindFirstChild("TabButtons") then newWindow.TabButtons.Visible = true end

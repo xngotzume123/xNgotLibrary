@@ -7,6 +7,8 @@
 --]]
 				local function AddDropdownButton(name, folder)
 					local newButton = Templates.DropdownButton:Clone()
+					newButton.Active = true
+					newButton.Interactable = true
 					newButton.Parent = folder or nil
 					newButton.Name = name
 					newButton.Frame.Title.Text = name
@@ -19,6 +21,7 @@
 								table.insert(gradient, g)
 							end
 						end
+						if #gradient == 0 then return nil end
 						local selectedGrad = gradient[math.random(1, #gradient)]
 						selectedGrad.Enabled = true
 						return selectedGrad

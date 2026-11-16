@@ -24,7 +24,7 @@
 
 			PreferShort    = 600,
 
-			RaceTracks     = 2,
+			RaceTracks     = 1,
 
 			Sources        = { "youtube", "soundcloud", "audius" },
 			Region         = "auto",

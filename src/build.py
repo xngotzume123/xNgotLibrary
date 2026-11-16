@@ -370,6 +370,13 @@ def main(argv: list[str] | None = None) -> int:
         bundle = banner + header + payload[len(banner):]
     else:
         bundle = header + payload
+    # The release file uses the requested credit banner; keep the vendor notice in the source module.
+    license_tokens = [tok.text for tok in _minify.tokenize(bundle)
+                      if tok.kind == "comment" and "Ophyn UI / snowdev: MIT License" in tok.text]
+    if len(license_tokens) != 1:
+        raise ValueError("missing or ambiguous Ophyn license notice")
+    license_notice = license_tokens[0]
+    bundle = bundle.replace(license_notice, "", 1)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(bundle)
@@ -387,14 +394,8 @@ def main(argv: list[str] | None = None) -> int:
         result = _minify.minify(bundle, args.minify, seed=seed, rename=not args.no_rename)
         # Minification removes comments, so reinsert the requested banner.
         notice = banner if banner else ("--[[xNgot Library v%s · %s]]\n" % (manifest["version"], profile["name"]))
-        # Preserve the vendored Ophyn MIT notice in every minified distribution.
-        license_tokens = [tok.text for tok in _minify.tokenize(bundle)
-                          if tok.kind == "comment" and "Ophyn UI / snowdev: MIT License" in tok.text]
-        if len(license_tokens) != 1:
-            raise ValueError("missing or ambiguous Ophyn license notice")
-        license_inline = " ".join(license_tokens[0].split())
         with open(min_path, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(notice + license_inline + result["code"])
+            fh.write(notice + result["code"])
         if not args.quiet:
             pct = 100.0 * result["bytes"] / max(1, size)
             print(Colors.ok("✔ minify %s" % os.path.relpath(min_path, REPO))

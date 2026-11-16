@@ -71,9 +71,10 @@
 
 			local region = CrossAIMusic.searchRegion()
 			local term = regionTerms[region]
+            if term and #out == 1 then add(main .. " " .. term) end
 			local trimmed, unique = {}, {}
 			for i = 1, math.min(#out, 3) do
-				local q = term and trim(out[i] .. " " .. term) or out[i]
+				local q = (term and i > 1 and not out[i]:lower():find(term:lower(), 1, true)) and trim(out[i] .. " " .. term) or out[i]
 				if not unique[q:lower()] then trimmed[#trimmed + 1] = q; unique[q:lower()] = true end
 			end
 			plan.region = region
@@ -187,7 +188,18 @@
 				if #shortList >= 3 then collected = shortList end
 			end
 
-			for _, t in ipairs(collected) do t._score = CrossAIMusic.score(t, plan) end
+            local relevant = {}
+            for _, t in ipairs(collected) do
+                if CrossAIMusic.isRelevant(t, plan) then
+                    t._score = CrossAIMusic.score(t, plan)
+                    relevant[#relevant + 1] = t
+                end
+            end
+            collected = relevant
+            if #collected == 0 then
+                callback("error", {reason = "no sufficiently related results"})
+                return {}
+            end
 			table.sort(collected, function(a, b) return a._score > b._score end)
 
 			local top = {}

@@ -315,14 +315,20 @@
 			if not urls then
 				local target = track.url or track.Url
 				if not target or target == "" then
-					target = "https://youtu.be/" .. tostring(track.id or track.Id)
+                    local source = tostring(track.source or track.Source or "youtube"):lower()
+                    local id = tostring(track.id or track.Id or "")
+                    if source ~= "youtube" or not id:match("^[%w_-]+$") then
+                        onProgress("error", {reason="missing source URL"})
+                        return nil
+                    end
+                    target = "https://youtu.be/" .. id
 				end
 				urls = CrossAIMusic.download(target, onProgress)
 			end
 
 			if not urls then return nil end
 
-			local key = track.id or track.Id or track.url or track.Url or "track"
+			local key = tostring(track.source or track.Source or "youtube") .. ":" .. tostring(track.id or track.Id or track.url or track.Url or "track")
 			local title = track.name or track.Name or track.title
 
 			if track._inline and type(writefile) == "function" then

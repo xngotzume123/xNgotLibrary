@@ -50,7 +50,7 @@
 			end
 
 			if plan.artist and plan.artist ~= "" then
-				local artistText = norm(track.text or "")
+				local artistText = text
 				local artistWords = norm(plan.artist)
 				local hitArtist = 0
 				local totalArtist = 0
@@ -67,7 +67,7 @@
 
 			if plan.tags.genre and plan.tags.genre ~= "" then
 				local wanted = norm(plan.tags.genre)
-				local got = norm(track.text or "")
+				local got = text
 				if wanted ~= "" and got:find(wanted, 1, true) then
 					score = score + 5
 				elseif (plan.tags.genre == "lofi" or plan.tags.genre == "ambient") and got:find("remix", 1, true) then
@@ -76,7 +76,7 @@
 			end
 
 			if plan.tags.ctx == "gaming" then
-				local got = norm(track.text or "")
+				local got = text
 				if got:find("gaming", 1, true) or got:find("epic", 1, true) or got:find("battle", 1, true) then
 					score = score + 3
 				end
@@ -96,6 +96,34 @@
 			if track.thumbnail ~= "" then score = score + 0.2 end
 			return score
 		end
+
+        -- A source ranking bias alone must never make an unrelated result eligible.
+        function CrossAIMusic.isRelevant(track, plan)
+            if type(track) ~= "table" or type(plan) ~= "table" then return false end
+            local title = norm(track.name or track.title or "")
+            local text = norm((track.name or track.title or "") .. " " .. (track.author or track.artist or ""))
+            if title == "" or title == "unknown" then return false end
+            local function ratio(phrase, haystack)
+                local hit, total = 0, 0
+                local hay = {}; for w in haystack:gmatch("%w+") do hay[w] = true end
+                for w in norm(phrase):gmatch("%w+") do
+                    if #w > 1 then total += 1; if hay[w] then hit += 1 end end
+                end
+                return total > 0 and hit / total or 0
+            end
+            if plan.explicitTitle and plan.explicitTitle ~= "" then
+                if ratio(plan.explicitTitle, text) < 0.67 then return false end
+            elseif plan.artist and plan.artist ~= "" then
+                if ratio(plan.artist, text) < 0.67 then return false end
+            else
+                local tags = plan.tags or {}
+                local term = tags.genre or tags.mood
+                if term and ratio(term, text) < 0.5 then return false end
+                if not term and ratio(plan.query or "", text) < 0.5 then return false end
+            end
+            if plan.artist and plan.artist ~= "" and ratio(plan.artist, text) < 0.5 then return false end
+            return true
+        end
 
 		function CrossAIMusic.learn(title, good)
 			CrossAIMusic._banned = CrossAIMusic._banned or {}

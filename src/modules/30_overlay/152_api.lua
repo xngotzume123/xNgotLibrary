@@ -282,6 +282,25 @@
 		    if name == "Body" or name == "Free" then Cross.Perm[name] = false; return false end
 		    if name == "Ui" or name == "Key" then Cross.Perm[name] = on and true or false end
 		end
+		function API:AiState()
+		    local reply = ""
+		    for i = #Cross.Chat, 1, -1 do
+		        if Cross.Chat[i].Role == "cross" then reply = tostring(Cross.Chat[i].Text or ""); break end
+		    end
+		    return {Enabled = Cross.Enabled == true, Thinking = Cross.Thinking == true,
+		        Reply = reply, Version = Cross.ChatVersion, Pending = Cross.Pending ~= nil}
+		end
+		function API:AiTeach(phrase, command) return Cross.Teach(phrase, command) end
+		function API:AiForgetPhrase(phrase) return Cross.ForgetPhrase(phrase) end
+		function API:AiLearningState() return Cross.Learning.State() end
+		function API:AiLearningList() return Cross.Learning.List() end
+		function API:AiLearningPreferences() return Cross.Learning.Preferences() end
+		function API:AiSetRemember(on) return Cross.Learning.SetRemember(on) end
+		function API:AiLearningClear()
+            local ok, message = Cross.Learning.Clear()
+            if ok then Cross.Pending = nil end
+            return ok, message
+        end
 		function API:AiClear() Cross.clearChat() end
 		function API:AiOpen() if not Cross.Enabled then Cross.setEnabled(true,false) end self:Expand("Cross") end
 		function API:SetLanguage(lang) self:Set("Language",lang) end

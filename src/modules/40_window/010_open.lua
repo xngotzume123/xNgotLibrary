@@ -83,7 +83,7 @@
 				Title = data.Title or "NgotStudio",
 				Icon = data.Icon or "layout-dashboard",
 				Version = data.Author or data.Version or "v1.0",
-				Folder = data.Folder,
+				Folder = data.Folder or "xNgotLibrary/Config",
 				Size = data.Size or UDim2.fromOffset(580, 420),
 				ToggleKey = data.ToggleKey or Enum.KeyCode.RightShift,
 				ToggleButtonPlatform = data.ToggleButtonPlatform or "Both",
@@ -113,6 +113,7 @@
 			Window.ConfigPath = Window.FileSaveName
 			if type(Window.Folder) == "string" and Window.Folder ~= "" then
 				local folder = Window.Folder:gsub("\\", "/"):gsub("/+$", "")
+                if folder:sub(1, 13) == "xNgotLibrary/" and type(makefolder) == "function" then pcall(makefolder, "xNgotLibrary") end
 				local folderReady = false
 				if type(isfolder) == "function" then
 					local ok, exists = pcall(isfolder, folder)
@@ -136,6 +137,15 @@
 				end
 			end
 
+            if data.Folder == nil and Window.ConfigPath ~= Window.FileSaveName and canReadConfig and canWriteConfig then
+                pcall(function()
+                    if not isfile(Window.ConfigPath) and isfile(Window.FileSaveName) then
+                        local raw = readfile(Window.FileSaveName)
+                        local decoded = HttpService:JSONDecode(raw)
+                        if type(decoded) == "table" then writefile(Window.ConfigPath, raw) end
+                    end
+                end)
+            end
 			if canReadConfig and isfile(Window.ConfigPath) then
 				local success, result = pcall(function()
 					return HttpService:JSONDecode(readfile(Window.ConfigPath))

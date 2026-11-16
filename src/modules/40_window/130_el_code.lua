@@ -38,6 +38,7 @@
 						newCode:Destroy()
 					end
 
+					Code._AIInstance = newCode
 					return Code
 				end
 

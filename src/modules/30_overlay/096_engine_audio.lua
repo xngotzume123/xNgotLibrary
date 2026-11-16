@@ -116,12 +116,15 @@
 		end
 		CrossAIMusic.hash = hashOf
 
-		local function ensureFolder(folder)
-			folder = folder or CFG.Folder
-			if type(makefolder) == "function" and type(isfolder) == "function" and not isfolder(folder) then
-				pcall(makefolder, folder)
-			end
-		end
+        local function ensureFolder(folder)
+            folder = tostring(folder or CFG.Folder):gsub("\\", "/")
+            if type(makefolder) ~= "function" then return end
+            local part = ""
+            for name in folder:gmatch("[^/]+") do
+                part = part == "" and name or (part .. "/" .. name)
+                if type(isfolder) ~= "function" or not isfolder(part) then pcall(makefolder, part) end
+            end
+        end
 		CrossAIMusic.ensureFolder = ensureFolder
 
 		local renameEnabled = true
@@ -138,7 +141,6 @@
 			if base ~= "" then
 
 				out[#out + 1] = string.format("%s/%s [%s].mp3", CFG.Folder, base, string.sub(hashOf(key), 1, 8))
-				out[#out + 1] = string.format("%s/%s.mp3", CFG.Folder, base)
 			end
 
 			out[#out + 1] = string.format("%s/%s.mp3", CFG.Folder, hashOf(key))

@@ -106,7 +106,7 @@ All constructors below are called on a `Tab`. Their `Title` values should be uni
 | `Button` | `Title`, `Desc`, `Locked`, `Callback` | Invoked on activation. This build does not read an `Icon` option for Button. |
 | `Toggle` | `Title`, `Desc`, `Default` or `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback fires at creation and on `:Set`. Avoid specifying conflicting `Default` and `Value`. |
 | `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Number; clamped, stepped; callbacks at initialization and changes. `:Set` returns the value or `nil` if outside bounds. |
-| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | String; callback on initialization, focus loss, and `:Set`. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `NoSave`, `Locked`, `Callback` | String; callback on initialization, focus loss, and `:Set`. |
 | `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | A string for single-select, table for multi-select; callback may fire at creation. |
 | `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Emits `Color3`; `:Get()` returns current value; initial callback runs. |
 | `Section` | `Title`, `Default`, `TextXAlignment` | Adds a collapsible group and makes it the parent for subsequent controls created through that tab. |
@@ -122,7 +122,7 @@ All constructors below are called on a `Tab`. Their `Title` values should be uni
 | Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
-| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `Get`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
 | Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
@@ -168,7 +168,7 @@ Các hàm tạo bên dưới được gọi trên `Tab`. Đặt `Title` **khác 
 | `Button` | `Title`, `Desc`, `Locked`, `Callback` | Chạy khi nhấn. Bản này không đọc `Icon` cho Button. |
 | `Toggle` | `Title`, `Desc`, `Default` hoặc `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback chạy lúc tạo và khi `:Set`. Tránh đặt `Default` và `Value` trái nhau. |
 | `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Số; giới hạn theo khoảng và bước; callback chạy lúc tạo và thay đổi. `:Set` trả giá trị hoặc `nil` nếu ngoài khoảng. |
-| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | Chuỗi; callback chạy lúc tạo, mất focus và `:Set`. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `NoSave`, `Locked`, `Callback` | Chuỗi; callback chạy lúc tạo, mất focus và `:Set`. |
 | `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | Chọn một trả chuỗi; chọn nhiều trả bảng; callback có thể chạy khi tạo. |
 | `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Callback nhận `Color3`; `:Get()` lấy màu hiện tại; callback chạy lúc tạo. |
 | `Section` | `Title`, `Default`, `TextXAlignment` | Nhóm thu gọn; trở thành container cho control tạo tiếp trên tab đó. |
@@ -184,7 +184,7 @@ Các hàm tạo bên dưới được gọi trên `Tab`. Đặt `Title` **khác 
 | Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
-| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `Get`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
 | Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
@@ -257,7 +257,7 @@ Window:Hide()
 | `DeleteConfig()` | Deletes the file if supported; returns success/error. It does not reset already-loaded in-memory controls. |
 | `ForgetSavedKey()` | Available when a key gate sets it up; deletes saved key if supported. |
 
-With `AutoSave = false`, automatic writes are disabled; explicit `SaveConfig()` still attempts a write. Saved data is local, not encrypted, and depends on executor filesystem functions. `DeleteConfig` does not delete downloaded music or the separately stored key.
+With `AutoSave = false`, automatic writes are disabled; explicit `SaveConfig()` still attempts a write. Saved data is local, not encrypted, and depends on executor filesystem functions. The default configuration path is `xNgotLibrary/Config/<FileSaveName>`; existing valid root config is copied on first use without deleting it. Explicit custom `Folder` paths remain supported and may be outside the root. Default keys, AI and music are under `xNgotLibrary/Keys`, `xNgotLibrary/AI` and `xNgotLibrary/Music` (covers under `Music/Covers`); externally configured or third-party paths can differ. Files are not E2E protected: other scripts or users with executor workspace access can read or modify them. `DeleteConfig` does not delete downloaded music or the separately stored key.
 
 ## Appearance APIs
 
@@ -310,7 +310,7 @@ Window:Hide()
 | `DeleteConfig()` | Xóa file nếu executor hỗ trợ; trả kết quả/lỗi. Không tự reset control đang nằm trong bộ nhớ. |
 | `ForgetSavedKey()` | Có khi key gate thiết lập hàm; xóa key đã lưu nếu được hỗ trợ. |
 
-`AutoSave = false` tắt ghi tự động; `SaveConfig()` vẫn chủ động thử ghi. Dữ liệu lưu local, không mã hóa, phụ thuộc API file của executor. `DeleteConfig` không xóa nhạc đã tải hay key được lưu riêng.
+`AutoSave = false` tắt ghi tự động; `SaveConfig()` vẫn chủ động thử ghi. Dữ liệu lưu local, không mã hóa, phụ thuộc API file của executor. Mặc định config ở `xNgotLibrary/Config/<FileSaveName>`; file config cũ hợp lệ ở gốc được sao chép khi cần, không xóa bản cũ. `Folder` do script tự chỉ định vẫn được giữ, có thể nằm ngoài thư mục mẹ. Mặc định key, AI và nhạc nằm trong `xNgotLibrary/Keys`, `xNgotLibrary/AI` và `xNgotLibrary/Music` (ảnh ở `Music/Covers`); đường dẫn tùy chỉnh hoặc dịch vụ ngoài có thể khác. File không được bảo vệ E2E: script khác hoặc người có quyền workspace executor có thể đọc/sửa. `DeleteConfig` không xóa nhạc đã tải hay key được lưu riêng.
 
 ## API giao diện
 
@@ -364,6 +364,10 @@ end
 
 ## Cross assistant
 
+In **Settings → Open Dynamic Island Settings → Cross AI Assistant**, turn on **Enable Cross AI**, enter a command such as `next song` or `timer 60`, and press **Send to Cross AI**. The response appears in the section. **Open Cross AI on Island** opens the island interface (enable the island first); **Clear Cross AI chat** clears the session. The input is not written to window config, but music-search commands may be sent to third-party search services; never enter secrets. This is a local, rule-based assistant, not a general online AI chatbot.
+
+`AiState()` returns a snapshot with `Enabled`, `Thinking`, `Reply`, `Version` and `Pending` (latest assistant response, not the full chat). `AiAsk` may yield during music resolution; use a task when needed.
+
 `AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` and `AiPermission(name, boolean)` control the local assistant. `Ui` and `Key` permissions can be configured; `Body` and `Free` are forced off by the implementation. `MusicAiLearn(title, good)` records feedback when supported; `DemoDownload()` displays simulated progress rather than downloading a real file. `MusicAiOnline(true)` does not enable an online model in this build; `MusicAiOnlineState()` reports removed/local. Do not assume it calls an external AI service.
 
 `SetLanguage` / `Set("Language", ...)` currently force English. The documentation language switch is independent of the library UI language.
@@ -401,6 +405,10 @@ end
 ```
 
 ## Trợ lý Cross
+
+Vào **Settings → Open Dynamic Island Settings → Cross AI Assistant**, bật **Enable Cross AI**, nhập lệnh như `next song` hoặc `hẹn giờ 60 giây` rồi nhấn **Send to Cross AI**. Câu trả lời hiện trong mục này. **Open Cross AI on Island** mở giao diện trên đảo (cần bật island trước); **Clear Cross AI chat** xóa hội thoại trong phiên. Ô nhập không ghi vào config cửa sổ, nhưng lệnh tìm nhạc có thể gửi đến dịch vụ tìm kiếm bên thứ ba; không nhập thông tin bí mật. Đây là trợ lý local theo quy tắc, không phải chatbot AI online tổng quát.
+
+`AiState()` trả bảng `Enabled`, `Thinking`, `Reply`, `Version`, `Pending` (câu trả lời mới nhất, không phải toàn bộ lịch sử). `AiAsk` có thể yield khi xử lý nhạc; dùng task khi cần.
 
 `AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui` và `Key`; `Body` và `Free` bị khóa tắt trong source. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
 

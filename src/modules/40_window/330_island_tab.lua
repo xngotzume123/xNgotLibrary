@@ -53,6 +53,79 @@
 				addToggle("UI Sound", "Sound")
 				addSlider("Sound Volume", "Volume", 0, 100)
 
+				IslandTab:Section({Title = "Cross AI Assistant", Default = true, AIControl = false})
+				do
+					IslandTab:Paragraph({Title = "Built-in assistant", AIControl = false, Desc = "Reads xNgot controls and asks before changing them. Local rule-based assistant, not an online chatbot. Music search may use network services."})
+					local toggle = IslandTab:Toggle({Title = "Enable Cross AI", AIControl = false, Default = false,
+						Callback = function(value) islandCall("AiEnable", value) end})
+					local status = IslandTab:Paragraph({Title = "Cross AI response", AIControl = false, Desc = "Turn on Cross AI and send a command."})
+					local input = IslandTab:Input({Title = "Cross AI message", AIControl = false, Placeholder = "e.g. next song or timer 60",
+						Desc = "Some confirmed command phrases are saved locally. Do not enter secrets.", NoSave = true})
+					local busy = false
+					IslandTab:Button({Title = "Send to Cross AI", AIControl = false, Callback = function()
+						local api = Window.DynamicIsland
+						if not api or type(api.AiAsk) ~= "function" or type(api.AiState) ~= "function" then
+							status:SetDesc("Cross AI is not available."); return
+						end
+						local state = api:AiState()
+						if not state.Enabled then status:SetDesc("Turn on Cross AI first."); return end
+						if busy or state.Thinking then status:SetDesc("Cross AI is already working. Please wait."); return end
+						local prompt = tostring(input:Get() or ""):match("^%s*(.-)%s*$")
+						if prompt == "" then status:SetDesc("Enter a command first."); return end
+						busy = true
+						status:SetDesc("Working...")
+						task.spawn(function()
+							local ok, err = pcall(api.AiAsk, api, prompt)
+							busy = false
+							if not ok and not windowDestroyed then status:SetDesc("Cross AI error: " .. tostring(err)) end
+						end)
+					end})
+					IslandTab:Button({Title = "Open Cross AI on Island", AIControl = false, Callback = function()
+						local api = Window.DynamicIsland
+						if not api or not api.Enabled then status:SetDesc("Enable Dynamic Island first."); return end
+						if not toggle.State then toggle:Set(true) end
+						islandCall("AiOpen")
+					end})
+					local function confirmCross(answer)
+						local api = Window.DynamicIsland
+						if busy or not api or type(api.AiState) ~= "function" or type(api.AiAsk) ~= "function" then return end
+						local ok, state = pcall(api.AiState, api)
+						if not ok or not state.Pending then status:SetDesc("No confirmation is pending."); return end
+						busy = true
+						task.spawn(function()
+							local success, err = pcall(api.AiAsk, api, answer)
+							busy = false
+							if not success and not windowDestroyed then status:SetDesc("Cross AI error: " .. tostring(err)) end
+						end)
+					end
+					IslandTab:Button({Title = "Confirm Cross AI action", AIControl = false, Callback = function() confirmCross("yes") end})
+					IslandTab:Button({Title = "Cancel Cross AI action", AIControl = false, Callback = function() confirmCross("no") end})
+					IslandTab:Button({Title = "Clear Cross AI chat", AIControl = false, Callback = function()
+						if busy then status:SetDesc("Wait for the current command before clearing."); return end
+						islandCall("AiClear")
+						input:Set("")
+						status:SetDesc("Chat cleared.")
+					end})
+					task.spawn(function()
+						local lastVersion, lastThinking
+						while not windowDestroyed do
+							local api = Window.DynamicIsland
+							if api and type(api.AiState) == "function" then
+								local ok, state = pcall(api.AiState, api)
+								if ok and type(state) == "table" then
+									if toggle.State ~= state.Enabled then toggle:Set(state.Enabled) end
+									if state.Version ~= lastVersion or state.Thinking ~= lastThinking then
+										lastVersion, lastThinking = state.Version, state.Thinking
+										if state.Thinking then status:SetDesc("Working...")
+										elseif state.Reply ~= "" then status:SetDesc(state.Reply) end
+									end
+								end
+							end
+							task.wait(0.35)
+						end
+					end)
+				end
+
 				IslandTab:Section({Title = "Music", Default = true})
 				do
 				local musicOptionIndexes = {}

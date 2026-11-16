@@ -712,7 +712,9 @@ print(_G.xNgotMusicConfig:Get("topN"))
 
 Use **Music region** and **Music platform** in the island settings. Auto region uses Roblox country when available, then its locale; choose Global to disable regional preference. Vietnam, United States, Korea and Japan are supported. This adds regional search terms, so results are not a verified country/language filter. Platforms in the UI are YouTube, SoundCloud and Audius; search and downloads depend on external services.
 
-When **Preload next track** and Auto play are enabled, the player prepares the next item from the current list at 50%, including a best-effort audio preload. Shuffle chooses one next item; Repeat One takes priority. If there is only one item, preloading is skipped. If preparation is incomplete or fails, normal loading is used; gapless playback is not guaranteed. Downloads use network and local storage. Region detection does not use a third-party IP lookup.
+With Auto play, the player randomly selects an eligible track it has not recently played. For a searched/assistant track, it prefers candidates matching the current query. When those are exhausted it can search online for related results, then falls back to an eligible older track; if none is suitable, it stops. Repeat One takes priority; manual Next and Previous retain their controls. Matching uses title/artist/genre text heuristics and may reject a valid song or accept a wrong one—review search results, and refine your query when needed. The search first tries the unmodified query, with regional terms as additional variants.
+
+With **Preload next track** and Auto enabled, an eligible unplayed item from the current list can be downloaded/preloaded at 50%. If preparation fails or is incomplete, normal loading is used; gapless playback is not guaranteed. Online searches and preloads use network and storage. The search filters weakly related results rather than automatically downloading them; source-qualified cache keys prevent collisions, but providers can still return the wrong audio. Previously cached files remain available in the downloaded list. Region detection does not use a third-party IP lookup.
 
 ```lua
 _G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
@@ -757,7 +759,9 @@ print(_G.xNgotMusicConfig:Get("topN"))
 
 Chọn **Music region** và **Music platform** trong cài đặt Island. Auto ưu tiên quốc gia do Roblox cung cấp, sau đó dùng locale; chọn Global để bỏ ưu tiên vùng. Có Việt Nam, Mỹ, Hàn Quốc và Nhật Bản. Đây là thêm từ khóa khu vực khi tìm, không phải bộ lọc xác minh ngôn ngữ hay quốc tịch. Giao diện hỗ trợ YouTube, SoundCloud, Audius; kết quả và tải nhạc phụ thuộc dịch vụ bên ngoài.
 
-Khi bật **Preload next track** và Auto play, lúc phát đến 50% trình phát chuẩn bị bài kế tiếp trong danh sách hiện tại và cố tải trước âm thanh. Shuffle chọn trước một bài; Repeat One được ưu tiên. Nếu chỉ có một bài thì bỏ qua tải trước. Nếu chưa tải xong hoặc tải lỗi, trình phát tiếp tục xử lý bình thường; không đảm bảo chuyển bài hoàn toàn không trễ. Tải trước dùng mạng và bộ nhớ. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
+Khi bật Auto play, trình phát chọn ngẫu nhiên bài phù hợp chưa phát gần đây. Với bài từ tìm kiếm/trợ lý, ưu tiên bài khớp câu tìm hiện tại. Khi hết lựa chọn mới, máy có thể tìm online bài liên quan rồi quay lại bài phù hợp đã nghe nếu không tìm được; nếu không có bài phù hợp thì dừng. Repeat One được ưu tiên; nút Next/Previous thủ công vẫn hoạt động. Việc đối chiếu dựa trên chữ trong tên/nghệ sĩ/thể loại, có thể bỏ sót bài đúng hoặc chọn nhầm—hãy xem kết quả và viết rõ câu tìm khi cần. Truy vấn gốc được thử trước, từ khóa vùng chỉ là biến thể bổ sung.
+
+Khi bật **Preload next track** cùng Auto, lúc phát đến 50% trình phát có thể tải trước một bài phù hợp chưa nghe trong danh sách. Nếu chưa xong hoặc tải lỗi, trình phát xử lý bình thường; không đảm bảo chuyển bài không trễ. Tìm online và tải trước dùng mạng/bộ nhớ. Kết quả kém liên quan bị lọc thay vì tự tải; cache mới có mã nguồn và ID để tránh trùng, nhưng provider vẫn có thể trả nhầm âm thanh. File cũ còn trong danh sách đã tải. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
 
 ```lua
 _G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
@@ -957,3 +961,7 @@ from details import sections_detail
 sections.extend(sections_detail)
 from controls import sections_controls
 sections.extend(sections_controls)
+from ai_guide import sections_ai
+sections.extend(sections_ai)
+from learning_guide import sections_learning
+sections.extend(sections_learning)

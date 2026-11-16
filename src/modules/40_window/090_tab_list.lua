@@ -23,18 +23,19 @@
 			local SelectedDropdown = nil
 			local DropdownState = false
 			local dropdownTransition = 0
-			local function DropdownPopup(state, name)
+			local function DropdownPopup(state, name, target)
 				local opening = state == nil and not DropdownState or state == true
 				if opening and name then
-					local folder = newWindow.DropdownSelection.Dropdowns:FindFirstChild(name)
+					local folder = target or newWindow.DropdownSelection.Dropdowns:FindFirstChild(name)
 					if not folder then return end
-					SelectedDropdown = name
+					SelectedDropdown = folder
 					for _, item in newWindow.DropdownSelection.Dropdowns:GetChildren() do
 						if item:IsA("Folder") then
 							item:FindFirstChild("DropdownItems").Visible = false
 							item:FindFirstChild("DropdownItemsSearch").Visible = false
 						end
 					end
+					newWindow.DropdownSelection.TopBar.BoxFrame.Frame.TextBox.Text = ""
 					newWindow.DropdownSelection.TopBar.Title.Text = name
 					folder:FindFirstChild("DropdownItems").Visible = true
 					folder:FindFirstChild("DropdownItemsSearch").Visible = false
@@ -97,7 +98,7 @@
 
 			textbox:GetPropertyChangedSignal("Text"):Connect(function()
 				if not Window.LiveSearchDropdown then return end
-				local currentFolder = newWindow.DropdownSelection.Dropdowns:FindFirstChild(SelectedDropdown)
+				local currentFolder = SelectedDropdown
 				if string.gsub(textbox.Text, " ", "") ~= "" then
 					if not currentFolder then return end
 					currentFolder:FindFirstChild("DropdownItems").Visible = false
@@ -121,7 +122,7 @@
 
 			textbox.FocusLost:Connect(function()
 				if Window.LiveSearchDropdown then return end
-				local currentFolder = newWindow.DropdownSelection.Dropdowns:FindFirstChild(SelectedDropdown)
+				local currentFolder = SelectedDropdown
 				if string.gsub(textbox.Text, " ", "") ~= "" then
 					if not currentFolder then return end
 					currentFolder:FindFirstChild("DropdownItems").Visible = false

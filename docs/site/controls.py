@@ -24,6 +24,7 @@ Each control page has a small **addition**, not a separate script. First paste a
 - Toggle, Slider, Input, Dropdown and Colorpicker invoke their callback while being created, with the initial or restored value. Create dependencies before these controls; do not refer to a local that is still being assigned from its own constructor.
 - Saved values are indexed by tab title and the control's original title, not by `Flag`. Use unique titles per tab. Renaming a control later does not migrate its saved key. `AutoSave` and filesystem support affect persistence; see Window & storage.
 - `Lock()` blocks interaction; programmatic setters can still update values and trigger callbacks. `Destroy()` removes the visual control.
+- `AIControl = false` on a control opts it out of the local assistant index. Confirmed UI actions run the original callback; see Cross AI: control your UI.
 - Mobile retains its original dimensions. Drag sliders horizontally; vertical gestures are treated as scrolling. Actual executor behavior still needs Roblox testing.
 ''' % setup
 intro_vi='''# Hướng dẫn control: bắt đầu tại đây
@@ -40,6 +41,7 @@ Mỗi trang control là một **đoạn nối thêm**, không phải script riê
 - Toggle, Slider, Input, Dropdown và Colorpicker gọi callback ngay khi tạo, với giá trị mặc định hoặc đã khôi phục. Hãy tạo đối tượng phụ thuộc trước; đừng dùng biến local đang được gán từ chính constructor của nó bên trong callback.
 - Giá trị lưu theo tên tab và **Title ban đầu** của control, không theo `Flag`. Đặt Title duy nhất trong mỗi tab. Đổi tên sau đó không tự chuyển key lưu. `AutoSave` và API file ảnh hưởng việc lưu; xem mục Window & storage.
 - `Lock()` khóa tương tác người dùng; setter bằng code vẫn có thể cập nhật và gọi callback. `Destroy()` xóa control khỏi giao diện.
+- `AIControl = false` loại control khỏi danh sách trợ lý local. Hành động UI đã xác nhận gọi callback gốc; xem Cross AI: điều khiển UI.
 - Mobile giữ kích thước gốc. Kéo slider theo chiều ngang; vuốt dọc dùng để cuộn. Vẫn cần test thực tế trong Roblox/executor.
 ''' % setup
 # title, English introduction, Vietnamese introduction, options (name/type/default/en/vi), methods, example, extra en, extra vi
@@ -74,12 +76,12 @@ toggle:Set(true)
 })
 slider:Set(40)''','Values are clamped; invalid/non-positive Step falls back to 1. Callback also runs on creation and Set.', 'Giá trị được giới hạn trong khoảng; Step không hợp lệ hoặc không dương trở về 1. Callback cũng chạy khi tạo và Set.'),
 ('input','Input','Accept text, optionally multiline.','Nhận văn bản, có thể nhiều dòng.',[
-('Title / Desc','string','Input / nil','Label and description','Nhãn và mô tả'),('Placeholder','string','empty','Hint in text box','Gợi ý trong ô nhập'),('Default / Value','string','empty','Initial text','Nội dung ban đầu'),('ClearTextOnFocus','boolean','false','Clear when focused','Xóa khi focus'),('MultiLine','boolean','false','Allow multiple lines','Cho phép nhiều dòng'),('Locked','boolean','false','Disable interaction','Khóa tương tác'),('Callback','function(string)','no-op','Receives text','Nhận chuỗi')],
-'`Set(text)`, `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`', '''local input = Tab:Input({
+('Title / Desc','string','Input / nil','Label and description','Nhãn và mô tả'),('Placeholder','string','empty','Hint in text box','Gợi ý trong ô nhập'),('Default / Value','string','empty','Initial text','Nội dung ban đầu'),('ClearTextOnFocus','boolean','false','Clear when focused','Xóa khi focus'),('NoSave','boolean','false','Do not restore or save this input in config','Không khôi phục hoặc lưu input này vào config'),('MultiLine','boolean','false','Allow multiple lines','Cho phép nhiều dòng'),('Locked','boolean','false','Disable interaction','Khóa tương tác'),('Callback','function(string)','no-op','Receives text','Nhận chuỗi')],
+'`Set(text)`, `Get()` (current TextBox text, even while focused), `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`', '''local input = Tab:Input({
     Title = "Nickname", Placeholder = "Enter a name", Default = "Guest",
     Callback = function(text) print("Nickname:", text) end,
 })
-input:Set("Player")''','Callback runs at creation, on focus loss and after Set; it is not an every-keystroke callback.','Callback chạy khi tạo, khi mất focus và sau Set; không chạy theo từng ký tự.'),
+input:Set("Player")''','Callback runs at creation, on focus loss and after Set; it is not an every-keystroke callback. `NoSave=true` prevents this input from reading or writing config; it does not delete old saved values.','Callback chạy khi tạo, khi mất focus và sau Set; không chạy theo từng ký tự. `NoSave=true` ngăn input đọc/ghi config; không xóa giá trị đã lưu trước đó.'),
 ('dropdown','Dropdown','Pick one or multiple options.','Chọn một hoặc nhiều mục.',[
 ('Title / Desc','string','Dropdown / nil','Label and description','Nhãn và mô tả'),('Values','array of strings','{}','Available items','Danh sách lựa chọn'),('Value / Default','string or array','nil','Initial selection','Lựa chọn ban đầu'),('Multi','boolean','false','Allow multiple selections','Cho phép chọn nhiều'),('AllowNone','boolean','false','Allow no selection','Cho phép không chọn'),('Locked','boolean','false','Disable interaction','Khóa tương tác'),('Callback','function(value)','no-op','Single: string or nil; multi: array','Một mục: string hoặc nil; nhiều mục: mảng')],
 '`Select(value)` (returns selected value or nil), `Refresh(values)` (returns selection), `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`', '''local mode = Tab:Dropdown({

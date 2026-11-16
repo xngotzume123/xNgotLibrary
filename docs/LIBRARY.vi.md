@@ -397,7 +397,9 @@ print(_G.xNgotMusicConfig:Get("topN"))
 
 Chọn **Music region** và **Music platform** trong cài đặt Island. Auto ưu tiên quốc gia do Roblox cung cấp, sau đó dùng locale; chọn Global để bỏ ưu tiên vùng. Có Việt Nam, Mỹ, Hàn Quốc và Nhật Bản. Đây là thêm từ khóa khu vực khi tìm, không phải bộ lọc xác minh ngôn ngữ hay quốc tịch. Giao diện hỗ trợ YouTube, SoundCloud, Audius; kết quả và tải nhạc phụ thuộc dịch vụ bên ngoài.
 
-Khi bật **Preload next track** và Auto play, lúc phát đến 50% trình phát chuẩn bị bài kế tiếp trong danh sách hiện tại và cố tải trước âm thanh. Shuffle chọn trước một bài; Repeat One được ưu tiên. Nếu chỉ có một bài thì bỏ qua tải trước. Nếu chưa tải xong hoặc tải lỗi, trình phát tiếp tục xử lý bình thường; không đảm bảo chuyển bài hoàn toàn không trễ. Tải trước dùng mạng và bộ nhớ. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
+Khi bật Auto play, trình phát chọn ngẫu nhiên bài phù hợp chưa phát gần đây. Với bài từ tìm kiếm/trợ lý, ưu tiên bài khớp câu tìm hiện tại. Khi hết lựa chọn mới, máy có thể tìm online bài liên quan rồi quay lại bài phù hợp đã nghe nếu không tìm được; nếu không có bài phù hợp thì dừng. Repeat One được ưu tiên; nút Next/Previous thủ công vẫn hoạt động. Việc đối chiếu dựa trên chữ trong tên/nghệ sĩ/thể loại, có thể bỏ sót bài đúng hoặc chọn nhầm—hãy xem kết quả và viết rõ câu tìm khi cần. Truy vấn gốc được thử trước, từ khóa vùng chỉ là biến thể bổ sung.
+
+Khi bật **Preload next track** cùng Auto, lúc phát đến 50% trình phát có thể tải trước một bài phù hợp chưa nghe trong danh sách. Nếu chưa xong hoặc tải lỗi, trình phát xử lý bình thường; không đảm bảo chuyển bài không trễ. Tìm online và tải trước dùng mạng/bộ nhớ. Kết quả kém liên quan bị lọc thay vì tự tải; cache mới có mã nguồn và ID để tránh trùng, nhưng provider vẫn có thể trả nhầm âm thanh. File cũ còn trong danh sách đã tải. Tự nhận vùng không dùng dịch vụ tra IP bên thứ ba.
 
 ```lua
 _G.xNgotMusicConfig:Set("region", "VN") -- auto, global, VN, US, KR, JP
@@ -574,7 +576,7 @@ Các hàm tạo bên dưới được gọi trên `Tab`. Đặt `Title` **khác 
 | `Button` | `Title`, `Desc`, `Locked`, `Callback` | Chạy khi nhấn. Bản này không đọc `Icon` cho Button. |
 | `Toggle` | `Title`, `Desc`, `Default` hoặc `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback chạy lúc tạo và khi `:Set`. Tránh đặt `Default` và `Value` trái nhau. |
 | `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Số; giới hạn theo khoảng và bước; callback chạy lúc tạo và thay đổi. `:Set` trả giá trị hoặc `nil` nếu ngoài khoảng. |
-| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | Chuỗi; callback chạy lúc tạo, mất focus và `:Set`. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `NoSave`, `Locked`, `Callback` | Chuỗi; callback chạy lúc tạo, mất focus và `:Set`. |
 | `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | Chọn một trả chuỗi; chọn nhiều trả bảng; callback có thể chạy khi tạo. |
 | `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Callback nhận `Color3`; `:Get()` lấy màu hiện tại; callback chạy lúc tạo. |
 | `Section` | `Title`, `Default`, `TextXAlignment` | Nhóm thu gọn; trở thành container cho control tạo tiếp trên tab đó. |
@@ -590,7 +592,7 @@ Các hàm tạo bên dưới được gọi trên `Tab`. Đặt `Title` **khác 
 | Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
-| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `Get`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
 | Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
 | Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
@@ -665,7 +667,7 @@ Window:Hide()
 | `DeleteConfig()` | Xóa file nếu executor hỗ trợ; trả kết quả/lỗi. Không tự reset control đang nằm trong bộ nhớ. |
 | `ForgetSavedKey()` | Có khi key gate thiết lập hàm; xóa key đã lưu nếu được hỗ trợ. |
 
-`AutoSave = false` tắt ghi tự động; `SaveConfig()` vẫn chủ động thử ghi. Dữ liệu lưu local, không mã hóa, phụ thuộc API file của executor. `DeleteConfig` không xóa nhạc đã tải hay key được lưu riêng.
+`AutoSave = false` tắt ghi tự động; `SaveConfig()` vẫn chủ động thử ghi. Dữ liệu lưu local, không mã hóa, phụ thuộc API file của executor. Mặc định config ở `xNgotLibrary/Config/<FileSaveName>`; file config cũ hợp lệ ở gốc được sao chép khi cần, không xóa bản cũ. `Folder` do script tự chỉ định vẫn được giữ, có thể nằm ngoài thư mục mẹ. Mặc định key, AI và nhạc nằm trong `xNgotLibrary/Keys`, `xNgotLibrary/AI` và `xNgotLibrary/Music` (ảnh ở `Music/Covers`); đường dẫn tùy chỉnh hoặc dịch vụ ngoài có thể khác. File không được bảo vệ E2E: script khác hoặc người có quyền workspace executor có thể đọc/sửa. `DeleteConfig` không xóa nhạc đã tải hay key được lưu riêng.
 
 ## API giao diện
 
@@ -720,6 +722,10 @@ end
 ```
 
 ## Trợ lý Cross
+
+Vào **Settings → Open Dynamic Island Settings → Cross AI Assistant**, bật **Enable Cross AI**, nhập lệnh như `next song` hoặc `hẹn giờ 60 giây` rồi nhấn **Send to Cross AI**. Câu trả lời hiện trong mục này. **Open Cross AI on Island** mở giao diện trên đảo (cần bật island trước); **Clear Cross AI chat** xóa hội thoại trong phiên. Ô nhập không ghi vào config cửa sổ, nhưng lệnh tìm nhạc có thể gửi đến dịch vụ tìm kiếm bên thứ ba; không nhập thông tin bí mật. Đây là trợ lý local theo quy tắc, không phải chatbot AI online tổng quát.
+
+`AiState()` trả bảng `Enabled`, `Thinking`, `Reply`, `Version`, `Pending` (câu trả lời mới nhất, không phải toàn bộ lịch sử). `AiAsk` có thể yield khi xử lý nhạc; dùng task khi cần.
 
 `AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui` và `Key`; `Body` và `Free` bị khóa tắt trong source. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
 
@@ -887,6 +893,7 @@ Window:SelectTab("Main")
 - Toggle, Slider, Input, Dropdown và Colorpicker gọi callback ngay khi tạo, với giá trị mặc định hoặc đã khôi phục. Hãy tạo đối tượng phụ thuộc trước; đừng dùng biến local đang được gán từ chính constructor của nó bên trong callback.
 - Giá trị lưu theo tên tab và **Title ban đầu** của control, không theo `Flag`. Đặt Title duy nhất trong mỗi tab. Đổi tên sau đó không tự chuyển key lưu. `AutoSave` và API file ảnh hưởng việc lưu; xem mục Window & storage.
 - `Lock()` khóa tương tác người dùng; setter bằng code vẫn có thể cập nhật và gọi callback. `Destroy()` xóa control khỏi giao diện.
+- `AIControl = false` loại control khỏi danh sách trợ lý local. Hành động UI đã xác nhận gọi callback gốc; xem Cross AI: điều khiển UI.
 - Mobile giữ kích thước gốc. Kéo slider theo chiều ngang; vuốt dọc dùng để cuộn. Vẫn cần test thực tế trong Roblox/executor.
 
 ---
@@ -1048,17 +1055,18 @@ input:Set("Player")
 | `Placeholder` | string | `empty` | Gợi ý trong ô nhập |
 | `Default / Value` | string | `empty` | Nội dung ban đầu |
 | `ClearTextOnFocus` | boolean | `false` | Xóa khi focus |
+| `NoSave` | boolean | `false` | Không khôi phục hoặc lưu input này vào config |
 | `MultiLine` | boolean | `false` | Cho phép nhiều dòng |
 | `Locked` | boolean | `false` | Khóa tương tác |
 | `Callback` | function(string) | `no-op` | Nhận chuỗi |
 
 ## Đối tượng trả về
 
-`Set(text)`, `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
+`Set(text)`, `Get()` (current TextBox text, even while focused), `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
 
 ## Lưu ý
 
-Callback chạy khi tạo, khi mất focus và sau Set; không chạy theo từng ký tự.
+Callback chạy khi tạo, khi mất focus và sau Set; không chạy theo từng ký tự. `NoSave=true` ngăn input đọc/ghi config; không xóa giá trị đã lưu trước đó.
 
 ---
 
@@ -1226,3 +1234,92 @@ Discord: `SetInvite(link, code)`, `Destroy()`. Info: `SetAvatar(id)`, `SetName(t
 ## Lưu ý
 
 Hoạt động của invite, avatar và mạng phụ thuộc executor/dịch vụ; ví dụ link chỉ là placeholder.
+
+---
+
+# Cross AI: điều khiển UI
+
+Cross là **trợ lý local theo quy tắc**, không phải mô hình ngôn ngữ tổng quát. Nó lập danh sách control do cửa sổ xNgot này tạo, kể cả control được script thêm sau. Nó không quét GUI Roblox khác và không tự hiểu công dụng của code chỉ từ tên.
+
+## Bắt đầu và xác nhận
+
+1. Vào **Settings → Open Dynamic Island Settings → Cross AI Assistant**, bật **Enable Cross AI**.
+2. Nhập lệnh rồi nhấn **Send to Cross AI**, ví dụ `bật Show FPS`.
+3. Đọc hành động, tên control và tab. Trả lời `có`/`yes` hoặc nhấn **Confirm Cross AI action**; để từ chối, trả lời `không`/`no` hoặc nhấn **Cancel Cross AI action**.
+4. Xác nhận trong 60 giây. Hết hạn hoặc hủy sẽ không thay đổi gì. Control bị khóa/đã xóa sẽ bị từ chối; nếu đổi tên, hãy ra lệnh lại. Trạng thái control có thể thay đổi trong lúc chờ.
+
+Bạn cũng có thể dùng chat Cross trên đảo: nhấn **Open Cross AI on Island**, rồi nhập lệnh và câu xác nhận tại đó.
+
+## Ví dụ lệnh
+
+| Lệnh | Cách hoạt động |
+| --- | --- |
+| `danh sách chức năng` / `list controls` | Liệt kê control, 15 mục mỗi trang; thêm `2` để xem trang tiếp. |
+| `bật Show FPS` | Đề xuất bật toggle đó. |
+| `tắt Main Auto Farm` | Đề xuất tắt `Auto Farm` trong tab `Main`, nếu có. |
+| `đặt Sound Volume 40` | Đề xuất giá trị slider, làm tròn theo Step. |
+| `chọn Mode "Fast"` | Đề xuất lựa chọn dropdown. |
+| `đổi Nickname "Hana"` | Đề xuất giá trị ô nhập; cần dấu ngoặc kép. |
+| `đổi Accent #66AAFF` | Đề xuất màu cho Colorpicker. |
+| `bấm Rejoin` | Đề xuất bấm nút. Nút có thể gây tác động khác; chỉ xác nhận sau khi đọc đúng mục. |
+
+Tên ví dụ phải tồn tại trong UI của bạn. Nếu trùng tên, hãy thêm tên tab. Có một số từ đồng nghĩa như `tốc độ` cho `Speed`; đây không phải AI hiểu mọi cách diễn đạt, nên câu lạ có thể không khớp. Chỉ nhập tên cũng có thể đề xuất đảo trạng thái toggle/section hoặc bấm nút, nhưng vẫn phải xác nhận.
+
+Hỗ trợ Section (mở/đóng), Toggle, Button, Slider, Input, Dropdown (thêm/bỏ một mục multi-select) và Colorpicker. Paragraph và Code có thể đổi nội dung hiển thị bằng chuỗi trong dấu ngoặc kép; Info đổi bio và Discord đổi link mời. Nội dung Code chỉ được hiển thị, không tự chạy. Control riêng của trợ lý được loại khỏi danh sách để tránh gọi lặp. Dropdown đơn chọn một mục có sẵn; với multi-select dùng `bỏ` / `remove` để bỏ một mục đang chọn.
+
+> Chỉ các thay đổi **control UI do AI đề xuất** mới qua bước xác nhận. Lệnh chat nhạc/hẹn giờ có sẵn vẫn chạy ngay; tìm nhạc có thể gọi dịch vụ bên thứ ba. Khi xác nhận nút, callback gốc sẽ chạy và có thể làm mọi việc script cho phép. Nếu callback lỗi, một phần tác động có thể đã xảy ra.
+
+## Người chơi và phiên hiện tại
+
+Bạn có thể hỏi `tên tôi là gì`, `thông tin người chơi`, `tên game`, `place id`, `game id`, `job id`, `bao nhiêu người chơi` hoặc `thông tin game`. Cross đọc `Name`, `DisplayName` và `UserId` của người chơi local; `PlaceId`, `GameId` (UniverseId) và `JobId` lấy từ phiên Roblox hiện tại; số người và sức chứa lấy từ `Players`. Tên game là **tên place hiện tại** lấy qua `MarketplaceService`, có thể khác tên trải nghiệm tổng thể. Tra cứu tên có thể chờ hoặc thất bại; khi không lấy được, Cross báo không có thay vì đoán. JobId rỗng, ví dụ trong một số phiên Studio, cũng được báo không lấy được. Các câu trả lời này không dạy hay lưu ID vào JSON học của Cross; chat chỉ tồn tại trong phiên. Cẩn thận khi chia sẻ JobId nếu không muốn người khác nhận diện hoặc tham gia server.
+
+Đây là thông tin chỉ đọc, không cần xác nhận UI. Nếu đang có hành động chờ xác nhận, hãy xử lý hành động đó trước. Cross nhận diện một số cách hỏi, không phải mọi câu tự do.
+
+## Loại control và API cho người viết script
+
+Đặt `AIControl = false` để control không xuất hiện trong danh sách AI. `island:AiPermission("Ui", false)` tắt liệt kê và điều khiển UI, kể cả yêu cầu đang chờ. Nên loại các nút hoặc ô nhập nhạy cảm mà bạn không muốn gọi qua chat.
+
+```lua
+Tab:Button({
+    Title = "Sensitive action",
+    AIControl = false,
+    Callback = function() print("Chỉ chạy qua UI") end,
+})
+
+local island = Window:GetDynamicIsland()
+if island then
+    island:AiEnable(true)
+    island:AiAsk("bật Show FPS") -- chỉ đề xuất
+    print(island:AiState().Pending)
+    island:AiAsk("no")            -- hủy, không chạy
+end
+```
+
+Ô nhập và lịch sử chat không được lưu thành log đầy đủ, nhưng một số câu đã xác nhận và tên control có thể tự ghi vào JSON local. Đừng nhập thông tin bí mật; xem Cross tự ghi nhớ. `AiAsk` có thể yield khi tìm nhạc hoặc tra tên game; dùng task khi cần. Xác nhận trong chat không ngăn script khác trực tiếp gọi API của thư viện.
+
+---
+
+# Cross tự ghi nhớ
+
+Cross tự ghi nhớ các yêu cầu UI phù hợp sau khi được xác nhận; không còn mục Learning hay nút cài đặt việc học. Đây là tra cứu local và đếm tần suất theo quy tắc, **không phải huấn luyện mô hình** hay chatbot online. Nó không thể tự hiểu mọi câu chưa biết.
+
+## Cách học
+
+1. Bật Cross tại **Settings → Open Dynamic Island Settings → Cross AI Assistant**.
+2. Yêu cầu control đã có, ví dụ `bật Show FPS`. Cross đề xuất hành động; đọc tên và tab rồi trả lời `có`/`yes` hoặc `không`/`no`.
+3. Thao tác UI được xác nhận và gọi thành công sẽ tăng số lần dùng control, tối đa 80 control khác nhau. Với câu phù hợp dành cho toggle, section hoặc button, Cross có thể lưu câu và hành động tương ứng, tối đa 80 câu. Hủy, hết hạn, bị khóa quyền hoặc thao tác lỗi thì không học.
+4. Nếu chưa khớp một câu có ý định thao tác, Cross có thể hỏi lại tên chức năng và hành động. Hãy ghi rõ tab và control có sẵn, ví dụ `bật Main Auto Farm`, rồi xác nhận. Nếu hướng bật/tắt khớp và câu đủ điều kiện, Cross ghi nhớ cách gọi ban đầu. Lần sau dùng câu đó, AI **vẫn hỏi trước khi thao tác**.
+
+Để hạn chế dữ liệu nhạy cảm, chỉ một số câu ngắn không chứa số, dấu ngoặc kép, URL hoặc từ nhạy cảm được tự lưu; bộ lọc không hoàn hảo. Việc tự học câu chỉ áp dụng cho toggle, section và button, không lưu nội dung input/code tùy ý. File lưu câu đã chuẩn hóa và control/hành động tương ứng; slider, dropdown, input, color và control khác vẫn thao tác được sau xác nhận và được đếm lượt dùng, nhưng giá trị hoặc nội dung nhập tùy ý không được tự lưu thành câu học. Các lần bấm UI trực tiếp ngoài Cross không được đếm.
+
+Tên trùng cần chỉ rõ tab; mục đổi tên, bị xóa, khóa hoặc trùng không thể tự chạy qua mapping cũ. Một số lệnh nhạc/hẹn giờ có sẵn vẫn chạy ngay, không qua xác nhận control UI. Gửi `gợi ý` / `preferences` để xem các control thường được xác nhận; Cross chỉ gợi ý, không tự bật.
+
+## Lưu trữ và riêng tư
+
+File `xNgotLibrary/AI/xNgotCrossAI_user_<UserId>.json` nằm trong workspace executor, riêng theo tài khoản và thiết bị/executor, không đồng bộ online. Nếu chưa có file mới, Cross đọc file cũ ở thư mục gốc và không tự xóa file cũ. Câu đã học tương thích từ bản trước vẫn có thể dùng; file cũ đang tắt ghi nhớ sẽ được đọc với chế độ tự ghi nhớ bật. Bộ đếm lưu tab, tên, loại control và số lần, không lưu giá trị. Tuy vậy, nếu chính tên control chứa dữ liệu cá nhân thì tên đó có thể bị lưu.
+
+JSON là **văn bản thường**; script khác hoặc người có quyền vào workspace có thể đọc/sửa. Bộ lọc câu không nhận diện được mọi thông tin cá nhân, nên không nhập mật khẩu, key hay nội dung riêng tư vào yêu cầu Cross. Tính năng này không lưu toàn bộ lịch sử chat. Nếu cần, bạn có thể tự xóa file trong workspace executor; UI không có mục quản lý Learning.
+
+Cần `isfile`, `readfile`, `writefile` và JSON của Roblox `HttpService`. Nếu thiếu hoặc ghi lỗi, trợ lý báo chỉ ghi nhớ **trong phiên**, không chắc còn sau khi chạy lại. File sai định dạng, không đọc được, quá lớn hoặc thuộc UserId khác không bị tự ghi đè; hãy sao lưu và kiểm tra trước khi tự xóa. Việc này không ngăn script khác gọi trực tiếp API thư viện.
+
+Người viết script có thể xem đường dẫn và lỗi bằng `island:AiLearningState()`. Công tắc API cũ `AiSetRemember(false)` không tắt tự ghi nhớ trong bản này. Các API học cũ vẫn giữ để tương thích, nhưng không có control cài đặt/quản lý trong Settings.
