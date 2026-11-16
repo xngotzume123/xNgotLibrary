@@ -60,10 +60,10 @@ local LIB = loadstring(game:HttpGet(
 ## Build from source
 
 ```bash
-python3 src/build.py --release --minify light
+python3 src/build.py --release --minify
 ```
 
-This produces `dist/main.lua` and `dist/main.min.lua`. The light build keeps line breaks and was checked with an older Luau compiler with a 200-register limit. A working Roblox executor is still needed for runtime testing.
+This produces `dist/main.lua` and one-line-after-credit `dist/main.min.lua`. The one-line wrapper requires `loadstring` and reconstructs light minified source at runtime; use `main.min.light.lua` from the release ZIP or rebuild with `--minify light` if needed. Successful compiler checks do not replace Roblox testing.
 
 ---
 
@@ -129,7 +129,7 @@ Add elements to a tab using `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input
 ```lua
 Main:Section({ Title = "General", Default = true })
 Main:Paragraph({ Title = "Welcome", Desc = "Choose an option below." })
-Main:Button({ Title = "Refresh", Icon = "refresh-cw", Callback = function()
+Main:Button({ Title = "Refresh", Callback = function()
     print("Refresh")
 end })
 local sample = Main:Code({ Title = "Example", Code = "print('hello')" })
@@ -382,9 +382,10 @@ if Island then
     Island:MusicSearch("lofi chill")
     Island:Expand("Music")
     Island:MusicVolume(65)
-    Island:PlayMusic()
 end
 ```
+
+Search runs asynchronously; after results appear, choose a track in the player or use `MusicSelectValue`. `PlayMusic()` toggles the current track and does not wait for search results.
 
 ## Presets
 
@@ -510,3 +511,718 @@ A compact index of the most useful entry points in this build.
 ## Credits
 
 xNgot Library: Nguyễn Minh Nhật (xNgot Zume). Key-system interface and engine: [Ophyn UI](https://github.com/snowdevlol/OphynUI). Window UI originates from [Wind UI](https://github.com/Footagesus/WindUI).
+
+---
+
+# Complete hub example
+
+This is a single script, not a set of independent snippets. Put the **updated** `main.lua` in the executor workspace first. The example does not use the demo boot and does not depend on GitHub. It deliberately has no key gate; see the key pages to add one.
+
+```lua
+getgenv().xNgotLibraryOnly = true
+local chunk, err = loadstring(readfile("main.lua"))
+assert(chunk, err)
+local LIB = chunk()
+
+local Window = LIB:CreateWindow({
+    Title = "My Hub", Author = "Example", Icon = "sparkles",
+    Size = UDim2.fromOffset(580, 420),
+    Folder = "MyHub", FileSaveName = "settings.json",
+    AutoSave = true, SettingsUI = true, Loading = false,
+})
+local Main = Window:Tab({ Title = "Main", Icon = "house" })
+Main:Section({ Title = "Controls", Default = true })
+local status = Main:Paragraph({ Title = "Status", Desc = "Ready" })
+local enabled = Main:Toggle({
+    Title = "Enabled", Default = false,
+    Callback = function(value) status:SetDesc(value and "Enabled" or "Disabled") end,
+})
+Main:Slider({
+    Title = "Amount", Value = { Min = 0, Max = 100, Default = 25 }, Step = 5,
+    Callback = function(value) print("Amount:", value) end,
+})
+Main:Input({ Title = "Name", Placeholder = "Enter text",
+    Callback = function(text) print("Name:", text) end,
+})
+Main:Dropdown({ Title = "Mode", Values = {"Normal", "Fast"}, Value = "Normal",
+    Callback = function(value) print("Mode:", value) end,
+})
+Main:Button({ Title = "Test notification", Callback = function()
+    LIB:Notify({ Title = "xNgot", Content = "Hello!", Kind = "success", Duration = 3 })
+end })
+Window:SelectTab("Main")
+```
+
+## What happens on startup
+
+1. Library-only mode returns `LIB` instead of running the bundled demo.
+2. `CreateWindow` replaces the previous active xNgot window; it does not intentionally remove unrelated game UI.
+3. `Window:Tab` returns a tab. `Section` becomes the container for later controls on that tab.
+4. State callbacks can run immediately with default or restored values. Build dependencies such as `status` **before** callbacks that use them.
+5. `SettingsUI = true` creates Settings and, if initialization succeeds, the integrated island. `Loading = false` disables the loader when there is no enabled key gate.
+
+> This code has not been validated in every Roblox experience or executor. The library uses executor APIs, which differ across environments.
+
+---
+
+# Component reference
+
+All constructors below are called on a `Tab`. Their `Title` values should be unique within a tab because stateful controls use the original title as a config key. Renaming a control later does **not** migrate that key.
+
+| Constructor | Options | Callback / behavior |
+| --- | --- | --- |
+| `Button` | `Title`, `Desc`, `Locked`, `Callback` | Invoked on activation. This build does not read an `Icon` option for Button. |
+| `Toggle` | `Title`, `Desc`, `Default` or `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback fires at creation and on `:Set`. Avoid specifying conflicting `Default` and `Value`. |
+| `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Number; clamped, stepped; callbacks at initialization and changes. `:Set` returns the value or `nil` if outside bounds. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | String; callback on initialization, focus loss, and `:Set`. |
+| `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | A string for single-select, table for multi-select; callback may fire at creation. |
+| `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Emits `Color3`; `:Get()` returns current value; initial callback runs. |
+| `Section` | `Title`, `Default`, `TextXAlignment` | Adds a collapsible group and makes it the parent for subsequent controls created through that tab. |
+| `Paragraph` | `Title`, `Desc`, `RichText` | Noninteractive text. |
+| `Code` | `Title`, `Code` | Displays code; it does not execute it. |
+| `Discord` | `Name`, `Desc`, `Avatar`, `InviteLink`, `InviteCode` | Card for an invite; clipboard and joining depend on executor capabilities. |
+| `InfoNguyenNhat` | `Name`, `Bio`, `Avatar`, `Badges` | Profile card. |
+
+## Returned object methods
+
+| Object | Methods |
+| --- | --- |
+| Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
+| Paragraph | `SetTitle`, `SetDesc`, `Destroy` |
+| Code | `SetTitle`, `SetCode`, `Destroy` |
+| Discord | `SetInvite`, `Destroy` |
+| InfoNguyenNhat | `SetName`, `SetBio`, `SetAvatar`, `Destroy` |
+
+## Single and multiple choice
+
+```lua
+local picker = Main:Dropdown({
+    Title = "Targets", Values = {"A", "B", "C"},
+    Multi = true, AllowNone = true, Value = {"A"},
+    Callback = function(values)
+        for _, value in ipairs(values) do print(value) end
+    end,
+})
+picker:Select({"B"}) -- toggles the given item in multi-select
+picker:Refresh({"A", "B", "C", "D"}) -- rebuilds choices and resets selection
+```
+
+`Refresh` resets the selection; call `Select` after refresh if needed. `AllowNone` applies differently to single and multi-select; a single-select None callback uses an empty string. Use existing values only. For mobile the selected option's persistent color represents selection, not a stuck press.
+
+## Grouping and text
+
+```lua
+local section = Main:Section({Title = "Options", Default = true})
+Main:Paragraph({Title = "Hint", Desc = "<b>Bold</b>", RichText = true})
+section:SetOpen(false)
+section:SetOpen(true)
+local card = Main:InfoNguyenNhat({Name = "Developer", Bio = "Hello", Badges = {"Dev"}})
+card:SetBio("Updated")
+```
+
+`Section` is not a separate tab object; continue using `Main:Button(...)` etc. To start a different group, create another section on the tab.
+
+---
+
+# Window and storage APIs
+
+## Window lifecycle and navigation
+
+| Method | Meaning |
+| --- | --- |
+| `Window:Tab({Title, Icon})` | Create a tab. |
+| `SelectTab(nameOrIndex)` | Select a tab by title or user-tab index; returns boolean. |
+| `Show()`, `Hide()`, `Toggle(state)` | Show/hide; the key gate can prevent opening until passed. |
+| `SetToggleKey(key)` | Accepts an `Enum.KeyCode` or its name; returns current key. |
+| `SetToggleButtonPlatform("Both" or "Mobile")` | Controls availability of floating open button; other values normalize to Both. |
+| `GetToggleButtonPlatform()` | Returns current setting. |
+| `EditOpenButton(options)` | Edits floating button and returns its GUI object. |
+| `Divider()`, `OpenUISettings()` | Add sidebar divider / select settings tab. |
+| `Dialog(options)` | Show modal; returned dialog has `:Close()`. |
+| `Destroy()` | Idempotent cleanup. Creating another xNgot window replaces this window. |
+
+```lua
+Window:SetToggleKey(Enum.KeyCode.RightShift)
+Window:SetToggleButtonPlatform("Mobile")
+Window:EditOpenButton({Title = "Open", Icon = "house", ShowText = true})
+Window:Hide()
+```
+
+`EditOpenButton` also accepts `OpenIcon`, `Size`, `Position`, `BackgroundColor3`, `TextColor3`, `IconColor3`, `OpenIconColor3`, `CornerRadius`.
+
+## Config persistence
+
+| Method | Meaning |
+| --- | --- |
+| `GetConfigPath()` | Returns the resolved path based on `Folder` and `FileSaveName`. |
+| `SaveConfig()` | Forces a write and includes current UI settings; returns success. |
+| `DeleteConfig()` | Deletes the file if supported; returns success/error. It does not reset already-loaded in-memory controls. |
+| `ForgetSavedKey()` | Available when a key gate sets it up; deletes saved key if supported. |
+
+With `AutoSave = false`, automatic writes are disabled; explicit `SaveConfig()` still attempts a write. Saved data is local, not encrypted, and depends on executor filesystem functions. `DeleteConfig` does not delete downloaded music or the separately stored key.
+
+## Appearance APIs
+
+`SetUISettings(table, save)` starts from defaults and applies the supplied fields; it is **not** an incremental patch over all previous settings. Pass a complete settings table when preserving prior settings. `save = false` skips the corresponding save request.
+
+```lua
+local settings = Window:GetUISettings()
+settings.AccentColor = Color3.fromRGB(0, 170, 255)
+settings.Overrides = nil -- derive overrides from supplied fields
+Window:SetUISettings(settings, true)
+Window:SetUISize(580, 420, true)
+print(Window:ExportUISettings())
+```
+
+Additional Settings-only helpers include `GetUILanguage`, `SetUILanguage` (currently English-only) and `RefreshAdminAvatar` (when the admin card is built). Other methods: `GetUIOverrides`, `ClearUIOverride(key, save)`, `GetUIPresets`, `ApplyUIPreset(name, save)`, `UseOriginalUI(save)`, `GetUISize`, `ResetUISize(save)`, `SaveUISettings`, `ImportUISettings(json, save)`, `ResetUISettings(save)`, `SaveUIProfile(name)`, `LoadUIProfile(name, save)`, `GetUIProfileNames`, `DeleteUIProfile(name)`. Profiles and exports use the current versioned format; legacy profiles can be rejected. Query `GetUIPresets()` rather than assuming names.
+
+`SetUISize` clamps width to 420–1000 and height to 300–800. UI language is English-only in this build; methods under Settings such as `GetUILanguage` are not necessarily available with `SettingsUI = false`.
+
+---
+
+# Dynamic Island API
+
+Use `local island = Window:GetDynamicIsland()` and check `if island then ... end`. The bridge is created when `SettingsUI` is enabled and initialization succeeds. Display waits for the menu and startup/key gate. Calling `Enable(true)` does not bypass that gate.
+
+## Display and activity
+
+| Method | Behavior |
+| --- | --- |
+| `Notify(title, message, kind, duration)` | Island notice; returns `false` when disabled. |
+| `GameplayActivity(title, message, duration, kind)` | Temporary activity, duration clamped to 3–30 seconds. |
+| `Enable(boolean)` | Enable or hide the island. |
+| `Expand(page)`, `Collapse()` | Open a page or close the expanded view. Common pages: `Home`, `Music`, `Cross`. |
+| `Set("Fps" / "Ping" / "Clock", boolean)` | Toggle activity. Other existing Settings keys may be set by name. |
+| `Theme(index)`, `Accent(index)` | Set palette/accent by numeric index, clamped. |
+| `State()` | Table with `Cross`, `Playing`, `MusicIndex`, `FPS`, `Ping`, `Timer`, `Island`. |
+| `Destroy()` | Shut down this island; use `Window:Destroy()` for full window cleanup. |
+
+`Window:NotifyIsland(title, message, kind, duration)` and `Window:IslandActivity(title, message, duration, kind)` are safe bridge helpers that return false if the island is unavailable. Notice that the order of **kind and duration** differs between the two methods.
+
+## Timers and stopwatch
+
+```lua
+local island = Window:GetDynamicIsland()
+if island then
+    island:Timer(120)       -- 1–86400 seconds
+    island:ExtendTimer(30)
+    island:StopTimer()
+    island:WatchToggle()    -- start/pause
+    island:WatchLap()
+    island:WatchReset()
+end
+```
+
+## Cross assistant
+
+`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` and `AiPermission(name, boolean)` control the local assistant. `Ui` and `Key` permissions can be configured; `Body` and `Free` are forced off by the implementation. `MusicAiLearn(title, good)` records feedback when supported; `DemoDownload()` displays simulated progress rather than downloading a real file. `MusicAiOnline(true)` does not enable an online model in this build; `MusicAiOnlineState()` reports removed/local. Do not assume it calls an external AI service.
+
+`SetLanguage` / `Set("Language", ...)` currently force English. The documentation language switch is independent of the library UI language.
+
+---
+
+# Music API and settings
+
+Search and download depend on third-party services, network access and executor support. Audio playback may also be restricted by Roblox. No actual provider or Delta runtime is guaranteed by a Luau compiler check.
+
+## Search and play
+
+```lua
+local island = Window:GetDynamicIsland()
+if island then
+    local disconnect = island:OnMusicCatalogChanged(function()
+        local rows, state = island:MusicRows()
+        print("Catalog state:", state, "rows:", #rows)
+    end)
+    island:MusicSearch("nhac viet chill")
+    -- The search is asynchronous; call disconnect() when no longer needed.
+end
+```
+
+`MusicSearch` returning `true` does not guarantee the search started (for example, it may already be busy) or that results are ready. Check `MusicSearchState()` or subscribe to catalog changes. Once results exist, `MusicRows()` returns `rows, state`; `MusicCatalog()` returns `catalog, state, supported`. `MusicSelectValue(value, play)` selects a result by row Value/name and returns a boolean. `MusicSelect(index, play)` uses the track index; avoid calling it for an empty list. `MusicPlayTrack(id, url, source)` queues/selects an external track and returns a boolean, not playback confirmation. `MusicDownloadOne` may yield and returns an asset string or `false`.
+
+| Control | Meaning |
+| --- | --- |
+| `PlayMusic()` | Toggles play/pause, not an unconditional play. |
+| `NextMusic(1)` / `NextMusic(-1)` | Next / previous. |
+| `MusicVolume(n)` | Volume 0–100. |
+| `MusicSpeed(n)` | Effective music tempo 0.7–1.4; the player applies its own clamp. |
+| `MusicMode(name, boolean)` | `Auto`, `Shuffle`, `RepeatOne`, `ShowIsland`. |
+| `OnMusicChanged(fn)` | Subscribe; returned function unsubscribes. |
+| `MusicQueue(prompt)`, `MusicPreset(name)`, `MusicConfig()` | Helpers attached by Settings/Island integration when available. |
+
+## Downloaded files
+
+`MusicFiles(includeSizes)` returns `files, stats`; `MusicStorage()` returns stats. `MusicLoadDownloaded()` reloads the current catalog from local cache and returns a count. `MusicPlayFile(path)` returns whether a matching item was selected. `MusicDeleteFile(path)` and `MusicClearDownloaded()` delete local files; the latter returns deleted and failed counts. Ask before destructive actions.
+
+```lua
+if island then
+    local files, stats = island:MusicFiles(true)
+    print("Files:", #files, "storage:", stats.TotalText)
+    if files[1] then island:MusicPlayFile(files[1].Path) end
+end
+```
+
+## Configuration
+
+Set before loading using `getgenv().xNgotMusic = {...}` or at runtime through `_G.xNgotMusicConfig:Set(key, value)`. `Get(key)`, `Get()`, `Schema()`, `Apply()`, `OnChange(fn)`, `Preset(name)`, `Presets()` are available. `OnChange` returns an unsubscribe function. Supported presets: `fast`, `quality`, `lowdata`, `vietnamese`.
+
+| Key | Default | Range / note |
+| --- | --- | --- |
+| `topN` | 12 | 1–40 results |
+| `sources` | youtube, soundcloud, audius | Table of source IDs; UI exposes All or one of these. Other engine sources depend on service support. |
+| `region` | `auto` | `auto`, `global`, `VN`, `US`, `KR`, `JP`; preference via query terms, not verified language. |
+| `prefetchNext` | true | At 50%, prepare next item from current list when Auto is on and RepeatOne off; needs >1 track. |
+| `searchTimeout` | 12 | 2–60 seconds |
+| `preferShort` | 600 | 0–7200 seconds; 0 disables preference |
+| `folder` | `xNgotLibrary/Music` | Local cache directory |
+| `raceTracks` | 2 | 1–4, parallel track attempts in resolve |
+| `downloadTimeout` | 200 | 20–600 seconds |
+| `retries` | 2 | 0–5 |
+| `renameFiles`, `aiLearn`, `coverArt` | true | Boolean |
+| `compactRows`, `debug` | false | Boolean |
+| `showSource`, `notifyOnSearch` | true | Boolean |
+| `aiBrain` | `local` | Online model is not enabled in this build. |
+
+Region Auto uses Roblox country if available and locale as fallback; unsupported/unknown regions become global. Preload uses network and storage and cannot guarantee a gapless transition. Prefetch failure falls back to regular loading. Some settings are exposed in the schema even where their effect is limited by the current code; inspect behavior in your target environment.
+
+For diagnostics call `_G.xNgotMusicDoctor()` when available, then inspect the returned checks. A warning is not proof of a particular fault. Test search, download, file support, `getcustomasset`/`getsynasset` and playback separately.
+
+---
+
+# Loader and key lifecycle
+
+## Configure startup
+
+```lua
+local Window = LIB:CreateWindow({
+    Title = "My Hub", Icon = "sparkles",
+    Loading = {Title = "My Hub", Text = "Starting", Steps = {"Prepare", "Almost ready"}, Duration = 2},
+    KeySystem = {Enabled = true, Keys = {"DEMO-KEY"}, SaveKey = false},
+})
+```
+
+When `KeySystem.Enabled = true` and `Style` is not `Legacy`, the embedded Ophyn flow handles the gate. The non-Ophyn/legacy loader uses `Loading.Title`, `Text`, `Steps` and `Duration`; its effective display can be longer than the configured duration. `Loading = false` disables the non-key loader, not an enabled key gate. Confirm which flow you are testing before expecting a particular animation.
+
+## Ordering and saved keys
+
+The window is constructed while startup proceeds, but the menu and island are held until the gate passes. Saved keys are rechecked. Closing the key UI without acceptance destroys the window. Use `SaveKey = false` or call `Window:ForgetSavedKey()` when available to retest input. Saving needs executor filesystem APIs.
+
+## Providers and trust
+
+Local values/functions are evaluated client-side and can be changed by the user. Providers require working network/request primitives and a properly configured service. PandaAuth and Jnkie load remote SDK code; Platoboost client-side secrets can be extracted. Multiple validators accept **any** successful validator. The code and SDK links can change externally; verify valid, invalid and network-failure cases with real credentials before release. Never hardcode a real secret into an example.
+
+For UI overrides, use `KeySystem.Ophyn`, such as `SyncTheme = false`, `SyncFont = false`, `Theme`, `Logo`, `Title`, `Description`. The source integrates Ophyn; the exact set of supported options is the bundled vendor implementation, not a promise that all future upstream options work.
+
+---
+
+# Build, test and publish
+
+## Project layout
+
+| Path | Purpose |
+| --- | --- |
+| `src/modules/` | Ordered Luau source modules, the source of truth for the library. |
+| `src/manifest.json` | Module ordering, hashes and block metadata. |
+| `src/profiles/`, `src/stubs/` | Development/release build profiles and replacement modules. |
+| `src/build.py`, `src/minify.py` | Build and single/light/compact/full minification tools. |
+| `dist/main.lua`, `dist/main.min.lua` | Generated release artifacts; include them in a repository or archive if needed. |
+| `docs/site/content.py`, `details.py` | Bilingual content. |
+| `docs/site/template.html` | Standalone HTML UI, inline CSS/JS/SVG. |
+| `docs/site/build.py` | Builds HTML and Markdown manuals from the content. |
+| `.github/workflows/pages.yml` | GitHub Actions Pages workflow. |
+
+## Build commands
+
+```bash
+python3 src/build.py --check
+python3 src/build.py --release --check
+python3 src/build.py --release --minify light
+python3 -m pip install -r docs/site/requirements.txt
+python3 docs/site/build.py
+```
+
+The source manifest validates module hashes and block balance. Update its metadata when changing modules, rather than editing generated `dist` alone. Single is a one-line wrapper requiring loadstring; it reconstructs light source with newlines at runtime. Light keeps newlines directly; very long compact output can be problematic for older executors. A successful compile checks syntax/register limits, not actual Roblox behavior.
+
+## Release checklist
+
+1. Test startup, key success/failure, close/reopen and replacement of an existing xNgot window.
+2. On mobile, test tap vs scroll, slider drag, releasing outside, dropdown, toggle and text input; also test desktop mouse.
+3. Test music search and download against real services, local files, auto-next/prefetch and errors.
+4. Review config save/read/delete and the executor APIs available on the target device.
+5. Build both release artifacts; update the repo's `dist/` and `docs/`, commit and push. A local ZIP or Pages publication does not update the raw GitHub script by itself.
+6. Enable GitHub Pages with GitHub Actions in repository settings and wait for a successful workflow. The expected Pages URL is `https://xngotzume123.github.io/xNgotLibrary/` only after publishing; GitHub's actual URL is authoritative.
+
+For private or inaccessible repositories, local preview can still open `docs/index.html`. JS is required for the bilingual navigation. No external fonts, scripts or icons are needed for the site.
+
+---
+
+# Control guides: start here
+
+Each control page has a small **addition**, not a separate script. First paste and run this setup together with one or more examples on the following pages. Put the current `main.lua` in the executor workspace. `readfile` and `loadstring` are required.
+
+```lua
+getgenv().xNgotLibraryOnly = true
+local chunk, err = loadstring(readfile("main.lua"))
+assert(chunk, err)
+local LIB = chunk()
+local Window = LIB:CreateWindow({
+    Title = "Control examples", Folder = "ControlExamples",
+    FileSaveName = "settings.json", AutoSave = true,
+    SettingsUI = true, Loading = false,
+})
+local Tab = Window:Tab({ Title = "Main", Icon = "house" })
+Window:SelectTab("Main")
+```
+
+## Before you begin
+
+- `Tab:Section()` changes the parent used by *subsequently created* controls; create another section to switch. `Section:_Use("Button", {...})` explicitly targets a section. Destroying the current section resets the parent to the tab.
+- Toggle, Slider, Input, Dropdown and Colorpicker invoke their callback while being created, with the initial or restored value. Create dependencies before these controls; do not refer to a local that is still being assigned from its own constructor.
+- Saved values are indexed by tab title and the control's original title, not by `Flag`. Use unique titles per tab. Renaming a control later does not migrate its saved key. `AutoSave` and filesystem support affect persistence; see Window & storage.
+- `Lock()` blocks interaction; programmatic setters can still update values and trigger callbacks. `Destroy()` removes the visual control.
+- Mobile retains its original dimensions. Drag sliders horizontally; vertical gestures are treated as scrolling. Actual executor behavior still needs Roblox testing.
+
+---
+
+# Section
+
+Group controls in a collapsible area.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local group = Tab:Section({ Title = "Actions", Default = true })
+Tab:Button({ Title = "Inside Actions", Callback = function() print("Pressed") end })
+group:SetOpen(true)
+-- group:_Use("Toggle", { Title = "Extra", Callback = function(v) print(v) end })
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title` | string | `Section` | Heading |
+| `Default` | boolean | `false` | Initially open |
+| `TextXAlignment` | string | `Left` | Left, Center or Right |
+
+## Returned object
+
+`SetTitle(text)`, `SetOpen(boolean)` (returns state), `Toggle()` (returns state), `Destroy()`, `_Use(methodName, options)`
+
+## Notes
+
+Later `Tab` controls go into the most recently created section, not automatically back to the tab. `_Use` does not permanently change that parent.
+
+---
+
+# Button
+
+Execute an action on activation.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local button = Tab:Button({
+    Title = "Say hello", Desc = "Run an action",
+    Callback = function() print("Hello!") end,
+})
+-- button:Lock()  -- button:Unlock()
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title` | string | `Button` | Label |
+| `Desc` | string | `nil` | Optional description |
+| `Locked` | boolean | `false` | Disable user activation |
+| `Callback` | function() | `no-op` | Runs when pressed |
+
+## Returned object
+
+`SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+The callback receives no arguments.
+
+---
+
+# Toggle
+
+Turn a feature on or off.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local toggle = Tab:Toggle({
+    Title = "Auto action", Desc = "Example switch", Default = false, Icon = "zap",
+    Callback = function(enabled) print("Auto action:", enabled) end,
+})
+toggle:Set(true)
+-- toggle:Set() -- invert
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title` | string | `Toggle` | Label and original storage key |
+| `Desc` | string | `nil` | Optional description |
+| `Default / Value` | boolean | `false` | Initial state; prefer Default alone |
+| `Icon` | string | `nil` | Optional icon name |
+| `Locked` | boolean | `false` | Disable interaction |
+| `Callback` | function(boolean) | `no-op` | Receives new state |
+
+## Returned object
+
+`Set(boolean)` or `Set()` to invert, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+The callback runs at creation and after Set. A saved state can override Default. Avoid supplying both Default=false and Value=true: the source fallback expression can choose Value.
+
+---
+
+# Slider
+
+Choose a number in a range.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local slider = Tab:Slider({
+    Title = "Speed", Value = { Min = 0, Max = 100, Default = 25 }, Step = 5,
+    Callback = function(value) print("Speed:", value) end,
+})
+slider:Set(40)
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Slider / nil` | Label and description |
+| `Value.Min / Max` | number | `0 / 100` | Range bounds |
+| `Value.Default` | number | `Min` | Initial number; top-level Default also supported |
+| `Step` | number | `1` | Positive step for updates |
+| `Locked` | boolean | `false` | Disable interaction |
+| `Callback` | function(number) | `no-op` | Receives number |
+
+## Returned object
+
+`Set(number)`, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+Values are clamped; invalid/non-positive Step falls back to 1. Callback also runs on creation and Set.
+
+---
+
+# Input
+
+Accept text, optionally multiline.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local input = Tab:Input({
+    Title = "Nickname", Placeholder = "Enter a name", Default = "Guest",
+    Callback = function(text) print("Nickname:", text) end,
+})
+input:Set("Player")
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Input / nil` | Label and description |
+| `Placeholder` | string | `empty` | Hint in text box |
+| `Default / Value` | string | `empty` | Initial text |
+| `ClearTextOnFocus` | boolean | `false` | Clear when focused |
+| `MultiLine` | boolean | `false` | Allow multiple lines |
+| `Locked` | boolean | `false` | Disable interaction |
+| `Callback` | function(string) | `no-op` | Receives text |
+
+## Returned object
+
+`Set(text)`, `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+Callback runs at creation, on focus loss and after Set; it is not an every-keystroke callback.
+
+---
+
+# Dropdown
+
+Pick one or multiple options.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local mode = Tab:Dropdown({
+    Title = "Mode", Values = {"Normal", "Fast"}, Value = "Normal",
+    Callback = function(value) print("Mode:", value) end,
+})
+mode:Select("Fast")
+local colors = Tab:Dropdown({
+    Title = "Colors", Values = {"Red", "Blue", "Green"},
+    Multi = true, AllowNone = true, Value = {"Red"},
+    Callback = function(values) print("Selected:", table.concat(values, ", ")) end,
+})
+colors:Select({"Blue", "Green"})
+-- mode:Refresh({"Normal", "Fast", "Slow"})
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Dropdown / nil` | Label and description |
+| `Values` | array of strings | `{}` | Available items |
+| `Value / Default` | string or array | `nil` | Initial selection |
+| `Multi` | boolean | `false` | Allow multiple selections |
+| `AllowNone` | boolean | `false` | Allow no selection |
+| `Locked` | boolean | `false` | Disable interaction |
+| `Callback` | function(value) | `no-op` | Single: string or nil; multi: array |
+
+## Returned object
+
+`Select(value)` (returns selected value or nil), `Refresh(values)` (returns selection), `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+Callback runs on creation and Select. For multi-select, Select toggles each named item rather than replacing the entire selection. Single AllowNone represents None as an empty string in callbacks; multi receives an array. Refresh resets the selection and saves it but does not call Callback. With multi and AllowNone=false, the first option is used if no initial selection exists.
+
+---
+
+# Colorpicker
+
+Pick and observe a Color3 value.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local color = Tab:Colorpicker({
+    Title = "Accent example", Default = "#66AAFF",
+    Callback = function(value) print("Color:", value) end,
+})
+color:Set(Color3.fromRGB(255, 120, 80))
+print(color:Get())
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Color / empty` | Label and description |
+| `Default / Value` | Color3, hex string or RGB table | `white` | Initial color |
+| `Locked` | boolean | `false` | Disable interaction |
+| `Callback` | function(Color3) | `no-op` | Receives Color3 |
+
+## Returned object
+
+`Set(value)`, `Get()` → Color3, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Notes
+
+Accepts Color3, `#RRGGBB`, or an RGB table. Invalid input falls back to white. Callback runs on creation and Set; this example does not change the global UI theme.
+
+---
+
+# Paragraph
+
+Display a title and descriptive text.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local status = Tab:Paragraph({ Title = "Status", Desc = "Ready" })
+status:SetDesc("Running")
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title` | string | `Paragraph` | Heading |
+| `Desc` | string | `nil` | Body |
+| `RichText` | boolean | `false` | Interpret Roblox RichText tags |
+
+## Returned object
+
+`SetTitle(text)`, `SetDesc(text)`, `Destroy()`
+
+## Notes
+
+This is a display element, not a persistent value control.
+
+---
+
+# Code
+
+Show a code block in the window.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local code = Tab:Code({ Title = "Example", Code = 'print("Hello")' })
+code:SetCode('print("Updated")')
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Title` | string | `Code` | Heading |
+| `Code` | string | `empty` | Code content |
+
+## Returned object
+
+`SetTitle(text)`, `SetCode(text)`, `Destroy()`
+
+## Notes
+
+Displays text; it does not execute that text.
+
+---
+
+# Discord & InfoNguyenNhat
+
+Display community and profile cards.
+
+First see **Control guides: start here**; append this snippet below the setup.
+
+```lua
+local discord = Tab:Discord({ Name = "Community", Desc = "Join us", InviteLink = "discord.gg/example" })
+local info = Tab:InfoNguyenNhat({ Name = "Developer", Bio = "Building a hub" })
+info:SetBio("Welcome!")
+-- discord:SetInvite("discord.gg/example", "example")
+```
+
+## Options
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `Discord.Avatar` | string | `rbxassetid://0` | Avatar asset |
+| `Discord.Name / Desc` | string | `Discord Server / empty` | Server text |
+| `Discord.InviteLink / InviteCode` | string | `discord.gg/xxxxxxx / nil` | Invite URL and optional code |
+| `Info.Avatar / Name / Bio` | string | `rbxassetid://0 / Nguyen Nhat / empty` | Profile fields |
+| `Info.Badges` | table | `{}` | Badge list |
+
+## Returned object
+
+Discord: `SetInvite(link, code)`, `Destroy()`. Info: `SetAvatar(id)`, `SetName(text)`, `SetBio(text)`, `Destroy()`, `Info.AddSocialIcon(icon, copyValue, order)` (dot call).
+
+## Notes
+
+Invite and avatar/network behavior depends on the executor and live services; placeholders are not real invites.

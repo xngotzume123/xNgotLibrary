@@ -75,10 +75,10 @@ local LIB = loadstring(game:HttpGet(
 ## Build from source
 
 ```bash
-python3 src/build.py --release --minify light
+python3 src/build.py --release --minify
 ```
 
-This produces `dist/main.lua` and `dist/main.min.lua`. The light build keeps line breaks and was checked with an older Luau compiler with a 200-register limit. A working Roblox executor is still needed for runtime testing.
+This produces `dist/main.lua` and one-line-after-credit `dist/main.min.lua`. The one-line wrapper requires `loadstring` and reconstructs light minified source at runtime; use `main.min.light.lua` from the release ZIP or rebuild with `--minify light` if needed. Successful compiler checks do not replace Roblox testing.
 ''',r'''# Cài đặt
 
 Đặt file `main.lua` đã cập nhật vào workspace của executor. Kiểm tra executor có hỗ trợ `readfile` và `loadstring`. File trong thư mục Downloads của điện thoại không tự nằm trong workspace của executor.
@@ -112,10 +112,10 @@ local LIB = loadstring(game:HttpGet(
 ## Build từ source
 
 ```bash
-python3 src/build.py --release --minify light
+python3 src/build.py --release --minify
 ```
 
-Lệnh tạo `dist/main.lua` và `dist/main.min.lua`. Bản light giữ xuống dòng và đã qua kiểm tra bằng Luau cũ với giới hạn 200 registers. Vẫn cần executor Roblox để test lúc chạy.
+Lệnh tạo `dist/main.lua` và `dist/main.min.lua` chỉ một dòng sau credit. Wrapper một dòng cần `loadstring`, dựng lại mã light khi chạy; nếu cần, dùng `main.min.light.lua` trong ZIP hoặc build với `--minify light`. Compile thành công không thay thế test trong Roblox.
 '''),
  ('window','BUILD A HUB','TẠO HUB','Windows & tabs','Cửa sổ và tab','03',r'''# Windows & tabs
 
@@ -225,7 +225,7 @@ Add elements to a tab using `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `Tab:Input
 ```lua
 Main:Section({ Title = "General", Default = true })
 Main:Paragraph({ Title = "Welcome", Desc = "Choose an option below." })
-Main:Button({ Title = "Refresh", Icon = "refresh-cw", Callback = function()
+Main:Button({ Title = "Refresh", Callback = function()
     print("Refresh")
 end })
 local sample = Main:Code({ Title = "Example", Code = "print('hello')" })
@@ -279,7 +279,7 @@ Thêm thành phần vào tab bằng `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `T
 ```lua
 Main:Section({ Title = "Cơ bản", Default = true })
 Main:Paragraph({ Title = "Chào bạn", Desc = "Chọn một tính năng bên dưới." })
-Main:Button({ Title = "Làm mới", Icon = "refresh-cw", Callback = function()
+Main:Button({ Title = "Làm mới", Callback = function()
     print("Làm mới")
 end })
 local sample = Main:Code({ Title = "Ví dụ", Code = "print('hello')" })
@@ -697,9 +697,10 @@ if Island then
     Island:MusicSearch("lofi chill")
     Island:Expand("Music")
     Island:MusicVolume(65)
-    Island:PlayMusic()
 end
 ```
+
+Search runs asynchronously; after results appear, choose a track in the player or use `MusicSelectValue`. `PlayMusic()` toggles the current track and does not wait for search results.
 
 ## Presets
 
@@ -741,9 +742,10 @@ if Island then
     Island:MusicSearch("lofi chill")
     Island:Expand("Music")
     Island:MusicVolume(65)
-    Island:PlayMusic()
 end
 ```
+
+Tìm kiếm chạy bất đồng bộ; khi có kết quả hãy chọn bài trong player hoặc dùng `MusicSelectValue`. `PlayMusic()` chỉ đảo trạng thái bài hiện tại, không chờ kết quả tìm.
 
 ## Preset
 
@@ -950,3 +952,8 @@ Tạo `Section`, `Button`, `Toggle`, `Slider`, `Input`, `Dropdown`, `Colorpicker
 xNgot Library: Nguyễn Minh Nhật (xNgot Zume). Giao diện và engine key: [Ophyn UI](https://github.com/snowdevlol/OphynUI). UI cửa sổ phát triển từ [Wind UI](https://github.com/Footagesus/WindUI).
 ''')
 ]
+
+from details import sections_detail
+sections.extend(sections_detail)
+from controls import sections_controls
+sections.extend(sections_controls)

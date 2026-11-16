@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """xNgot Library - minifier Lua/Luau (thuần Python, không cần thư viện ngoài).
 
-Ba mức:
+Bốn mức:
     light    bỏ comment, bỏ dòng trống, bỏ khoảng trắng cuối dòng — giữ nguyên tên & xuống dòng
     compact  bỏ comment + thụt lề + dấu cách, dồn thành dòng dài, GIỮ NGUYÊN mọi tên
-             (đây là mức mặc định — file vẫn đọc được, không giống obfuscate)
+    single   wrapper một dòng: khôi phục mã light và biên dịch qua loadstring khi chạy
+             (mặc định build; cần loadstring, không phải obfuscate)
     full     compact + đổi tên local cấp chunk thành tên ngẫu nhiên (trông như obfuscate,
              chỉ dùng khi thật cần giấu tên)
 
@@ -345,17 +346,40 @@ def _token_signature(tokens: list[Token], mapping: dict[str, str] | None = None)
     return sig
 
 
+def _quote_piece(value: str) -> str:
+    """Quote a chunk as Luau source without literal newlines or loss of Unicode."""
+    escaped = []
+    for char in value:
+        o = ord(char)
+        if char == "\\": escaped.append("\\\\")
+        elif char == '"': escaped.append('\\"')
+        elif char == "\n": escaped.append("\\n")
+        elif char == "\r": escaped.append("\\r")
+        elif char == "\t": escaped.append("\\t")
+        elif o < 32 or o == 127: escaped.append("\\%03d" % o)
+        else: escaped.append(char)
+    return '"' + "".join(escaped) + '"'
+
+
+def _single_wrapper(source: str) -> str:
+    # Small string literals keep parser complexity bounded while the reconstructed
+    # source retains the newlines needed by old mobile Luau compilers.
+    chunks = [_quote_piece(source[i:i + 2048]) for i in range(0, len(source), 2048)]
+    return ('assert(type(loadstring)=="function","xNgot single-line requires loadstring; use main.min.light.lua")'
+            ';return assert(loadstring(table.concat({' + ','.join(chunks) + '})))(...)')
+
+
 def minify(text: str, level: str = "light", seed: str = "xngot", rename: bool = True) -> dict:
     """Trả về dict: code, bytes, lines, mapping, breaks, renamed, tokens."""
-    if level not in ("light", "compact", "full"):
-        raise ValueError("level phải là 'light', 'compact' hoặc 'full'")
+    if level not in ("light", "compact", "single", "full"):
+        raise ValueError("level phải là 'light', 'compact', 'single' hoặc 'full'")
     tokens = tokenize(text)
     bare = strip(tokens)
     mapping: dict[str, str] = {}
     if level == "full" and rename:
         bare, mapping = rename_chunk_locals(bare, seed)
 
-    code, breaks = emit(bare, single_line=(level != "light"))
+    code, breaks = emit(bare, single_line=(level not in ("light", "single")))
 
     # tự kiểm chứng: token stream phải trùng khớp bản gốc (sau khi áp bảng đổi tên)
     round_trip = _token_signature(strip(tokenize(code)))
@@ -365,6 +389,12 @@ def minify(text: str, level: str = "light", seed: str = "xngot", rename: bool = 
             if a != b:
                 raise SystemExit("minify: token lệch ở vị trí %d: gốc %r → ra %r" % (i, a, b))
         raise SystemExit("minify: số token khác nhau (%d → %d)" % (len(expected), len(round_trip)))
+
+    if level == "single":
+        code = _single_wrapper(code)
+        breaks = 0
+        if "\n" in code or "\r" in code:
+            raise ValueError("single: wrapper contains a literal newline")
 
     return {
         "code": code,

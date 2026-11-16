@@ -60,10 +60,10 @@ local LIB = loadstring(game:HttpGet(
 ## Build từ source
 
 ```bash
-python3 src/build.py --release --minify light
+python3 src/build.py --release --minify
 ```
 
-Lệnh tạo `dist/main.lua` và `dist/main.min.lua`. Bản light giữ xuống dòng và đã qua kiểm tra bằng Luau cũ với giới hạn 200 registers. Vẫn cần executor Roblox để test lúc chạy.
+Lệnh tạo `dist/main.lua` và `dist/main.min.lua` chỉ một dòng sau credit. Wrapper một dòng cần `loadstring`, dựng lại mã light khi chạy; nếu cần, dùng `main.min.light.lua` trong ZIP hoặc build với `--minify light`. Compile thành công không thay thế test trong Roblox.
 
 ---
 
@@ -129,7 +129,7 @@ Thêm thành phần vào tab bằng `Tab:Button`, `Tab:Toggle`, `Tab:Slider`, `T
 ```lua
 Main:Section({ Title = "Cơ bản", Default = true })
 Main:Paragraph({ Title = "Chào bạn", Desc = "Chọn một tính năng bên dưới." })
-Main:Button({ Title = "Làm mới", Icon = "refresh-cw", Callback = function()
+Main:Button({ Title = "Làm mới", Callback = function()
     print("Làm mới")
 end })
 local sample = Main:Code({ Title = "Ví dụ", Code = "print('hello')" })
@@ -382,9 +382,10 @@ if Island then
     Island:MusicSearch("lofi chill")
     Island:Expand("Music")
     Island:MusicVolume(65)
-    Island:PlayMusic()
 end
 ```
+
+Tìm kiếm chạy bất đồng bộ; khi có kết quả hãy chọn bài trong player hoặc dùng `MusicSelectValue`. `PlayMusic()` chỉ đảo trạng thái bài hiện tại, không chờ kết quả tìm.
 
 ## Preset
 
@@ -510,3 +511,718 @@ Tạo `Section`, `Button`, `Toggle`, `Slider`, `Input`, `Dropdown`, `Colorpicker
 ## Credit
 
 xNgot Library: Nguyễn Minh Nhật (xNgot Zume). Giao diện và engine key: [Ophyn UI](https://github.com/snowdevlol/OphynUI). UI cửa sổ phát triển từ [Wind UI](https://github.com/Footagesus/WindUI).
+
+---
+
+# Ví dụ hub hoàn chỉnh
+
+Đây là **một script hoàn chỉnh**, không phải các đoạn rời. Trước tiên đặt `main.lua` **mới** vào workspace của executor. Ví dụ không mở demo, không phụ thuộc GitHub và chưa bật key; xem mục Key system nếu cần khóa.
+
+```lua
+getgenv().xNgotLibraryOnly = true
+local chunk, err = loadstring(readfile("main.lua"))
+assert(chunk, err)
+local LIB = chunk()
+
+local Window = LIB:CreateWindow({
+    Title = "Hub của tôi", Author = "Ví dụ", Icon = "sparkles",
+    Size = UDim2.fromOffset(580, 420),
+    Folder = "MyHub", FileSaveName = "settings.json",
+    AutoSave = true, SettingsUI = true, Loading = false,
+})
+local Main = Window:Tab({ Title = "Main", Icon = "house" })
+Main:Section({ Title = "Điều khiển", Default = true })
+local status = Main:Paragraph({ Title = "Trạng thái", Desc = "Sẵn sàng" })
+local enabled = Main:Toggle({
+    Title = "Bật tính năng", Default = false,
+    Callback = function(value) status:SetDesc(value and "Đã bật" or "Đã tắt") end,
+})
+Main:Slider({
+    Title = "Giá trị", Value = { Min = 0, Max = 100, Default = 25 }, Step = 5,
+    Callback = function(value) print("Giá trị:", value) end,
+})
+Main:Input({ Title = "Tên", Placeholder = "Nhập nội dung",
+    Callback = function(text) print("Tên:", text) end,
+})
+Main:Dropdown({ Title = "Chế độ", Values = {"Normal", "Fast"}, Value = "Normal",
+    Callback = function(value) print("Chế độ:", value) end,
+})
+Main:Button({ Title = "Thử thông báo", Callback = function()
+    LIB:Notify({ Title = "xNgot", Content = "Xin chào!", Kind = "success", Duration = 3 })
+end })
+Window:SelectTab("Main")
+```
+
+## Khi chạy sẽ xảy ra gì?
+
+1. Chế độ library-only trả về `LIB`, không chạy demo đi kèm.
+2. `CreateWindow` thay cửa sổ xNgot đang hoạt động; không chủ đích xóa UI khác của game.
+3. `Window:Tab` trả về tab; `Section` trở thành nơi chứa các control tạo sau đó trên tab.
+4. Callback của control có trạng thái có thể chạy ngay với mặc định hoặc dữ liệu đã lưu. Tạo các đối tượng được callback dùng, như `status`, **trước** control.
+5. `SettingsUI = true` tạo tab Settings và Island nếu khởi tạo thành công. `Loading = false` tắt loader khi không bật key gate.
+
+> Ví dụ chưa được kiểm chứng trên mọi game/executor Roblox. API của executor có thể khác nhau.
+
+---
+
+# Chi tiết từng control
+
+Các hàm tạo bên dưới được gọi trên `Tab`. Đặt `Title` **khác nhau trong cùng tab**, vì control có trạng thái dùng tên ban đầu làm khóa lưu cấu hình. `SetTitle` sau đó không tự chuyển khóa cũ sang tên mới.
+
+| Thành phần | Tùy chọn | Callback / cách hoạt động |
+| --- | --- | --- |
+| `Button` | `Title`, `Desc`, `Locked`, `Callback` | Chạy khi nhấn. Bản này không đọc `Icon` cho Button. |
+| `Toggle` | `Title`, `Desc`, `Default` hoặc `Value`, `Icon`, `Locked`, `Callback` | Boolean; callback chạy lúc tạo và khi `:Set`. Tránh đặt `Default` và `Value` trái nhau. |
+| `Slider` | `Title`, `Desc`, `Value = {Min, Max, Default}`, `Step`, `Locked`, `Callback` | Số; giới hạn theo khoảng và bước; callback chạy lúc tạo và thay đổi. `:Set` trả giá trị hoặc `nil` nếu ngoài khoảng. |
+| `Input` | `Title`, `Desc`, `Placeholder`, `Default` / `Value`, `ClearTextOnFocus`, `MultiLine`, `Locked`, `Callback` | Chuỗi; callback chạy lúc tạo, mất focus và `:Set`. |
+| `Dropdown` | `Title`, `Desc`, `Values`, `Value` / `Default`, `Multi`, `AllowNone`, `Locked`, `Callback` | Chọn một trả chuỗi; chọn nhiều trả bảng; callback có thể chạy khi tạo. |
+| `Colorpicker` | `Title`, `Desc`, `Default` / `Value`, `Locked`, `Callback` | Callback nhận `Color3`; `:Get()` lấy màu hiện tại; callback chạy lúc tạo. |
+| `Section` | `Title`, `Default`, `TextXAlignment` | Nhóm thu gọn; trở thành container cho control tạo tiếp trên tab đó. |
+| `Paragraph` | `Title`, `Desc`, `RichText` | Nội dung chữ, không tương tác. |
+| `Code` | `Title`, `Code` | Hiển thị code, không thực thi. |
+| `Discord` | `Name`, `Desc`, `Avatar`, `InviteLink`, `InviteCode` | Thẻ mời; copy/tham gia tùy executor. |
+| `InfoNguyenNhat` | `Name`, `Bio`, `Avatar`, `Badges` | Thẻ thông tin. |
+
+## Các hàm của object trả về
+
+| Object | Hàm |
+| --- | --- |
+| Button | `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Toggle | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Slider | `Set`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Input | `Set`, `SetTitle`, `SetDesc`, `SetPlaceholder`, `Lock`, `Unlock`, `Destroy` |
+| Dropdown | `Select`, `Refresh`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Colorpicker | `Set`, `Get`, `SetTitle`, `SetDesc`, `Lock`, `Unlock`, `Destroy` |
+| Section | `SetTitle`, `SetOpen`, `Toggle`, `Destroy` |
+| Paragraph | `SetTitle`, `SetDesc`, `Destroy` |
+| Code | `SetTitle`, `SetCode`, `Destroy` |
+| Discord | `SetInvite`, `Destroy` |
+| InfoNguyenNhat | `SetName`, `SetBio`, `SetAvatar`, `Destroy` |
+
+## Chọn một hoặc nhiều
+
+```lua
+local picker = Main:Dropdown({
+    Title = "Mục tiêu", Values = {"A", "B", "C"},
+    Multi = true, AllowNone = true, Value = {"A"},
+    Callback = function(values)
+        for _, value in ipairs(values) do print(value) end
+    end,
+})
+picker:Select({"B"}) -- đảo trạng thái mục B khi chọn nhiều
+picker:Refresh({"A", "B", "C", "D"}) -- dựng lại và reset lựa chọn
+```
+
+`Refresh` reset lựa chọn; gọi `Select` sau đó nếu cần. `AllowNone` khác nhau giữa chọn một và nhiều; khi chọn một, callback cho None nhận chuỗi rỗng. Chỉ chọn giá trị có trong danh sách. Màu được giữ ở mục đã chọn thể hiện trạng thái lựa chọn, không phải hiệu ứng nhấn bị kẹt.
+
+## Nhóm và nội dung
+
+```lua
+local section = Main:Section({Title = "Tùy chọn", Default = true})
+Main:Paragraph({Title = "Gợi ý", Desc = "<b>Chữ đậm</b>", RichText = true})
+section:SetOpen(false)
+section:SetOpen(true)
+local card = Main:InfoNguyenNhat({Name = "Developer", Bio = "Xin chào", Badges = {"Dev"}})
+card:SetBio("Đã cập nhật")
+```
+
+`Section` không phải tab mới; tiếp tục gọi `Main:Button(...)` v.v. Muốn bắt đầu nhóm khác, tạo section khác trên cùng tab.
+
+---
+
+# API cửa sổ và lưu trữ
+
+## Vòng đời và điều hướng
+
+| Hàm | Công dụng |
+| --- | --- |
+| `Window:Tab({Title, Icon})` | Tạo tab. |
+| `SelectTab(nameOrIndex)` | Chọn theo tên hoặc số thứ tự tab người dùng; trả boolean. |
+| `Show()`, `Hide()`, `Toggle(state)` | Hiện/ẩn; key gate có thể chặn mở trước khi xác thực xong. |
+| `SetToggleKey(key)` | Nhận `Enum.KeyCode` hoặc tên phím, trả phím hiện tại. |
+| `SetToggleButtonPlatform("Both" hoặc "Mobile")` | Chọn nền tảng cho nút nổi; giá trị khác được đưa về Both. |
+| `GetToggleButtonPlatform()` | Lấy cài đặt hiện tại. |
+| `EditOpenButton(options)` | Chỉnh nút nổi, trả về GUI object. |
+| `Divider()`, `OpenUISettings()` | Thêm đường phân cách sidebar / mở tab Settings. |
+| `Dialog(options)` | Mở hộp thoại; object trả về có `:Close()`. |
+| `Destroy()` | Dọn cửa sổ, gọi lại an toàn. Tạo cửa sổ xNgot mới sẽ thay cửa sổ cũ. |
+
+```lua
+Window:SetToggleKey(Enum.KeyCode.RightShift)
+Window:SetToggleButtonPlatform("Mobile")
+Window:EditOpenButton({Title = "Mở", Icon = "house", ShowText = true})
+Window:Hide()
+```
+
+`EditOpenButton` còn nhận `OpenIcon`, `Size`, `Position`, `BackgroundColor3`, `TextColor3`, `IconColor3`, `OpenIconColor3`, `CornerRadius`.
+
+## Lưu cấu hình
+
+| Hàm | Công dụng |
+| --- | --- |
+| `GetConfigPath()` | Trả đường dẫn thực tế theo `Folder` và `FileSaveName`. |
+| `SaveConfig()` | Chủ động ghi, gồm UI settings; trả kết quả thành công. |
+| `DeleteConfig()` | Xóa file nếu executor hỗ trợ; trả kết quả/lỗi. Không tự reset control đang nằm trong bộ nhớ. |
+| `ForgetSavedKey()` | Có khi key gate thiết lập hàm; xóa key đã lưu nếu được hỗ trợ. |
+
+`AutoSave = false` tắt ghi tự động; `SaveConfig()` vẫn chủ động thử ghi. Dữ liệu lưu local, không mã hóa, phụ thuộc API file của executor. `DeleteConfig` không xóa nhạc đã tải hay key được lưu riêng.
+
+## API giao diện
+
+`SetUISettings(table, save)` khởi đầu từ mặc định và áp các trường đã đưa vào; đây **không phải** thao tác vá từng trường lên toàn bộ cài đặt trước đó. Khi muốn giữ, hãy truyền bảng đầy đủ. `save = false` bỏ qua yêu cầu lưu tương ứng.
+
+```lua
+local settings = Window:GetUISettings()
+settings.AccentColor = Color3.fromRGB(0, 170, 255)
+settings.Overrides = nil -- tự xác định các trường cần override
+Window:SetUISettings(settings, true)
+Window:SetUISize(580, 420, true)
+print(Window:ExportUISettings())
+```
+
+Các helper khác thuộc Settings gồm `GetUILanguage`, `SetUILanguage` (hiện chỉ tiếng Anh) và `RefreshAdminAvatar` (khi thẻ admin được tạo). Các hàm khác: `GetUIOverrides`, `ClearUIOverride(key, save)`, `GetUIPresets`, `ApplyUIPreset(name, save)`, `UseOriginalUI(save)`, `GetUISize`, `ResetUISize(save)`, `SaveUISettings`, `ImportUISettings(json, save)`, `ResetUISettings(save)`, `SaveUIProfile(name)`, `LoadUIProfile(name, save)`, `GetUIProfileNames`, `DeleteUIProfile(name)`. Profile/export có version; profile cũ có thể bị từ chối. Hãy dùng `GetUIPresets()` để lấy tên thật.
+
+`SetUISize` giới hạn rộng 420–1000, cao 300–800. UI bản này hiện chỉ tiếng Anh; hàm thuộc phần Settings như `GetUILanguage` có thể không tồn tại khi `SettingsUI = false`.
+
+---
+
+# API Dynamic Island
+
+Dùng `local island = Window:GetDynamicIsland()` và kiểm tra `if island then ... end`. Bridge được tạo khi bật `SettingsUI` và khởi tạo thành công. Island chỉ hiện sau khi menu và loader/key gate hoàn tất; `Enable(true)` không vượt qua key gate.
+
+## Hiển thị và hoạt động
+
+| Hàm | Cách hoạt động |
+| --- | --- |
+| `Notify(title, message, kind, duration)` | Thông báo; trả `false` khi island tắt. |
+| `GameplayActivity(title, message, duration, kind)` | Hoạt động tạm thời, thời lượng giới hạn 3–30 giây. |
+| `Enable(boolean)` | Bật hoặc ẩn island. |
+| `Expand(page)`, `Collapse()` | Mở trang hoặc thu gọn. Trang thường dùng: `Home`, `Music`, `Cross`. |
+| `Set("Fps" / "Ping" / "Clock", boolean)` | Bật/tắt hoạt động. Một số key đã có trong Settings cũng có thể chỉnh bằng tên. |
+| `Theme(index)`, `Accent(index)` | Chọn bảng màu/màu nhấn bằng chỉ số, có giới hạn. |
+| `State()` | Trả bảng `Cross`, `Playing`, `MusicIndex`, `FPS`, `Ping`, `Timer`, `Island`. |
+| `Destroy()` | Dọn island; dùng `Window:Destroy()` để dọn toàn bộ cửa sổ. |
+
+`Window:NotifyIsland(title, message, kind, duration)` và `Window:IslandActivity(title, message, duration, kind)` là bridge trả false nếu island không sẵn sàng. Chú ý thứ tự **kind và duration** khác nhau giữa hai hàm.
+
+## Hẹn giờ và đồng hồ bấm giờ
+
+```lua
+local island = Window:GetDynamicIsland()
+if island then
+    island:Timer(120)       -- 1–86400 giây
+    island:ExtendTimer(30)
+    island:StopTimer()
+    island:WatchToggle()    -- chạy/tạm dừng
+    island:WatchLap()
+    island:WatchReset()
+end
+```
+
+## Trợ lý Cross
+
+`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui` và `Key`; `Body` và `Free` bị khóa tắt trong source. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
+
+`SetLanguage` / `Set("Language", ...)` hiện ép về tiếng Anh. Nút đổi ngôn ngữ tài liệu là độc lập với ngôn ngữ UI thư viện.
+
+---
+
+# API và cấu hình nhạc
+
+Tìm/tải nhạc phụ thuộc dịch vụ bên thứ ba, kết nối và executor. Roblox cũng có thể hạn chế phát âm thanh. Luau compiler pass không đảm bảo provider hay Delta chạy được.
+
+## Tìm và phát
+
+```lua
+local island = Window:GetDynamicIsland()
+if island then
+    local disconnect = island:OnMusicCatalogChanged(function()
+        local rows, state = island:MusicRows()
+        print("Trạng thái:", state, "số bài:", #rows)
+    end)
+    island:MusicSearch("nhac viet chill")
+    -- Tìm bất đồng bộ; gọi disconnect() khi không cần theo dõi nữa.
+end
+```
+
+`MusicSearch` trả `true` không đảm bảo việc tìm đã bắt đầu (ví dụ đang bận) hoặc đã có kết quả. Dùng `MusicSearchState()` hoặc theo dõi thay đổi catalog. Khi có kết quả, `MusicRows()` trả `rows, state`; `MusicCatalog()` trả `catalog, state, supported`. `MusicSelectValue(value, play)` chọn theo Value/tên và trả boolean. `MusicSelect(index, play)` chọn theo index; không gọi khi danh sách rỗng. `MusicPlayTrack(id, url, source)` thêm/chọn bài ngoài và trả boolean, không chứng minh phát thành công. `MusicDownloadOne` có thể chờ, trả asset string hoặc `false`.
+
+| Điều khiển | Ý nghĩa |
+| --- | --- |
+| `PlayMusic()` | Đảo phát/tạm dừng, không phải luôn luôn phát. |
+| `NextMusic(1)` / `NextMusic(-1)` | Bài tiếp / trước. |
+| `MusicVolume(n)` | Âm lượng 0–100. |
+| `MusicSpeed(n)` | Tốc độ thực tế 0.7–1.4; player có giới hạn riêng. |
+| `MusicMode(name, boolean)` | `Auto`, `Shuffle`, `RepeatOne`, `ShowIsland`. |
+| `OnMusicChanged(fn)` | Đăng ký theo dõi; hàm trả về dùng để hủy theo dõi. |
+| `MusicQueue(prompt)`, `MusicPreset(name)`, `MusicConfig()` | Helper do tích hợp Settings/Island gắn vào khi có. |
+
+## File đã tải
+
+`MusicFiles(includeSizes)` trả `files, stats`; `MusicStorage()` trả stats. `MusicLoadDownloaded()` thay catalog hiện tại bằng file local và trả số lượng. `MusicPlayFile(path)` cho biết có chọn được bài hay không. `MusicDeleteFile(path)` và `MusicClearDownloaded()` xóa file local; hàm sau trả số thành công và thất bại. Hãy xác nhận trước khi xóa.
+
+```lua
+if island then
+    local files, stats = island:MusicFiles(true)
+    print("Số file:", #files, "dung lượng:", stats.TotalText)
+    if files[1] then island:MusicPlayFile(files[1].Path) end
+end
+```
+
+## Cấu hình
+
+Đặt trước khi load bằng `getgenv().xNgotMusic = {...}` hoặc lúc chạy qua `_G.xNgotMusicConfig:Set(key, value)`. API có `Get(key)`, `Get()`, `Schema()`, `Apply()`, `OnChange(fn)`, `Preset(name)`, `Presets()`; `OnChange` trả hàm hủy theo dõi. Preset: `fast`, `quality`, `lowdata`, `vietnamese`.
+
+| Key | Mặc định | Phạm vi / ghi chú |
+| --- | --- | --- |
+| `topN` | 12 | 1–40 kết quả |
+| `sources` | youtube, soundcloud, audius | Bảng ID nguồn; UI cho chọn All hoặc một trong ba. Nguồn khác phụ thuộc dịch vụ. |
+| `region` | `auto` | `auto`, `global`, `VN`, `US`, `KR`, `JP`; ưu tiên qua từ khóa, không xác minh ngôn ngữ. |
+| `prefetchNext` | true | Chuẩn bị bài tiếp trong danh sách tại 50% khi bật Auto, tắt RepeatOne và có hơn một bài. |
+| `searchTimeout` | 12 | 2–60 giây |
+| `preferShort` | 600 | 0–7200 giây; 0 tắt ưu tiên |
+| `folder` | `xNgotLibrary/Music` | Thư mục cache local |
+| `raceTracks` | 2 | 1–4 bài thử song song trong resolve |
+| `downloadTimeout` | 200 | 20–600 giây |
+| `retries` | 2 | 0–5 |
+| `renameFiles`, `aiLearn`, `coverArt` | true | Boolean |
+| `compactRows`, `debug` | false | Boolean |
+| `showSource`, `notifyOnSearch` | true | Boolean |
+| `aiBrain` | `local` | Bản này không bật mô hình online. |
+
+Auto ưu tiên quốc gia Roblox nếu có, dự phòng locale; vùng chưa hỗ trợ/không rõ chuyển về global. Preload dùng mạng và bộ nhớ, không đảm bảo chuyển bài không trễ. Nếu preload lỗi sẽ tải theo luồng bình thường. Một số key có trong schema nhưng hiệu lực thực tế tùy source hiện tại; hãy kiểm tra trong môi trường của bạn.
+
+Để chẩn đoán, gọi `_G.xNgotMusicDoctor()` khi có và xem từng check. Cảnh báo không tự chứng minh một nguyên nhân cụ thể. Test riêng tìm kiếm, tải, API file, `getcustomasset`/`getsynasset` và phát âm thanh.
+
+---
+
+# Loader và vòng đời key
+
+## Cấu hình khởi động
+
+```lua
+local Window = LIB:CreateWindow({
+    Title = "My Hub", Icon = "sparkles",
+    Loading = {Title = "My Hub", Text = "Đang mở", Steps = {"Chuẩn bị", "Sắp xong"}, Duration = 2},
+    KeySystem = {Enabled = true, Keys = {"DEMO-KEY"}, SaveKey = false},
+})
+```
+
+Khi `KeySystem.Enabled = true` và `Style` không phải `Legacy`, luồng Ophyn tích hợp xử lý key gate. Loader không dùng Ophyn/legacy đọc `Loading.Title`, `Text`, `Steps`, `Duration`; thời gian hiện thực tế có thể lâu hơn thời lượng cấu hình. `Loading = false` tắt loader không-key, không tắt key gate đã bật. Hãy xác định đúng luồng đang test trước khi chờ một animation cụ thể.
+
+## Thứ tự và key lưu
+
+Cửa sổ được dựng trong lúc khởi động, nhưng menu và Island chờ gate vượt qua. Key đã lưu được kiểm tra lại. Nếu đóng UI key mà chưa chấp nhận, cửa sổ sẽ bị hủy. Dùng `SaveKey = false` hoặc gọi `Window:ForgetSavedKey()` khi có để test nhập lại. Lưu file cần API filesystem của executor.
+
+## Provider và độ tin cậy
+
+Key/validator local chạy phía client nên người dùng có thể sửa. Provider cần network/request và service cấu hình đúng. PandaAuth/Jnkie nạp SDK từ xa; secret Platoboost đặt ở client có thể bị đọc. Nhiều validator nghĩa là **một validator thành công là đủ**. Code và SDK bên ngoài có thể đổi; trước khi phát hành hãy test key đúng, sai và trường hợp lỗi mạng bằng tài khoản thật. Không nhúng secret thật vào ví dụ.
+
+Để tùy chỉnh UI, dùng `KeySystem.Ophyn`, ví dụ `SyncTheme = false`, `SyncFont = false`, `Theme`, `Logo`, `Title`, `Description`. Những option thực sự hỗ trợ là của vendor được nhúng, không mặc định mọi option upstream tương lai đều chạy.
+
+---
+
+# Build, test và xuất bản
+
+## Cấu trúc dự án
+
+| Đường dẫn | Công dụng |
+| --- | --- |
+| `src/modules/` | Source Luau chia module theo thứ tự; nguồn chính của thư viện. |
+| `src/manifest.json` | Thứ tự module, hash và metadata cân bằng block. |
+| `src/profiles/`, `src/stubs/` | Profile dev/release và module thay thế. |
+| `src/build.py`, `src/minify.py` | Công cụ build, minify single/light/compact/full. |
+| `dist/main.lua`, `dist/main.min.lua` | Bản release sinh ra; đưa vào repo/ZIP khi cần. |
+| `docs/site/content.py`, `details.py` | Nội dung song ngữ. |
+| `docs/site/template.html` | Giao diện HTML độc lập, CSS/JS/SVG inline. |
+| `docs/site/build.py` | Sinh HTML và manual Markdown từ nội dung. |
+| `.github/workflows/pages.yml` | Workflow Pages bằng GitHub Actions. |
+
+## Lệnh build
+
+```bash
+python3 src/build.py --check
+python3 src/build.py --release --check
+python3 src/build.py --release --minify light
+python3 -m pip install -r docs/site/requirements.txt
+python3 docs/site/build.py
+```
+
+Manifest kiểm tra hash và độ cân bằng block của module. Khi sửa module, cập nhật metadata thay vì chỉ sửa `dist`. Bản single là wrapper một dòng cần loadstring, khôi phục mã light có xuống dòng khi chạy. Bản light giữ xuống dòng trực tiếp; compact rất dài có thể gây vấn đề cho executor cũ. Compile thành công chỉ kiểm tra cú pháp/giới hạn register, không chứng minh chạy đúng trong Roblox.
+
+## Checklist trước khi phát hành
+
+1. Test khởi động, key đúng/sai, đóng/mở và thay UI xNgot cũ bằng UI mới.
+2. Trên mobile test chạm và cuộn, kéo slider, thả ngoài nút, dropdown, toggle, input; test cả chuột desktop.
+3. Test tìm/tải nhạc với dịch vụ thật, file local, tự chuyển/preload và lỗi mạng.
+4. Kiểm tra lưu/đọc/xóa config và các API executor trên thiết bị đích.
+5. Build hai bản release; cập nhật `dist/`, `docs/` trong repo rồi commit/push. ZIP local hoặc đăng Pages không tự cập nhật script raw trên GitHub.
+6. Chọn GitHub Actions làm nguồn Pages trong Settings repo và chờ workflow thành công. `https://xngotzume123.github.io/xNgotLibrary/` chỉ là URL dự kiến sau khi đăng; dùng URL thực tế GitHub cung cấp.
+
+Có thể mở `docs/index.html` để xem local nếu repo private hoặc chưa truy cập được. Điều hướng song ngữ cần JavaScript. Trang không cần font, script hay icon bên ngoài.
+
+---
+
+# Hướng dẫn control: bắt đầu tại đây
+
+Mỗi trang control là một **đoạn nối thêm**, không phải script riêng. Hãy ghép đoạn khởi tạo dưới đây với một hoặc nhiều ví dụ ở các trang tiếp theo rồi chạy. Đặt `main.lua` mới trong workspace của executor; cần `readfile` và `loadstring`.
+
+```lua
+getgenv().xNgotLibraryOnly = true
+local chunk, err = loadstring(readfile("main.lua"))
+assert(chunk, err)
+local LIB = chunk()
+local Window = LIB:CreateWindow({
+    Title = "Control examples", Folder = "ControlExamples",
+    FileSaveName = "settings.json", AutoSave = true,
+    SettingsUI = true, Loading = false,
+})
+local Tab = Window:Tab({ Title = "Main", Icon = "house" })
+Window:SelectTab("Main")
+```
+
+## Trước khi tạo control
+
+- `Tab:Section()` đổi vùng chứa cho các control tạo **sau đó**; tạo section khác để đổi vùng. `Section:_Use("Button", {...})` chỉ định vùng chứa cụ thể. Xóa section hiện tại sẽ đưa vùng chứa về tab.
+- Toggle, Slider, Input, Dropdown và Colorpicker gọi callback ngay khi tạo, với giá trị mặc định hoặc đã khôi phục. Hãy tạo đối tượng phụ thuộc trước; đừng dùng biến local đang được gán từ chính constructor của nó bên trong callback.
+- Giá trị lưu theo tên tab và **Title ban đầu** của control, không theo `Flag`. Đặt Title duy nhất trong mỗi tab. Đổi tên sau đó không tự chuyển key lưu. `AutoSave` và API file ảnh hưởng việc lưu; xem mục Window & storage.
+- `Lock()` khóa tương tác người dùng; setter bằng code vẫn có thể cập nhật và gọi callback. `Destroy()` xóa control khỏi giao diện.
+- Mobile giữ kích thước gốc. Kéo slider theo chiều ngang; vuốt dọc dùng để cuộn. Vẫn cần test thực tế trong Roblox/executor.
+
+---
+
+# Section
+
+Nhóm control trong một vùng có thể thu gọn.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local group = Tab:Section({ Title = "Actions", Default = true })
+Tab:Button({ Title = "Inside Actions", Callback = function() print("Pressed") end })
+group:SetOpen(true)
+-- group:_Use("Toggle", { Title = "Extra", Callback = function(v) print(v) end })
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title` | string | `Section` | Tiêu đề |
+| `Default` | boolean | `false` | Mở sẵn |
+| `TextXAlignment` | string | `Left` | Left, Center hoặc Right |
+
+## Đối tượng trả về
+
+`SetTitle(text)`, `SetOpen(boolean)` (returns state), `Toggle()` (returns state), `Destroy()`, `_Use(methodName, options)`
+
+## Lưu ý
+
+Control tạo sau qua `Tab` nằm trong section mới nhất, không tự quay về tab. `_Use` không đổi vùng chứa mặc định lâu dài.
+
+---
+
+# Button
+
+Thực hiện hành động khi nhấn.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local button = Tab:Button({
+    Title = "Say hello", Desc = "Run an action",
+    Callback = function() print("Hello!") end,
+})
+-- button:Lock()  -- button:Unlock()
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title` | string | `Button` | Nhãn |
+| `Desc` | string | `nil` | Mô tả tùy chọn |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function() | `no-op` | Chạy khi nhấn |
+
+## Đối tượng trả về
+
+`SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Callback không nhận tham số.
+
+---
+
+# Toggle
+
+Bật hoặc tắt một tính năng.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local toggle = Tab:Toggle({
+    Title = "Auto action", Desc = "Example switch", Default = false, Icon = "zap",
+    Callback = function(enabled) print("Auto action:", enabled) end,
+})
+toggle:Set(true)
+-- toggle:Set() -- invert
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title` | string | `Toggle` | Nhãn và key lưu ban đầu |
+| `Desc` | string | `nil` | Mô tả tùy chọn |
+| `Default / Value` | boolean | `false` | Trạng thái đầu; nên chỉ dùng Default |
+| `Icon` | string | `nil` | Tên icon tùy chọn |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function(boolean) | `no-op` | Nhận trạng thái mới |
+
+## Đối tượng trả về
+
+`Set(boolean)` or `Set()` to invert, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Callback chạy khi tạo và sau Set; trạng thái đã lưu có thể ghi đè Default. Tránh truyền đồng thời Default=false và Value=true vì biểu thức fallback có thể chọn Value.
+
+---
+
+# Slider
+
+Chọn số trong một khoảng.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local slider = Tab:Slider({
+    Title = "Speed", Value = { Min = 0, Max = 100, Default = 25 }, Step = 5,
+    Callback = function(value) print("Speed:", value) end,
+})
+slider:Set(40)
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Slider / nil` | Nhãn và mô tả |
+| `Value.Min / Max` | number | `0 / 100` | Giới hạn khoảng |
+| `Value.Default` | number | `Min` | Giá trị đầu; cũng hỗ trợ Default ở ngoài |
+| `Step` | number | `1` | Bước dương khi thay đổi |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function(number) | `no-op` | Nhận số |
+
+## Đối tượng trả về
+
+`Set(number)`, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Giá trị được giới hạn trong khoảng; Step không hợp lệ hoặc không dương trở về 1. Callback cũng chạy khi tạo và Set.
+
+---
+
+# Input
+
+Nhận văn bản, có thể nhiều dòng.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local input = Tab:Input({
+    Title = "Nickname", Placeholder = "Enter a name", Default = "Guest",
+    Callback = function(text) print("Nickname:", text) end,
+})
+input:Set("Player")
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Input / nil` | Nhãn và mô tả |
+| `Placeholder` | string | `empty` | Gợi ý trong ô nhập |
+| `Default / Value` | string | `empty` | Nội dung ban đầu |
+| `ClearTextOnFocus` | boolean | `false` | Xóa khi focus |
+| `MultiLine` | boolean | `false` | Cho phép nhiều dòng |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function(string) | `no-op` | Nhận chuỗi |
+
+## Đối tượng trả về
+
+`Set(text)`, `SetTitle(text)`, `SetDesc(text)`, `SetPlaceholder(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Callback chạy khi tạo, khi mất focus và sau Set; không chạy theo từng ký tự.
+
+---
+
+# Dropdown
+
+Chọn một hoặc nhiều mục.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local mode = Tab:Dropdown({
+    Title = "Mode", Values = {"Normal", "Fast"}, Value = "Normal",
+    Callback = function(value) print("Mode:", value) end,
+})
+mode:Select("Fast")
+local colors = Tab:Dropdown({
+    Title = "Colors", Values = {"Red", "Blue", "Green"},
+    Multi = true, AllowNone = true, Value = {"Red"},
+    Callback = function(values) print("Selected:", table.concat(values, ", ")) end,
+})
+colors:Select({"Blue", "Green"})
+-- mode:Refresh({"Normal", "Fast", "Slow"})
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Dropdown / nil` | Nhãn và mô tả |
+| `Values` | array of strings | `{}` | Danh sách lựa chọn |
+| `Value / Default` | string or array | `nil` | Lựa chọn ban đầu |
+| `Multi` | boolean | `false` | Cho phép chọn nhiều |
+| `AllowNone` | boolean | `false` | Cho phép không chọn |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function(value) | `no-op` | Một mục: string hoặc nil; nhiều mục: mảng |
+
+## Đối tượng trả về
+
+`Select(value)` (returns selected value or nil), `Refresh(values)` (returns selection), `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Callback chạy khi tạo và Select. Với multi, Select đảo trạng thái từng mục được truyền, không thay toàn bộ lựa chọn. Một lựa chọn với AllowNone biểu diễn None bằng chuỗi rỗng trong callback; multi nhận mảng. Refresh đặt lại lựa chọn và lưu nhưng không gọi Callback. Multi với AllowNone=false chọn mục đầu nếu ban đầu chưa chọn.
+
+---
+
+# Colorpicker
+
+Chọn màu và nhận giá trị Color3.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local color = Tab:Colorpicker({
+    Title = "Accent example", Default = "#66AAFF",
+    Callback = function(value) print("Color:", value) end,
+})
+color:Set(Color3.fromRGB(255, 120, 80))
+print(color:Get())
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title / Desc` | string | `Color / empty` | Nhãn và mô tả |
+| `Default / Value` | Color3, hex string or RGB table | `white` | Màu ban đầu |
+| `Locked` | boolean | `false` | Khóa tương tác |
+| `Callback` | function(Color3) | `no-op` | Nhận Color3 |
+
+## Đối tượng trả về
+
+`Set(value)`, `Get()` → Color3, `SetTitle(text)`, `SetDesc(text)`, `Lock()`, `Unlock()`, `Destroy()`
+
+## Lưu ý
+
+Nhận Color3, `#RRGGBB` hoặc bảng RGB. Đầu vào không hợp lệ trở về trắng. Callback chạy khi tạo và Set; ví dụ này không tự đổi theme toàn UI.
+
+---
+
+# Paragraph
+
+Hiển thị tiêu đề và nội dung.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local status = Tab:Paragraph({ Title = "Status", Desc = "Ready" })
+status:SetDesc("Running")
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title` | string | `Paragraph` | Tiêu đề |
+| `Desc` | string | `nil` | Nội dung |
+| `RichText` | boolean | `false` | Cho phép tag Roblox RichText |
+
+## Đối tượng trả về
+
+`SetTitle(text)`, `SetDesc(text)`, `Destroy()`
+
+## Lưu ý
+
+Đây là phần hiển thị, không phải control lưu giá trị.
+
+---
+
+# Code
+
+Hiển thị khối code trong cửa sổ.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local code = Tab:Code({ Title = "Example", Code = 'print("Hello")' })
+code:SetCode('print("Updated")')
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Title` | string | `Code` | Tiêu đề |
+| `Code` | string | `empty` | Nội dung code |
+
+## Đối tượng trả về
+
+`SetTitle(text)`, `SetCode(text)`, `Destroy()`
+
+## Lưu ý
+
+Chỉ hiển thị văn bản; không thực thi đoạn đó.
+
+---
+
+# Discord & InfoNguyenNhat
+
+Hiển thị thẻ cộng đồng và hồ sơ.
+
+Trước tiên xem trang **Control: bắt đầu tại đây**; thêm đoạn này bên dưới phần khởi tạo.
+
+```lua
+local discord = Tab:Discord({ Name = "Community", Desc = "Join us", InviteLink = "discord.gg/example" })
+local info = Tab:InfoNguyenNhat({ Name = "Developer", Bio = "Building a hub" })
+info:SetBio("Welcome!")
+-- discord:SetInvite("discord.gg/example", "example")
+```
+
+## Tùy chọn
+
+| Tên | Kiểu | Mặc định | Ý nghĩa |
+| --- | --- | --- | --- |
+| `Discord.Avatar` | string | `rbxassetid://0` | Asset avatar |
+| `Discord.Name / Desc` | string | `Discord Server / empty` | Tên và mô tả server |
+| `Discord.InviteLink / InviteCode` | string | `discord.gg/xxxxxxx / nil` | Link mời và code tùy chọn |
+| `Info.Avatar / Name / Bio` | string | `rbxassetid://0 / Nguyen Nhat / empty` | Thông tin hồ sơ |
+| `Info.Badges` | table | `{}` | Danh sách badge |
+
+## Đối tượng trả về
+
+Discord: `SetInvite(link, code)`, `Destroy()`. Info: `SetAvatar(id)`, `SetName(text)`, `SetBio(text)`, `Destroy()`, `Info.AddSocialIcon(icon, copyValue, order)` (dot call).
+
+## Lưu ý
+
+Hoạt động của invite, avatar và mạng phụ thuộc executor/dịch vụ; ví dụ link chỉ là placeholder.

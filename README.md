@@ -16,7 +16,7 @@
 
 - [Trang tài liệu tương tác](docs/index.html) — tiếng Việt / English, tìm kiếm, hướng dẫn key system.
 - [Hướng dẫn tiếng Việt](docs/LIBRARY.vi.md) · [English manual](docs/LIBRARY.en.md).
-- Build: `python3 src/build.py --release --minify` (xuất `dist/main.lua` và `dist/main.min.lua`).
+- Build: `python3 src/build.py --release --minify` (xuất `dist/main.lua` và `dist/main.min.lua` một dòng sau credit). Bản một dòng là wrapper gọi `loadstring` để nạp mã light; nếu executor không hỗ trợ `loadstring`, dùng `main.lua` hoặc `main.min.light.lua` trong ZIP.
 - Trang Pages chỉ hoạt động sau khi commit/push và bật GitHub Actions trong Settings → Pages.
 
 ---

@@ -4,7 +4,7 @@
 Cách dùng:
     python3 src/build.py                     # build dev   -> dist/xngot_studio.lua
     python3 src/build.py --release           # build phát hành -> dist/main.lua
-    python3 src/build.py --release --minify  # + bản minify (light) -> dist/main.min.lua
+    python3 src/build.py --release --minify  # + bản minify (single) -> dist/main.min.lua
     python3 src/build.py --minify light      # nhẹ tay: chỉ bỏ comment
     python3 src/build.py --minify full       # đổi tên định danh + dồn 1 dòng
     python3 src/build.py --check             # kiểm tra module, không ghi gì
@@ -316,10 +316,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default=None, help="đường dẫn xuất")
     parser.add_argument("--check", action="store_true", help="chỉ kiểm tra")
     parser.add_argument("--stats", action="store_true", help="in thống kê module")
-    parser.add_argument("--minify", nargs="?", const="light", default=None,
-                        choices=["light", "compact", "full"],
-                        help="xuất thêm bản minify: light (mặc định, giữ xuống dòng), "
-                             "compact (dồn dòng, giữ tên) hoặc full (đổi tên)")
+    parser.add_argument("--minify", nargs="?", const="single", default=None,
+                        choices=["light", "compact", "single", "full"],
+                        help="xuất thêm bản minify: single (mặc định, một dòng), light (giữ dòng), "
+                             "compact (dồn dòng) hoặc full (đổi tên)")
     parser.add_argument("--no-rename", action="store_true",
                         help="giữ nguyên tên định danh kể cả khi chọn mức full")
     parser.add_argument("--tag-modules", action="store_true", help="chèn `-- [module]` giữa các module")
@@ -387,8 +387,14 @@ def main(argv: list[str] | None = None) -> int:
         result = _minify.minify(bundle, args.minify, seed=seed, rename=not args.no_rename)
         # Minification removes comments, so reinsert the requested banner.
         notice = banner if banner else ("--[[xNgot Library v%s · %s]]\n" % (manifest["version"], profile["name"]))
+        # Preserve the vendored Ophyn MIT notice in every minified distribution.
+        license_tokens = [tok.text for tok in _minify.tokenize(bundle)
+                          if tok.kind == "comment" and "Ophyn UI / snowdev: MIT License" in tok.text]
+        if len(license_tokens) != 1:
+            raise ValueError("missing or ambiguous Ophyn license notice")
+        license_inline = " ".join(license_tokens[0].split())
         with open(min_path, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(notice + result["code"])
+            fh.write(notice + license_inline + result["code"])
         if not args.quiet:
             pct = 100.0 * result["bytes"] / max(1, size)
             print(Colors.ok("✔ minify %s" % os.path.relpath(min_path, REPO))
