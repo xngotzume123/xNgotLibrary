@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="docs/demo/hero.png" alt="xNgot Library" width="100%">
+## Wacth Demo (Click To Image)
+[![Watch Video](docs/demo/hero.png)](https://files.catbox.moe/30u99y.mp4)
 
 # xNgot Library
 
