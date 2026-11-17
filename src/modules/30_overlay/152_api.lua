@@ -48,7 +48,6 @@
 		    elseif name == "Clock" then setClockActivity(value and true or false)
 		    elseif name == "Language" then
 		        Settings.Language = "en"  
-		        Cross.Lang = "en"
 		        Fwd.applyLanguage()
 		        Fwd.applyLanguage()
 		    elseif Settings[name] ~= nil then
@@ -211,6 +210,28 @@
 			return findAndPlay()
 		end
 
+        -- Local AI offline playback: verify the path against scanned cache and never resolve URLs.
+        function API:MusicPlayCachedFile(path)
+            if not self.Enabled then return false,"Music player is disabled." end
+            if Music.Auto then return false,"Disable Auto play in Music settings before offline playback." end
+            local remote=Music.Remote
+            if not remote or type(remote.ScanDownloaded)~="function" or type(Music.PlayAsset)~="function" then return false,"Music cache unavailable." end
+            local ok,files=pcall(remote.ScanDownloaded,false)
+            if not ok or type(files)~="table" then return false,"Could not read music cache." end
+            local match
+            for _,f in ipairs(files) do if type(f)=="table" and f.Path==path then match=f;break end end
+            if not match then return false,"Downloaded file not found." end
+            local getter=getcustomasset or getsynasset
+            if type(getter)~="function" then return false,"Executor cannot load local audio." end
+            local got,asset=pcall(getter,path)
+            if not got or type(asset)~="string" or asset=="" then return false,"Cannot load cached audio." end
+            local colors=Music.Covers;local cover=type(colors)=="table" and colors[1]
+            if not cover then return false,"Music artwork palette unavailable." end
+            local played,index=pcall(Music.PlayAsset,{Name=tostring(match.Title or match.FileName or "Track"),Artist=tostring(match.Artist or ""),
+                Mood="Downloaded",Remote=true,Source="local",CachedPath=path,Downloaded=true,Asset=asset,A=cover[1],B=cover[2]})
+            return played and type(index)=="number" and index>0,played and (type(index)=="number" and index>0 and "Cached audio requested; actual playback depends on the client." or "Could not play cached audio.") or tostring(index)
+        end
+
 		function API:MusicDeleteFile(path)
 			local engine = Music.Remote and Music.Remote.Engine
 			if not engine or type(engine.deleteDownloaded) ~= "function" then return false, "Engine chua san sang" end
@@ -279,7 +300,14 @@
 		end
 
 		function API:AiPermission(name,on)
-		    if name == "Body" or name == "Free" then Cross.Perm[name] = false; return false end
+		    if name == "Free" then Cross.Perm.Free = false; return false end
+		    if name == "Body" then
+		        Cross.Perm.Body = on and true or false
+		        if not Cross.Perm.Body and __hostWindow and __hostWindow.LocalAI and __hostWindow.LocalAI.Movement then
+		            pcall(__hostWindow.LocalAI.Movement.StopAll)
+		        end
+		        return Cross.Perm.Body
+		    end
 		    if name == "Ui" or name == "Key" then Cross.Perm[name] = on and true or false end
 		end
 		function API:AiState()
@@ -288,7 +316,7 @@
 		        if Cross.Chat[i].Role == "cross" then reply = tostring(Cross.Chat[i].Text or ""); break end
 		    end
 		    return {Enabled = Cross.Enabled == true, Thinking = Cross.Thinking == true,
-		        Reply = reply, Version = Cross.ChatVersion, Pending = Cross.Pending ~= nil}
+		        Reply = reply, Version = Cross.ChatVersion, Pending = Cross.Pending ~= nil or (__hostWindow and __hostWindow.LocalAI and (__hostWindow.LocalAI.Pending ~= nil or (__hostWindow.LocalAI.Movement and __hostWindow.LocalAI.Movement.Pending ~= nil))) or false, Language = Cross.Lang}
 		end
 		function API:AiTeach(phrase, command) return Cross.Teach(phrase, command) end
 		function API:AiForgetPhrase(phrase) return Cross.ForgetPhrase(phrase) end

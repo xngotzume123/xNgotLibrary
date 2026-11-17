@@ -9,6 +9,7 @@
 			function Window:Destroy()
 				if windowDestroyed then return end
 				windowDestroyed = true
+                if self.LocalAI and type(self.LocalAI.Destroy)=="function" then pcall(self.LocalAI.Destroy,self.LocalAI) end
 				if self._AIControls then table.clear(self._AIControls) end
 				if _G.__xNgotActiveWindow == self then _G.__xNgotActiveWindow = nil end
 				if guiDestroyConnection then guiDestroyConnection:Disconnect(); guiDestroyConnection = nil end

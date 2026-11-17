@@ -175,6 +175,14 @@
 
 			end
 
+            if not windowDestroyed then
+                local okLocalAI, localAIError = pcall(__xNgotMountLocalAI, Window)
+                if not okLocalAI then
+                    Window.LocalAIError = tostring(localAIError)
+                    if Window.LocalAI and type(Window.LocalAI.Destroy)=="function" then pcall(Window.LocalAI.Destroy,Window.LocalAI) end
+                    warn("[xNgot/LocalAI V2] " .. Window.LocalAIError)
+                end
+            end
 			if windowDestroyed then return Window end
 			WindowByTitle[Window.Title] = Window
 			startupMenuBuilt = true

@@ -23,7 +23,7 @@
 		        MarkText = "",
 		        Pose = {},
 		        Target = {},
-		        Perm = { Ui = true, Body = false, Free = false, Key = true },
+		        Perm = { Ui = true, Body = true, Free = false, Key = true },
 		        Busy = 0,
 		        Idle = "neutral",
 		        Inputs = {},

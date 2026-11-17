@@ -166,8 +166,8 @@
 
 		        View.crossShell = Cross.buildShell(View.crossTerm, {
 		            Position = UDim2.fromOffset(12, 12),
-		            Size = UDim2.fromOffset(316, 134),
-		            Rows = 7,
+		            Size = UDim2.fromOffset(316, 94),
+		            Rows = 4,
 		            Radius = 12,
 		            ZIndex = 3,
 		            Active = function()
@@ -179,6 +179,39 @@
 		        end)
 		        View.crossChatBtn.TextSize = 11
 		        View.crossChatBtn.ZIndex = 8
+
+		        -- The shell sends the same natural-language commands as chat; it is not an OS shell.
+		        View.crossShellField = box({
+		            Name = "ShellField", Position = UDim2.fromOffset(12, 112), Size = UDim2.fromOffset(264, 32),
+		            BackgroundColor3 = Static.White, BackgroundTransparency = 0.9, ZIndex = 4, Parent = View.crossTerm,
+		        })
+		        corner(16, View.crossShellField)
+		        View.crossShellBox = new("TextBox", {
+		            Name = "ShellInput", Position = UDim2.fromOffset(14, 0), Size = UDim2.new(1, -28, 1, 0),
+		            BackgroundTransparency = 1, BorderSizePixel = 0, ClearTextOnFocus = false, Text = "",
+		            PlaceholderText = translate("Nhắn cho Cross…"), PlaceholderColor3 = Static.Gray,
+		            FontFace = Fonts.Regular, TextSize = 13, TextColor3 = Static.White,
+		            TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+		            ZIndex = 6, Parent = View.crossShellField,
+		        })
+		        raw(View.crossShellBox)
+		        table.insert(Cross.Inputs, View.crossShellBox)
+		        local function crossShellSend()
+		            local value = View.crossShellBox.Text
+		            View.crossShellBox.Text = ""
+		            if value == "" then return end
+		            if #value > 500 then
+		                Cross.say("cross", Cross.Lang == "en" and "Request too long (maximum 500 bytes)." or "Yêu cầu quá dài (tối đa 500 byte).")
+		                return
+		            end
+		            Cross.ask(value)
+		        end
+		        View.crossShellBox.FocusLost:Connect(function(enterPressed)
+		            View.Touched = os.clock()
+		            if enterPressed then crossShellSend() end
+		        end)
+		        View.crossShellBox.InputBegan:Connect(function() View.SeekStamp = os.clock(); View.Touched = os.clock() end)
+		        View.crossShellSend = action(View.crossTerm, 282, 112, 46, 32, "Gửi", Static.Blue, crossShellSend)
 
 		        function View.crossMode(mode, instant)
 		            if View.CrossMode == mode and not instant then
@@ -207,9 +240,9 @@
 		            end
 		            if not chat then
 		                View.crossShell.Refresh(true, false)
-		                pcall(function()
-		                    View.crossBox:ReleaseFocus()
-		                end)
+		                pcall(function() View.crossBox:ReleaseFocus() end)
+		            else
+		                pcall(function() View.crossShellBox:ReleaseFocus() end)
 		            end
 		            View.Touched = os.clock()
 		        end
@@ -232,7 +265,7 @@
 		            end
 		            local focused = false
 		            pcall(function()
-		                focused = View.crossBox:IsFocused()
+		                focused = View.crossBox:IsFocused() or View.crossShellBox:IsFocused()
 		            end)
 		            if focused or Cross.Busy > 0 or os.clock() < Cross.SpeakUntil then
 		                View.Touched = os.clock()

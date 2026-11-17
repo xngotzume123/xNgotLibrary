@@ -196,6 +196,25 @@
 		            end
 		        end
 
+		        -- Mirror actual Cross messages only; no simulated command or shell execution.
+		        do
+		            local say = Cross.say
+		            function Cross.say(role, value)
+		                local entry = say(role, value)
+		                pcall(function()
+		                    local text = tostring(value or "")
+		                    local low = text:lower()
+		                    local sensitive = low:find("password",1,true) or low:find("token",1,true) or low:find("secret",1,true)
+		                        or low:find("api key",1,true) or low:find("mat khau",1,true) or low:find("mật khẩu",1,true)
+		                        or low:find("cookie",1,true) or low:find("https://",1,true) or low:find("http://",1,true) or low:find("@",1,true)
+		                    if sensitive then text = Cross.Lang == "en" and "[Potentially sensitive content hidden]" or "[Đã ẩn nội dung có thể nhạy cảm]" end
+		                    text = text:sub(1, 500)
+		                    Cross.shellText(role == "user" and "cmd" or "out", (role == "user" and "> " or "Cross: ") .. text)
+		                end)
+		                return entry
+		            end
+		        end
+
 		        local function makeLabel(parent, props)
 		            props.BackgroundTransparency = 1
 		            props.BorderSizePixel = 0
@@ -227,7 +246,7 @@
 		                Name = "Header",
 		                Position = UDim2.fromOffset(10, 5),
 		                Size = UDim2.new(1, -20, 0, 14),
-		                Text = "Windows PowerShell · cross@xNgọtStudio",
+		                Text = "Cross · Activity log",
 		                FontFace = codeFace,
 		                TextSize = 10,
 		                TextColor3 = rgb(138, 160, 200),
@@ -236,43 +255,48 @@
 		                ZIndex = (props.ZIndex or 5) + 1,
 		            })
 		            header:SetAttribute("BoncutiRaw", true)
+		            local scroll = new("ScrollingFrame", {
+		                Name = "Log", Position = UDim2.fromOffset(10, 22), Size = UDim2.new(1, -20, 1, -25),
+		                BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 3,
+		                CanvasSize = UDim2.fromOffset(0, 0), ScrollingDirection = Enum.ScrollingDirection.Y,
+		                ZIndex = (props.ZIndex or 5) + 1, Parent = frame,
+		            })
 		            local labels = {}
-		            for index = 1, rows do
-		                local label = makeLabel(frame, {
+		            for index = 1, 80 do
+		                local label = makeLabel(scroll, {
 		                    Name = "Line" .. index,
-		                    Position = UDim2.fromOffset(10, 22 + (index - 1) * lineHeight),
-		                    Size = UDim2.new(1, -20, 0, lineHeight),
-		                    Text = "",
-		                    FontFace = codeFace,
-		                    TextSize = textSize,
-		                    TextColor3 = rgb(238, 237, 240),
-		                    TextXAlignment = Enum.TextXAlignment.Left,
-		                    TextTruncate = Enum.TextTruncate.AtEnd,
-		                    RichText = true,
-		                    ZIndex = (props.ZIndex or 5) + 1,
+		                    Position = UDim2.fromOffset(0, (index - 1) * lineHeight),
+		                    Size = UDim2.new(1, -4, 0, lineHeight),
+		                    Text = "", FontFace = codeFace, TextSize = textSize,
+		                    TextColor3 = rgb(238, 237, 240), TextXAlignment = Enum.TextXAlignment.Left,
+		                    TextTruncate = Enum.TextTruncate.AtEnd, RichText = true,
+		                    ZIndex = (props.ZIndex or 5) + 2,
 		                })
 		                label:SetAttribute("BoncutiRaw", true)
 		                labels[index] = label
 		            end
-		            local shell = { Frame = frame, Labels = labels, Rows = rows, Version = -1, Cursor = false, Active = props.Active }
+		            local shell = { Frame = frame, Scroll = scroll, Labels = labels, Rows = rows, Version = -1, Cursor = false, Active = props.Active }
 		            function shell.Refresh(force, cursor)
-		                if not force and shell.Version == Cross.Shell.Version and shell.Cursor == cursor then
-		                    return
-		                end
-		                shell.Version = Cross.Shell.Version
-		                shell.Cursor = cursor
+		                if not force and shell.Version == Cross.Shell.Version and shell.Cursor == cursor then return end
+		                -- New content and reopening the shell follow the newest line. A cursor blink alone must not interrupt manual scrolling.
+		                local follow = force or shell.Version ~= Cross.Shell.Version
+		                shell.Version = Cross.Shell.Version; shell.Cursor = cursor
 		                local lines = Cross.Shell.Lines
 		                local total = #lines
-		                for index = 1, rows do
-		                    local line = lines[total - rows + index]
-		                    local label = labels[index]
-		                    local value = ""
-		                    if line then
-		                        value = Cross.renderLine(line, cursor and total - rows + index == total)
-		                    end
-		                    if label.Text ~= value then
-		                        label.Text = value
-		                    end
+		                scroll.CanvasSize = UDim2.fromOffset(0, total * lineHeight)
+		                for index = 1, 80 do
+		                    local line, label = lines[index], labels[index]
+		                    local value = line and Cross.renderLine(line, cursor and index == total) or ""
+		                    if label.Text ~= value then label.Text = value end
+		                end
+		                if follow then
+		                    scroll.CanvasPosition = Vector2.new(0, total * lineHeight)
+		                    local version = shell.Version
+		                    task.defer(function()
+		                        if scroll.Parent and shell.Version == version and Cross.Shell.Version == version then
+		                            scroll.CanvasPosition = Vector2.new(0, #Cross.Shell.Lines * lineHeight)
+		                        end
+		                    end)
 		                end
 		            end
 		            table.insert(Cross.Shells, shell)

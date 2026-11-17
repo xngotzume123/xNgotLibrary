@@ -368,7 +368,7 @@ In **Settings → Open Dynamic Island Settings → Cross AI Assistant**, turn on
 
 `AiState()` returns a snapshot with `Enabled`, `Thinking`, `Reply`, `Version` and `Pending` (latest assistant response, not the full chat). `AiAsk` may yield during music resolution; use a task when needed.
 
-`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` and `AiPermission(name, boolean)` control the local assistant. `Ui` and `Key` permissions can be configured; `Body` and `Free` are forced off by the implementation. `MusicAiLearn(title, good)` records feedback when supported; `DemoDownload()` displays simulated progress rather than downloading a real file. `MusicAiOnline(true)` does not enable an online model in this build; `MusicAiOnlineState()` reports removed/local. Do not assume it calls an external AI service.
+`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` and `AiPermission(name, boolean)` control the local assistant. `Ui`, `Key`, and `Body` permissions can be configured. `Body` defaults on for confirmed local-character movement commands; calling `AiPermission("Body", false)` immediately stops them. `Free` remains forced off. `MusicAiLearn(title, good)` records feedback when supported; `DemoDownload()` displays simulated progress rather than downloading a real file. `MusicAiOnline(true)` does not enable an online model in this build; `MusicAiOnlineState()` reports removed/local. Do not assume it calls an external AI service.
 
 `SetLanguage` / `Set("Language", ...)` currently force English. The documentation language switch is independent of the library UI language.
 ''',r'''# API Dynamic Island
@@ -410,7 +410,7 @@ Vào **Settings → Open Dynamic Island Settings → Cross AI Assistant**, bật
 
 `AiState()` trả bảng `Enabled`, `Thinking`, `Reply`, `Version`, `Pending` (câu trả lời mới nhất, không phải toàn bộ lịch sử). `AiAsk` có thể yield khi xử lý nhạc; dùng task khi cần.
 
-`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui` và `Key`; `Body` và `Free` bị khóa tắt trong source. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
+`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui`, `Key` và `Body`. `Body` mặc định bật cho các lệnh di chuyển nhân vật local sau xác nhận; `AiPermission("Body", false)` dừng ngay các lệnh đó. `Free` vẫn bị khóa tắt. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
 
 `SetLanguage` / `Set("Language", ...)` hiện ép về tiếng Anh. Nút đổi ngôn ngữ tài liệu là độc lập với ngôn ngữ UI thư viện.
 '''),

@@ -166,7 +166,8 @@
 							if type(data) == "table" and data.AIControl == false then return object end
 							if type(object) ~= "table" or not object._AIInstance then return object end
 							local title = (type(data) == "table" and (data.Title or data.Name)) or object.Title or object.Name or kind
-							local entry = {Kind = kind, Title = tostring(title), Tab = NAMETAB, Object = object, Root = newWindow}
+							local entry = {Kind = kind, Title = tostring(title), Tab = NAMETAB, Object = object, Root = newWindow,
+                                MacroAllowed = type(data) == "table" and data.AIAllowMacro == true}
 							if kind == "Slider" then
 								local v = type(data) == "table" and type(data.Value) == "table" and data.Value or {}
 								local lo, hi = tonumber(v.Min) or 0, tonumber(v.Max) or 100

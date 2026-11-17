@@ -420,7 +420,7 @@
       "to": 5358,
       "lines": 24,
       "delta": 0,
-      "sha256": "b58c756736537a7b6ad5e3725af17ae9c30578c6be47bc8cb1fc371b22e83218"
+      "sha256": "3bfd15fe2b067ae8231fd95ca8c410ccacb2f68424183136cddc63dac55c6b26"
     },
     {
       "id": "overlay.cross_face",
@@ -428,9 +428,9 @@
       "role": "Mặt AI: shell, face, pose, renderLine, cử động",
       "from": 5359,
       "to": 6021,
-      "lines": 663,
+      "lines": 687,
       "delta": 0,
-      "sha256": "903352cb56bdf9f75b42d8fb1b836f3fe6ae8d9f7823338c5ea889406b480d2a"
+      "sha256": "7859d4b28ab3c999e9570bbe7d0a8400e1d83ddf3e9203fc850ea6146ed1a004"
     },
     {
       "id": "overlay.music_core",
@@ -598,9 +598,9 @@
       "role": "Trang Cross: crossActive, crossSend, crossFocus, crossMode",
       "from": 9432,
       "to": 9824,
-      "lines": 393,
+      "lines": 426,
       "delta": 0,
-      "sha256": "d9eeebdfb158abdd8adfa6c307335db8cd87254c10d4b06d1443d3471277d3fc"
+      "sha256": "31e5c9d322c18aab88a3d48bd02c1bfb18008ec23c29a89827e35275e1c989fa"
     },
     {
       "id": "overlay.view_layout",
@@ -658,9 +658,9 @@
       "role": "refreshIslandScale, Cross.setEnabled/ask/clearChat/shutdown",
       "from": 10444,
       "to": 10784,
-      "lines": 754,
+      "lines": 794,
       "delta": 0,
-      "sha256": "111f30b5f08704d6cb78f746bf17f8b81def962d9ded39d77b8df1213b63b4db"
+      "sha256": "24411cb41861595fcbac2223079252ef1777edd4af4694451bc97d0d777edc36"
     },
     {
       "id": "overlay.api",
@@ -668,9 +668,39 @@
       "role": "API công khai của island: Notify/Music*/Ai*/Expand/State/Destroy",
       "from": 10785,
       "to": 11080,
-      "lines": 315,
+      "lines": 343,
       "delta": -1,
-      "sha256": "b9d7cbe080f1c2c064914d4309632ec978d03afd82c16f5ef1aab5575cecf6a5"
+      "sha256": "add3d71ad71a39a58b366c25b5ecf9e6d7b807e8a51b5562c14150ace0391b59"
+    },
+    {
+      "id": "localai.engine",
+      "path": "25_localai/010_engine.lua",
+      "role": "Local AI V2",
+      "from": 0,
+      "to": 0,
+      "lines": 478,
+      "delta": 0,
+      "sha256": "ed921236f5f8f453b4bb372d9736c39d787bffb3defd3cc88129b17d8605f2ff"
+    },
+    {
+      "id": "localai.movement",
+      "path": "25_localai/015_movement.lua",
+      "role": "Confirmed and bounded local character movement",
+      "from": 0,
+      "to": 0,
+      "lines": 164,
+      "delta": 0,
+      "sha256": "d711460dd943ec68666c1d5c58bf18f5974662c22497761818760187ebf6ccc4"
+    },
+    {
+      "id": "localai.ui",
+      "path": "25_localai/020_ui.lua",
+      "role": "Local AI V2",
+      "from": 0,
+      "to": 0,
+      "lines": 204,
+      "delta": 0,
+      "sha256": "48af99ac1f1aefeaa8d9ae7585859882dbd086e3240e1a681086eb020727e41b"
     },
     {
       "id": "window.open",
@@ -888,9 +918,9 @@
       "role": "Tab:Discord",
       "from": 14131,
       "to": 14283,
-      "lines": 194,
+      "lines": 195,
       "delta": -1,
-      "sha256": "3eb523df558d38c4eb285eae1d833e1f7bfc2ac4ad7a913940f41cf0a079c0d6"
+      "sha256": "09b73f5e5759c0701837d2b21230dc84481ca528a271f0e91f3b66662608b0fd"
     },
     {
       "id": "window.actions",
@@ -938,9 +968,9 @@
       "role": "Window:Destroy + cổng khoá key (KeySystem) + ForgetSavedKey",
       "from": 14598,
       "to": 15113,
-      "lines": 666,
+      "lines": 667,
       "delta": 0,
-      "sha256": "aac4ed2f93d3ac8ad0cb888d4dcf0bd9bbf40e799ea7b9dee5884dc1388dba7a"
+      "sha256": "2770b920b0b77df993fa381d4cd3ed9fccd258001f0f8493e60eafd530934a6d"
     },
     {
       "id": "window.island_bridge",
@@ -1018,9 +1048,9 @@
       "role": "Tab nhạc + AI prompt + file manager trong tab island",
       "from": 17060,
       "to": 17212,
-      "lines": 177,
+      "lines": 185,
       "delta": -2,
-      "sha256": "d5a40e0c0ddf3daf67c16303ab34c5d1d816fd343584ca5cbb3bf5a714764e2f"
+      "sha256": "ae99f8c2a06b532b2f39c4e2222eca89140e09e8a89cc817d4a7a9a99708cfef"
     },
     {
       "id": "notify",

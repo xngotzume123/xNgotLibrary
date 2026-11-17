@@ -965,3 +965,5 @@ from ai_guide import sections_ai
 sections.extend(sections_ai)
 from learning_guide import sections_learning
 sections.extend(sections_learning)
+from localai_v2_guide import sections_localai_v2
+sections.extend(sections_localai_v2)

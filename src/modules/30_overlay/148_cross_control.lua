@@ -51,6 +51,9 @@ function Cross.setEnabled(on)
     else
         Cross.Pending = nil
         Cross.Clarify = nil
+        local localAI=__hostWindow and __hostWindow.LocalAI
+        if localAI and localAI.Macro then pcall(localAI.Macro.Cancel) end
+        if localAI and localAI.Movement then pcall(localAI.Movement.StopAll) end
         Activities.Cross = nil
         Cross.releaseFocus()
     end
@@ -119,7 +122,7 @@ function Cross.ask(prompt)
 					or prompt:find("https://", 1, true) or prompt:find("http://", 1, true)
 
 				if Engine and (hasTag or asksSearch) and not isControl then
-					local vi = crossPromptIsVi(prompt)
+					local vi = Cross.Lang ~= "en"
 					local plan = Engine.parse(prompt)
 
 					if prompt:find("https://", 1, true) or prompt:find("http://", 1, true) then
@@ -227,7 +230,7 @@ function Cross.ask(prompt)
 			end
 
     local lower = __askNorm(prompt)
-    local vi = crossPromptIsVi(prompt)
+    local vi = Cross.Lang ~= "en"
     local response
 
     local seconds = lower:match("timer%s+(%d+)") or lower:match("hen gio%s+(%d+)") or lower:match("(%d+)%s*giay")
@@ -587,9 +590,24 @@ do
         prompt = tostring(prompt or "")
         if prompt == "" then return end
         local text = normalize(prompt)
+        -- The user's language follows the request, independently from the UI's fixed English setting.
+        local function containsWord(word) return (" "..text.." "):find(" "..word.." ",1,true)~=nil end
+        local viHint = prompt:find("[\195-\197\225]") ~= nil or text=="co" or text=="khong"
+        for _,w in ipairs({"bat","tat","mo","dong","bam","nhan","nhac","phat","tim","giai thich","chan doan","hieu suat","tao","chay","tiep tuc","tam dung","huy","yeu thich","lich su","danh sach","nguoi choi","hen gio","thong tin","kiem tra","huong dan","ten","toi","minh","bay","toc do","xuyen tuong"}) do if containsWord(w) then viHint=true;break end end
+        local enHint = false
+        for _,w in ipairs({"enable","disable","turn","open","close","click","press","music","play","pause","find","explain","diagnostics","performance","create","run","resume","cancel","favorites","history","players","fly","speed","noclip"}) do if containsWord(w) then enHint=true;break end end
+        if viHint then Cross.Lang="vi" elseif enHint then Cross.Lang="en" elseif not Cross.Lang then Cross.Lang="vi" end
         local yes = text == "co" or text == "yes" or text == "ok" or text == "dong y" or text == "xac nhan" or text == "confirm" or text == "co bat" or text == "bat di" or text == "co dong y"
         local no = text == "khong" or text == "no" or text == "huy" or text == "cancel" or text == "thoi" or text == "khong bat" or text == "khong dong y"
         if Cross.Pending then
+            local ai=__hostWindow and __hostWindow.LocalAI
+            local emergency = text=="tat bay" or text=="tat fly" or text=="dung bay" or text=="disable fly" or text=="stop flying" or text=="fly off" or text=="unfly"
+                or text=="tat noclip" or text=="tat xuyen tuong" or text=="dung noclip" or text=="disable noclip" or text=="noclip off" or text=="clip"
+                or text=="dat lai toc do" or text=="reset speed" or text=="tat toc do" or text=="dung tat ca di chuyen" or text=="stop movement"
+            if emergency and ai and ai.Movement then
+                local ok,handled,answer=pcall(ai.Movement.Route,prompt,false,false,true,Cross.Lang~="en")
+                if ok and handled then Cross.say("user",prompt);reply(answer);return end
+            end
             Cross.say("user", prompt)
             local p = Cross.Pending
             if os.clock() > p.Expires then Cross.Pending = nil; reply("Yêu cầu đã hết hạn. Hãy ra lệnh lại."); return end
@@ -597,8 +615,14 @@ do
             if not yes then reply("Đang chờ xác nhận. Trả lời Có/Yes hoặc Không/Cancel."); return end
             Cross.Pending = nil
             local ok, success, reason = pcall(execute, p)
-            if not ok then reply("Lệnh gặp lỗi; callback có thể đã chạy một phần: " .. tostring(success)); return end
-            if not success then reply(reason or "Không thực hiện được."); return end
+            if not ok then
+                local ai=__hostWindow and __hostWindow.LocalAI;if ai and ai.Diagnostics then pcall(ai.Diagnostics.Error,"Cross callback",success) end
+                reply("Lệnh gặp lỗi; callback có thể đã chạy một phần: " .. tostring(success)); return
+            end
+            if not success then
+                local ai=__hostWindow and __hostWindow.LocalAI;if ai and ai.Diagnostics then pcall(ai.Diagnostics.Error,"Cross callback",reason or "rejected") end
+                reply(reason or "Không thực hiện được."); return
+            end
             local learnNote = learnConfirmed(p) or ""
             local state = Cross.Learning and Cross.Learning.State()
             local notice = state and not state.Persistent and " Ghi nhớ chỉ trong phiên: không lưu được JSON." or ""
@@ -606,6 +630,18 @@ do
             return
         end
         if Cross.Clarify and os.clock() > Cross.Clarify.Expires then Cross.Clarify = nil end
+        local localAI = __hostWindow and __hostWindow.LocalAI
+        if not Cross.Clarify and localAI and type(localAI.RouteCross)=="function" then
+            local ok,handled,answer=pcall(localAI.RouteCross,prompt,yes,no,not Cross.Perm or Cross.Perm.Ui~=false,Cross.Lang~="en",Cross.Learning and Cross.Learning.Find(text)~=nil,not Cross.Perm or Cross.Perm.Body~=false)
+            if not ok then
+                if localAI.Diagnostics then localAI.Diagnostics.Error("Cross integration",handled) end
+                Cross.say("user",prompt);reply("Không thể xử lý yêu cầu Local AI; hãy thử lại.");return
+            elseif handled then
+                Cross.say("user",prompt)
+                if not Cross.Enabled then Cross.setEnabled(true) end
+                reply(tostring(answer or ""));return
+            end
+        end
         if yes or no then
             Cross.say("user",prompt)
             if Cross.Clarify then
@@ -724,6 +760,10 @@ do
 end
 
 function Cross.clearChat()
+    if Cross.Shell and Cross.Shell.Lines then table.clear(Cross.Shell.Lines);Cross.Shell.Version += 1 end
+    local localAI=__hostWindow and __hostWindow.LocalAI
+    if localAI and localAI.Macro then pcall(localAI.Macro.Cancel) end
+    if localAI and localAI.Movement then localAI.Movement.Pending=nil end
     Cross.Pending = nil
     Cross.Clarify = nil
     table.clear(Cross.Chat)
@@ -758,4 +798,4 @@ end)
 		blur.Size = 0
 		Spr.springIslandY:Set(ISLAND.Top)
 		Isl.settleIsland()
-		Cross.Lang = Settings.Language
+		Cross.Lang = Cross.Lang or "vi"

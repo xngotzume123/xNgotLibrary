@@ -727,7 +727,7 @@ Vào **Settings → Open Dynamic Island Settings → Cross AI Assistant**, bật
 
 `AiState()` trả bảng `Enabled`, `Thinking`, `Reply`, `Version`, `Pending` (câu trả lời mới nhất, không phải toàn bộ lịch sử). `AiAsk` có thể yield khi xử lý nhạc; dùng task khi cần.
 
-`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui` và `Key`; `Body` và `Free` bị khóa tắt trong source. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
+`AiEnable(boolean)`, `AiOpen()`, `AiAsk(text)`, `AiClear()` và `AiPermission(name, boolean)` điều khiển trợ lý local. Có thể cấu hình quyền `Ui`, `Key` và `Body`. `Body` mặc định bật cho các lệnh di chuyển nhân vật local sau xác nhận; `AiPermission("Body", false)` dừng ngay các lệnh đó. `Free` vẫn bị khóa tắt. `MusicAiLearn(title, good)` ghi nhận phản hồi nếu engine hỗ trợ; `DemoDownload()` chỉ mô phỏng tiến trình, không tải file thật. `MusicAiOnline(true)` không bật AI online ở bản này; `MusicAiOnlineState()` báo removed/local. Không nên hiểu tính năng này là gọi một AI online.
 
 `SetLanguage` / `Set("Language", ...)` hiện ép về tiếng Anh. Nút đổi ngôn ngữ tài liệu là độc lập với ngôn ngữ UI thư viện.
 
@@ -1323,3 +1323,41 @@ JSON là **văn bản thường**; script khác hoặc người có quyền vào
 Cần `isfile`, `readfile`, `writefile` và JSON của Roblox `HttpService`. Nếu thiếu hoặc ghi lỗi, trợ lý báo chỉ ghi nhớ **trong phiên**, không chắc còn sau khi chạy lại. File sai định dạng, không đọc được, quá lớn hoặc thuộc UserId khác không bị tự ghi đè; hãy sao lưu và kiểm tra trước khi tự xóa. Việc này không ngăn script khác gọi trực tiếp API thư viện.
 
 Người viết script có thể xem đường dẫn và lỗi bằng `island:AiLearningState()`. Công tắc API cũ `AiSetRemember(false)` không tắt tự ghi nhớ trong bản này. Các API học cũ vẫn giữ để tương thích, nhưng không có control cài đặt/quản lý trong Settings.
+
+---
+
+# Cross: tích hợp xử lý offline
+
+Người dùng chỉ dùng **khung chat Cross hiện có trong Dynamic Island**, không có tab Local AI mới. Các khả năng V2 chạy phía sau Cross. Đây là xử lý theo luật, không phải LLM: chỉ nhận diện một số mẫu tiếng Việt có/không dấu và tiếng Anh, không hiểu mọi câu tự do. Phần AI không cần model ngoài hay API key. Nhạc online và các chức năng mạng cũ hoạt động riêng.
+
+## Dùng hằng ngày
+
+Mở Cross như cũ và thử `bật Main Auto Farm`, `giải thích Main Auto Farm`, `mở tab Main`, `chẩn đoán` hoặc `fps ping`. Các lệnh control thông thường vẫn dùng Cross cũ và yêu cầu xác nhận. Trả lời `có` / `yes` hoặc `không` / `no`. Control phải được đăng ký, không bị khóa, không trùng và còn tồn tại; quyền UI và `AIControl=false` vẫn có hiệu lực. Giải thích dựa trên loại control thực, không đoán công dụng riêng của script. Chẩn đoán chỉ báo tình trạng và lỗi Cross/Local AI quan sát được, không kiểm tra toàn bộ lỗi và không sửa source. FPS/Ping lấy từ số đo sẵn có, không bịa RAM. Cảnh báo kiểm tra mỗi 15 giây, tối đa một lần mỗi phút khi Cross bật.
+
+## Tự học và dữ liệu local
+
+Cross tự học câu hợp lệ sau xác nhận và sở thích như trước, không cần thêm cài đặt hay giao diện quản lý. File cũ vẫn là `xNgotLibrary/AI/xNgotCrossAI_user_<UserId>.json`. Engine tích hợp vẫn dùng file riêng `xNgotLibrary/AI/LocalAI_v2_user_<UserId>.json` cho macro, yêu thích/lịch sử nhạc và dữ liệu V2 trước đó. Cài mới sẽ tự bật lưu local nếu executor hỗ trợ filesystem; lựa chọn bộ nhớ V2 có sẵn vẫn được giữ. File lỗi hoặc bị đổi từ bên ngoài được bảo vệ, không ghi đè. Nếu không lưu được, dữ liệu có thể chỉ tồn tại trong phiên. File là JSON local không mã hóa; bộ lọc không hoàn hảo nên **đừng nhập bí mật**. Bộ nhớ AI không đồng bộ online. Các câu V2 cũ vẫn được nhận diện nếu không trùng lệnh đã học của Cross.
+
+## Shell và phản hồi tiếng Việt
+
+Trong Cross, mở **Shell**, nhập yêu cầu rồi bấm Gửi hoặc Enter. Shell gọi cùng bộ xử lý với Chat: thao tác được hỗ trợ thực sự chạy sau khi qua cùng bước kiểm tra quyền và xác nhận. Nhật ký có thể cuộn và tự kéo xuống dòng mới nhất khi có hoạt động mới hoặc mở lại Shell. Nhật ký hiển thị tin nhắn, xác nhận đang chờ và lỗi mà Cross thực sự trả lời; không giả lập lệnh hệ điều hành hay báo hoàn thành trước khi có kết quả. Bấm **Chat** để quay lại. Shell không phải Windows PowerShell và không chạy Lua hay lệnh hệ điều hành tùy ý. Tối đa 80 dòng sau khi xuống dòng được giữ trong phiên và xóa cùng chat Cross/khi đóng. Bộ lọc ẩn bí mật hoặc URL trong nhật ký chỉ là cố gắng, không bảo đảm; không nên nhập bí mật. Chat và Shell dùng chung trợ lý và trạng thái xác nhận.
+
+Cross chọn trả lời tiếng Việt hoặc tiếng Anh theo từ nhận diện được trong câu hỏi; hỗ trợ tiếng Việt có/không dấu. Câu ngắn không rõ ngôn ngữ thường giữ ngôn ngữ trước đó. Không phải mọi câu hay lỗi từ callback bên thứ ba đều dịch tự động.
+
+## Nhiều thao tác
+
+Có thể nói `bật Main Auto Farm rồi tắt Main Auto Farm` mà không cần tạo macro trước. Mỗi bước cần xác nhận riêng; nói `tạm dừng macro`, `tiếp tục macro` hoặc `hủy macro`. Các bước đã thực hiện không tự hoàn tác. Chuỗi hỗ trợ Toggle/Section và Button được tác giả cấp `AIAllowMacro=true`. Tên nhạy cảm được lọc theo danh sách giới hạn; callback chạy code gốc nên không thể bảo đảm an toàn tuyệt đối. Lệnh đơn của Cross vẫn hỗ trợ nhiều loại control hơn.
+
+Nếu muốn lưu lại, có thể nói `tạo macro tên: bật Main Auto Farm; tắt Main Auto Farm`, `chạy macro tên`, `danh sách macro` hoặc `xóa macro tên`. Đây chỉ là lựa chọn qua chat, không phải bước cài đặt khi dùng bình thường. Câu ngoài mẫu có thể không được nhận diện và không được tự chạy.
+
+## Di chuyển nhân vật local
+
+Nhập trong Cross hoặc Shell: `tốc độ 32`, `đặt lại tốc độ`, `bật bay`, `tốc độ bay 50`, `tắt bay`, `bật noclip`, `tắt noclip` hoặc `dừng tất cả di chuyển`. Tiếng Anh có `speed 32`, `reset speed`, `fly`, `fly speed 50`, `disable fly`, `noclip`, `disable noclip`, `stop movement`. Bật hoặc thay đổi tốc độ phải xác nhận; lệnh dừng không cần xác nhận. Tốc độ là số nguyên từ 4 đến 100. Chỉ tác động nhân vật hiện tại của bạn; không lưu qua phiên và không đưa các lệnh này vào macro. `AiPermission("Body", false)` thu hồi quyền và dừng ngay; `Free` vẫn tắt. Quyền di chuyển mặc định bật nhưng từng lần kích hoạt vẫn cần xác nhận.
+
+Khi bay, dùng điều khiển di chuyển bình thường và hướng camera lên/xuống; Space hoặc nút nhảy để lên, Ctrl/C trên máy tính để xuống. Đây là hiệu ứng phía client, có thể không hoạt động với mọi rig, executor, cách điều khiển mobile, game do server quyết định hoặc anti-cheat. Tắt bay có thể khiến nhân vật rơi. Noclip ghi lại và cố khôi phục va chạm khi dừng; script khác sửa cùng thuộc tính có thể gây xung đột. Cross dừng và dọn khi nhân vật bị xóa/chết, Cross bị tắt hoặc cửa sổ bị đóng. Tốc độ chỉ được khôi phục nếu game chưa đổi giá trị; cần bật lại sau hồi sinh. Chỉ sử dụng tại nơi bạn được phép.
+
+## Nhạc
+
+Tìm/phát nhạc Cross cũ không thay đổi và có thể dùng mạng. Yêu thích và playlist mới dùng file đã tải: `favorite gentle song`, `thêm gentle song vào playlist chill`, `phát playlist chill`, `bài tiếp playlist chill`, `danh sách yêu thích`, `danh sách playlist`, `lịch sử nhạc`. Tắt Music Auto trước khi phát playlist; executor cần API nạp audio local. Chuyển bài playlist thủ công. Metadata cache/lịch sử có thể thiếu hoặc trùng; yêu cầu phát không bảo đảm client giải mã được audio. Player cũ vẫn có thể truy cập mạng độc lập.
+
+Module nội bộ vẫn ở `Window.LocalAI` và được dọn khi đóng cửa sổ. JSON local không phải cơ chế mã hóa. Test mock không thay thế test Roblox/Delta thực tế.
